@@ -312,7 +312,7 @@
   function transpileAll(capped) {
     var wantTsc = $('#f-tsc').checked, n = files.length;
     setProgress('ternTS: 0 of ' + num(n), 0, n);
-    return call({ type: 'many', files: files, esm: $('#f-module').value === 'esm', define: $('#f-define').checked, tsc: wantTsc }, function (p) {
+    return call({ type: 'many', files: files, esm: $('#f-module').value === 'esm', define: $('#f-define').checked, tsc: wantTsc, swc: $('#f-swc').checked }, function (p) {
       setProgress(p.total ? p.phase + ': ' + num(p.done) + ' of ' + num(p.total) : p.phase, p.done, p.total);
     }).then(function (r) {
       progress.hidden = true;
@@ -326,19 +326,22 @@
     var h = '<div class="res-head"><b>' + esc(sourceName) + '</b><span>' + num(n) + ' files · ' + size(r.bytes) + (capped ? ' · capped at the first ' + num(MAX_FILES) + ' files' : '') + '</span></div>';
     h += '<div class="stats res-stats">';
     h += '<div class="stat"><b>' + ms(r.ternMs) + '</b><span>ternTS, all files</span><small>' + (r.bytes / 1e6 / (r.ternMs / 1000)).toFixed(1) + ' MB/s in WebAssembly</small></div>';
+    if (r.swcMs !== undefined)
+      h += '<div class="stat hi"><b>' + (r.swcMs / r.ternMs).toFixed(1) + '&times;</b><span>faster than swc</span><small>swc ' + ms(r.swcMs) + ', its WebAssembly build in the same worker</small></div>';
     if (r.tscMs !== undefined) {
-      h += '<div class="stat"><b>' + ms(r.tscMs) + '</b><span>tsc <code class="plain">transpileModule</code></span><small>TypeScript 5.9 in the same worker</small></div>';
-      h += '<div class="stat hi"><b>' + (r.tscMs / r.ternMs).toFixed(1) + '&times;</b><span>faster than tsc</span><small>on this project, in this browser</small></div>';
+      h += '<div class="stat hi"><b>' + (r.tscMs / r.ternMs).toFixed(1) + '&times;</b><span>faster than tsc</span><small>tsc ' + ms(r.tscMs) + ', TypeScript 5.9 <code class="plain">transpileModule</code></small></div>';
       h += '<div class="stat ' + (r.same === n ? 'hi' : '') + '"><b>' + num(r.same) + ' / ' + num(n) + '</b><span>the same program as tsc</span><small>' + (r.same === n ? 'every file' : num(n - r.same) + ' differ (listed below)') + '</small></div>';
     } else {
       h += '<div class="stat"><b>' + num(ok) + ' / ' + num(n) + '</b><span>transpiled</span><small>' + (r.errors ? num(r.errors) + ' with errors' : 'no errors') + '</small></div>';
     }
     h += '</div>';
-    if (r.tscMs !== undefined) {
-      var max = Math.max(r.tscMs, r.ternMs);
+    if (r.tscMs !== undefined || r.swcMs !== undefined) {
+      var max = Math.max(r.ternMs, r.tscMs || 0, r.swcMs || 0);
       h += '<figure class="chart res-chart" style="--max:' + max + '"><figcaption><b>Time to transpile ' + num(n) + ' files</b><span>shorter is better</span></figcaption>' +
         '<div class="row tern"><span>ternTS</span><i style="--v:' + r.ternMs + '"></i><em>' + ms(r.ternMs) + '</em></div>' +
-        '<div class="row"><span>tsc</span><i style="--v:' + r.tscMs + '"></i><em>' + ms(r.tscMs) + '</em></div></figure>';
+        (r.swcMs !== undefined ? '<div class="row"><span>swc</span><i style="--v:' + r.swcMs + '"></i><em>' + ms(r.swcMs) + '</em></div>' : '') +
+        (r.tscMs !== undefined ? '<div class="row"><span>tsc</span><i style="--v:' + r.tscMs + '"></i><em>' + ms(r.tscMs) + '</em></div>' : '') +
+        '</figure>';
     }
     var odd = [];
     files.forEach(function (f, i) {

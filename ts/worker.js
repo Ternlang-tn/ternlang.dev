@@ -1,12 +1,13 @@
 // ternts in the browser: ternts.wasm (the same build as ternts/js/wasm.cjs) runs here, off the
-// page's thread; tsc (TypeScript 5.9's transpileModule) and acorn load only when asked for.
+// page's thread; tsc (TypeScript 5.9's transpileModule), swc and acorn load only when asked for.
 //
 // Messages in:  {id, type: 'one', src, file, esm, define, tsc}
-//               {id, type: 'many', files: [{path, src}], esm, define, tsc}
+//               {id, type: 'many', files: [{path, src}], esm, define, tsc, swc}
 // Messages out: {id, type: 'progress', done, total, phase} ... then {id, type: 'result', ...}
 'use strict';
 const TS_URL = 'https://cdn.jsdelivr.net/npm/typescript@5.9.3/lib/typescript.js';
 const ACORN_URL = 'https://cdn.jsdelivr.net/npm/acorn@8.15.0/dist/acorn.js';
+const SWC_URL = 'https://cdn.jsdelivr.net/npm/@swc/wasm-web@1.16.13/';
 const enc = new TextEncoder(), dec = new TextDecoder();
 
 let x = null, memory = null;
@@ -112,6 +113,29 @@ function tsc(src, file, esm, define) {
   return ts.transpileModule(src, { fileName: file, compilerOptions: o, reportDiagnostics: false }).outputText;
 }
 
+let swc = null;
+async function loadSwc(id) {
+  if (swc) return;
+  postMessage({ id, type: 'progress', phase: 'Loading swc 1.16 from jsDelivr (about 6 MB)…', done: 0, total: 0 });
+  const m = await import(SWC_URL + 'wasm.js');
+  await m.default(SWC_URL + 'wasm_bg.wasm');
+  swc = m;
+  swcOne('export class A {}', 'warm.ts', false, false);      // (its first call sets up; not timed)
+}
+
+// swc with the same settings: legacy decorators with metadata, as Nest projects configure it
+function swcOne(src, file, esm, define) {
+  return swc.transformSync(src, {
+    filename: file, sourceMaps: false, isModule: true,
+    jsc: {
+      parser: { syntax: 'typescript', tsx: file.endsWith('.tsx'), decorators: true },
+      transform: { legacyDecorator: true, decoratorMetadata: true, useDefineForClassFields: !!define, react: { runtime: 'automatic' } },
+      target: 'es2022',
+    },
+    module: { type: esm ? 'es6' : 'commonjs' },
+  }).code;
+}
+
 // harness/tscheck.mjs's comparison: the same AST, ignoring positions, raw text, and the
 // numbering of temp names (_a, _1)
 const TEMP = /^_[a-z]$|^_\d+$/;
@@ -158,6 +182,17 @@ onmessage = async (ev) => {
     }
     const ternMs = performance.now() - t0;
     const result = { id: q.id, type: 'result', outputs, ternMs, bytes, errors };
+    if (q.swc) {
+      await loadSwc(q.id);
+      let swcErrors = 0;
+      const t2 = performance.now();
+      for (let i = 0; i < n; i++) {
+        try { swcOne(files[i].src, files[i].path, q.esm, q.define); } catch (e) { swcErrors++; }
+        if ((i & 31) === 31) postMessage({ id: q.id, type: 'progress', phase: 'swc', done: i + 1, total: n });
+      }
+      result.swcMs = performance.now() - t2;
+      result.swcErrors = swcErrors;
+    }
     if (q.tsc) {
       loadTsc(q.id);
       const want = new Array(n);
