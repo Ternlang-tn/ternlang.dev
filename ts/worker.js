@@ -2,12 +2,13 @@
 // page's thread; tsc (TypeScript 5.9's transpileModule), swc and acorn load only when asked for.
 //
 // Messages in:  {id, type: 'one', src, file, esm, define, tsc}
-//               {id, type: 'many', files: [{path, src}], esm, define, tsc, swc}
+//               {id, type: 'many', files: [{path, src}], esm, define, tsc, swc, tsgo}
 // Messages out: {id, type: 'progress', done, total, phase} ... then {id, type: 'result', ...}
 'use strict';
 const TS_URL = 'https://cdn.jsdelivr.net/npm/typescript@5.9.3/lib/typescript.js';
 const ACORN_URL = 'https://cdn.jsdelivr.net/npm/acorn@8.15.0/dist/acorn.js';
 const SWC_URL = 'https://cdn.jsdelivr.net/npm/@swc/wasm-web@1.16.13/';
+const TSGO_URL = 'https://cdn.jsdelivr.net/npm/tsgo-wasm@7.0.2/tsgo.wasm';
 const enc = new TextEncoder(), dec = new TextDecoder();
 
 let x = null, memory = null;
@@ -118,9 +119,19 @@ async function loadSwc(id) {
   if (swc) return;
   postMessage({ id, type: 'progress', phase: 'Loading swc 1.16 from jsDelivr (about 6 MB)…', done: 0, total: 0 });
   const m = await import(SWC_URL + 'wasm.js');
-  await m.default(SWC_URL + 'wasm_bg.wasm');
+  await m.default({ module_or_path: SWC_URL + 'wasm_bg.wasm' });
   swc = m;
   swcOne('export class A {}', 'warm.ts', false, false);      // (its first call sets up; not timed)
+}
+
+// tsgo (TypeScript 7): an unofficial WebAssembly build of typescript-go, run by tsgo.js on an
+// in-memory copy of the project as a whole-project build with --noCheck
+let tsgoModule = null;
+async function loadTsgo(id) {
+  if (tsgoModule) return;
+  postMessage({ id, type: 'progress', phase: 'Loading tsgo (TypeScript 7) from jsDelivr (about 49 MB, once)…', done: 0, total: 0 });
+  importScripts('tsgo.js');
+  tsgoModule = await WebAssembly.compileStreaming(fetch(TSGO_URL));
 }
 
 // swc with the same settings: legacy decorators with metadata, as Nest projects configure it
@@ -192,6 +203,14 @@ onmessage = async (ev) => {
       }
       result.swcMs = performance.now() - t2;
       result.swcErrors = swcErrors;
+    }
+    if (q.tsgo) {
+      await loadTsgo(q.id);
+      postMessage({ id: q.id, type: 'progress', phase: 'tsgo: building the project…', done: 0, total: 0 });
+      const r = await runTsgo(tsgoModule, files, { esm: q.esm, define: q.define });
+      result.tsgoMs = r.ms;
+      result.tsgoExit = r.exitCode;
+      if (r.exitCode) console.warn('tsgo exited ' + r.exitCode + ':\n' + r.stdout.slice(0, 4000));
     }
     if (q.tsc) {
       loadTsc(q.id);

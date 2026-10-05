@@ -202,7 +202,7 @@ code.plain { background: none; padding: 0; color: inherit; }
 .res-head { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; margin-bottom: 14px; }
 .res-head b { font: 700 1.25rem var(--display); }
 .res-head span { color: var(--muted); font-size: 14px; }
-.res-stats { padding: 0 !important; margin-bottom: 16px; }
+.res-stats { padding: 0 !important; margin-bottom: 16px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 .res-stats .stat { background: var(--ground); }
 .res-chart { background: var(--ground); margin-bottom: 16px; }
 .res-actions { margin-bottom: 8px; }
