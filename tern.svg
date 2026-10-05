@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 4 64 46" role="img" aria-label="Tern">
+  <!-- a tern in flight: grey wings, white body, black cap, coral beak, forked tail -->
+  <path d="M29 30 C24 20 17 12 6 7 C15 15 20 23 23 32 Z" fill="#9fb0c2"/>
+  <path d="M33 29 C36 20 41 13 49 9 C43 17 40 24 38 30 Z" fill="#7d8fa3"/>
+  <g fill="#eef2f6" stroke="#b9c6d3" stroke-width="0.8" stroke-linejoin="round">
+    <path d="M14 37 L2 41 L13 39.5 L3 47 L17 38.5 Z"/>
+    <path d="M12 38 C18 33 30 29 42 27 C47 26 51 27 52 30 C51 33 46 35 40 35 C30 36 20 37 12 38 Z"/>
+  </g>
+  <path d="M42.4 27.6 C45.5 24.6 50.2 24.6 52.6 27.6 C52.8 29 52.2 30 51.2 30.5 C49 28.8 45.6 28.3 42.4 28.9 Z" fill="#18202b"/>
+  <path d="M52 28.2 L62 30.6 L51.6 31.2 Z" fill="#e0533a"/>
+</svg>

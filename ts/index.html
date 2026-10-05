@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ternTS: TypeScript, exactly like tsc</title>
+<meta name="description" content="ternTS transpiles TypeScript to exactly what tsc emits, decorator metadata included, 6x faster than swc. Try it on your own project in the browser.">
+<meta property="og:title" content="ternTS: TypeScript, exactly like tsc, 6x faster than swc">
+<meta property="og:description" content="The same output as tsc on 37,000 real files, NestJS decorator metadata included. Try it on your own project, in your browser.">
+<meta property="og:image" content="https://ternlang.dev/ts/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../docs/style.css">
+<link rel="stylesheet" href="../home.css">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../"><img src="../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a href="../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../#built">Built with Tern</a>
+    <a class="cur" href="./">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main">
+<section class="hero wrap ts-hero">
+  <div class="hero-text">
+    <p class="eyebrow">ternTS &middot; written in Tern &middot; experimental</p>
+    <h1>TypeScript, exactly like&nbsp;tsc. 6&times; faster than&nbsp;swc.</h1>
+    <p class="lead">ternTS turns TypeScript into the JavaScript <code>tsc</code> would write, including the legacy decorators and <code>emitDecoratorMetadata</code> that NestJS, TypeORM and Angular run on. Same output on 37,000 real files; a fraction of the time.</p>
+    <div class="cta">
+      <a class="btn primary" href="#try">Try it in your browser</a>
+      <a class="btn" href="#install"><code class="plain">npm i -D @ternlang/ternts@experimental</code></a>
+    </div>
+  </div>
+  <div class="stats ts-stats">
+    <div class="stat"><b>32 ms</b><span>all 1,959 NestJS files, one thread</span><small>swc 202 ms &middot; tsc 1.44 s</small></div>
+    <div class="stat"><b>108 ms</b><span>NestJS save to restarted app</span><small><code>nest start --watch</code> 676 ms</small></div>
+    <div class="stat"><b>37,319</b><span>files checked against tsc, all identical</span><small>NestJS, VS Code, Grafana, Excalidraw, Immich, Twenty</small></div>
+    <div class="stat"><b>1.33 s</b><span>all of VS Code: 13,454 files, 177 MB</span><small>swc 6.07 s &middot; tsc 40.2 s</small></div>
+  </div>
+</section>
+
+<section class="wrap" id="try">
+  <p class="eyebrow">Playground</p>
+  <h2>Type TypeScript, get tsc&rsquo;s JavaScript.</h2>
+  <p class="sub">This is ternTS itself, compiled to WebAssembly and running in this page. Turn on <b>Compare with tsc</b> to run TypeScript 5.9&rsquo;s <code>transpileModule</code> beside it and check the two outputs parse to the same program.</p>
+  <div class="pg">
+    <div class="pg-bar">
+      <div class="tabs" role="tablist" aria-label="Examples">
+        <button role="tab" data-preset="nest" aria-selected="true">NestJS controller</button>
+        <button role="tab" data-preset="react">React (TSX)</button>
+        <button role="tab" data-preset="enums">Enums &amp; namespaces</button>
+        <button role="tab" data-preset="using"><code class="plain">using</code> &amp; accessor</button>
+      </div>
+      <div class="opts">
+        <label>Module <select id="pg-module"><option value="cjs">CommonJS</option><option value="esm">ES modules</option></select></label>
+        <label><input type="checkbox" id="pg-define"> <code class="plain">useDefineForClassFields</code></label>
+        <label class="tsc-toggle"><input type="checkbox" id="pg-tsc"> Compare with tsc</label>
+      </div>
+    </div>
+    <div class="pg-panes">
+      <div class="pane">
+        <div class="pane-head"><input id="pg-file" value="cats.controller.ts" aria-label="File name" spellcheck="false"><span>TypeScript</span></div>
+        <textarea id="pg-src" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="TypeScript source"></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-head"><div class="out-tabs"><button data-out="ternts" aria-pressed="true">ternTS</button><button data-out="tsc" aria-pressed="false" hidden>tsc</button></div><span id="pg-status" class="status">loading ternts.wasm…</span></div>
+        <pre id="pg-out" class="out" aria-live="polite"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="folder">
+  <p class="eyebrow">Your code</p>
+  <h2>Run it on a whole project.</h2>
+  <p class="sub">Pick a folder, drop one here, or load a public GitHub repository. ternTS transpiles every <code>.ts</code> and <code>.tsx</code> file (skipping <code>node_modules</code>, <code>dist</code> and <code>.d.ts</code>), then tsc does the same so you can compare. <b>Nothing is uploaded:</b> it all runs in your browser.</p>
+  <div class="sources">
+    <label class="drop" id="drop">
+      <input type="file" id="pick" webkitdirectory directory multiple hidden>
+      <b>Drop a folder here</b><span>or click to choose one</span>
+    </label>
+    <form class="gh" id="gh">
+      <b>A public GitHub repository</b>
+      <div class="gh-row"><input id="gh-repo" placeholder="owner/repo, or a github.com URL" spellcheck="false" autocapitalize="off"><button class="btn">Load</button></div>
+      <div class="chips"><button type="button" data-repo="nestjs/nest">nestjs/nest</button><button type="button" data-repo="excalidraw/excalidraw">excalidraw/excalidraw</button><button type="button" data-repo="immich-app/immich/server">immich-app/immich/server</button></div>
+    </form>
+    <div class="sample">
+      <b>No project handy?</b>
+      <button class="btn" id="sample" type="button">All 37 NestJS samples</button>
+      <span>475 files, loads instantly</span>
+    </div>
+  </div>
+  <div class="run-opts">
+    <label><input type="checkbox" id="f-tsc" checked> Also run tsc and compare</label>
+    <label>Module <select id="f-module"><option value="cjs">CommonJS</option><option value="esm">ES modules</option></select></label>
+    <label><input type="checkbox" id="f-define"> <code class="plain">useDefineForClassFields</code></label>
+  </div>
+  <div class="runres" id="results" hidden>
+    <div class="progress" id="progress"><div class="progress-text"></div><div class="progress-bar"><i></i></div></div>
+    <div id="summary"></div>
+  </div>
+  <p class="note">In the browser ternTS runs as single-threaded WebAssembly. The native <code>ternts build</code> uses every core and skips unchanged files, so it&rsquo;s faster still. Options here are ternTS&rsquo; defaults (legacy decorators with metadata, ES2022+ output); <code>ternts build</code> reads them from your <code>tsconfig.json</code>.</p>
+</section>
+
+<section class="wrap" id="bench">
+  <p class="eyebrow">Benchmarks</p>
+  <h2>Faster than the Rust and Go rewrites.</h2>
+  <p class="sub">Apple M4 Pro, Node 24, the latest release of each tool: swc 1.16.12, TypeScript 5.9.3, tsgo 7.0.2. <code>node bench/run.mjs</code> in the ternTS repository reproduces every number. Shorter bars are better.</p>
+  <div class="charts">
+    <figure class="chart" style="--max:1440">
+      <figcaption><b>Transpile NestJS in-process</b><span>1,959 files, 4.8 MB, one thread; ms</span></figcaption>
+      <div class="row tern"><span>ternTS</span><i style="--v:32"></i><em>32</em></div>
+      <div class="row"><span>swc</span><i style="--v:202"></i><em>202</em></div>
+      <div class="row"><span>tsgo</span><i style="--v:624"></i><em>624</em></div>
+      <div class="row"><span>tsc 5.9</span><i style="--v:1440"></i><em>1,440</em></div>
+    </figure>
+    <figure class="chart" style="--max:40.2">
+      <figcaption><b>Transpile VS Code in-process</b><span>13,454 files, 177 MB, one thread; seconds</span></figcaption>
+      <div class="row tern"><span>ternTS</span><i style="--v:1.33"></i><em>1.33</em></div>
+      <div class="row"><span>swc</span><i style="--v:6.07"></i><em>6.07</em></div>
+      <div class="row"><span>tsgo</span><i style="--v:22.2"></i><em>22.2</em></div>
+      <div class="row"><span>tsc 5.9</span><i style="--v:40.2"></i><em>40.2</em></div>
+    </figure>
+    <figure class="chart" style="--max:676">
+      <figcaption><b>NestJS dev mode: save to new code answering</b><span>cats sample, median of 20 edits; ms</span></figcaption>
+      <div class="row tern"><span>ternts dev --warm</span><i style="--v:108"></i><em>108</em></div>
+      <div class="row tern"><span>ternts dev</span><i style="--v:298"></i><em>298</em></div>
+      <div class="row"><span>nest (tsc)</span><i style="--v:661"></i><em>661</em></div>
+      <div class="row"><span>nest -b swc</span><i style="--v:676"></i><em>676</em></div>
+    </figure>
+    <figure class="chart" style="--max:1000">
+      <figcaption><b>Whole build from the command line</b><span>Nest packages, 971 files, all cores, ES modules; ms</span></figcaption>
+      <div class="row tern"><span>ternts build</span><i style="--v:66"></i><em>66</em></div>
+      <div class="row"><span>tsgo --noCheck</span><i style="--v:110"></i><em>110</em></div>
+      <div class="row"><span>swc CLI</span><i style="--v:185"></i><em>185</em></div>
+      <div class="row"><span>tsc --noCheck</span><i style="--v:1000"></i><em>1,000</em></div>
+    </figure>
+    <figure class="chart" style="--max:2390">
+      <figcaption><b>Jest transform, steady state</b><span>NestJS repo, one worker, source maps; ms</span></figcaption>
+      <div class="row tern"><span>ternts/jest</span><i style="--v:267"></i><em>267</em></div>
+      <div class="row"><span>@swc/jest</span><i style="--v:392"></i><em>392</em></div>
+      <div class="row"><span>ts-jest</span><i style="--v:2390"></i><em>2,390</em></div>
+    </figure>
+    <figure class="chart" style="--max:1620">
+      <figcaption><b>NestJS dev mode: cold start</b><span>cats sample; ms</span></figcaption>
+      <div class="row tern"><span>ternts dev</span><i style="--v:288"></i><em>288</em></div>
+      <div class="row tern"><span>ternts dev --warm</span><i style="--v:333"></i><em>333</em></div>
+      <div class="row"><span>nest -b swc</span><i style="--v:1367"></i><em>1,367</em></div>
+      <div class="row"><span>nest (tsc)</span><i style="--v:1620"></i><em>1,620</em></div>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap" id="correct">
+  <p class="eyebrow">Correct</p>
+  <h2>tsc&rsquo;s output, checked three ways.</h2>
+  <div class="split">
+    <div>
+      <p><b>1. The same program as tsc.</b> Every file goes through ternTS and through TypeScript 5.9&rsquo;s <code>transpileModule</code> with the same options, and both outputs are parsed and compared, ignoring only formatting and the numbering of temp names like <code>_a</code>. That&rsquo;s the check the playground above runs.</p>
+      <p><b>2. Nest&rsquo;s own test suite.</b> All 3,631 of Nest&rsquo;s unit tests pass with ternTS as the TypeScript transformer.</p>
+      <p><b>3. Real apps, same behavior.</b> Nine NestJS sample apps built with tsc and with ternTS answer the same requests byte for byte, including the Swagger document and GraphQL schema that Nest builds from decorator metadata.</p>
+    </div>
+    <div class="table cmp">
+      <table>
+        <thead><tr><th>Corpus</th><th class="r">Files</th><th class="r">Identical</th></tr></thead>
+        <tbody>
+          <tr><td>NestJS repository</td><td class="r">1,959</td><td class="r"><b>1,959</b></td></tr>
+          <tr><td>VS Code</td><td class="r">13,454</td><td class="r"><b>13,432</b>*</td></tr>
+          <tr><td>Grafana + Excalidraw (4,948 .tsx)</td><td class="r">10,181</td><td class="r"><b>10,181</b></td></tr>
+          <tr><td>Immich server</td><td class="r">668</td><td class="r"><b>668</b></td></tr>
+          <tr><td>Twenty server</td><td class="r">11,057</td><td class="r"><b>11,057</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="note">* The 22 VS Code files that differ aren&rsquo;t valid TypeScript on purpose (lint-error fixtures, a file cut off at 8 MB). tsc emits something for them anyway; ternTS reports the syntax error. Every corpus is identical in CommonJS, ES modules, with <code>esModuleInterop</code> + <code>strictNullChecks</code>, and with <code>useDefineForClassFields</code>; the .tsx files in all four JSX modes.</p>
+</section>
+
+<section class="wrap" id="install">
+  <p class="eyebrow">Experimental</p>
+  <h2>Install</h2>
+  <p class="sub">An early, experimental release: expect rough edges, and please tell us what breaks. The npm package carries a native binary for macOS and Linux (arm64 and x64) and WebAssembly for everything else, so you never install Tern.</p>
+  <div class="block code"><pre><code>npm i -D @ternlang/ternts@experimental
+npx ternts build<span class="c">                # the project in ./tsconfig.json: files, outDir, module, decorators, jsx…</span>
+npx ternts dev --warm<span class="c">           # build, run, and restart on every save (replaces nest start --watch)</span></code></pre></div>
+  <div class="uses">
+    <div><h3>Jest</h3><div class="block code"><pre>// jest.config.js
+transform: {
+  '^.+\\.(t|j|mj)sx?$': ['@ternlang/ternts/jest', { tsconfig: 'tsconfig.json' }],
+}</pre></div></div>
+    <div><h3>Vite and Vitest</h3><div class="block code"><pre>// vite.config.ts
+import ternts from '@ternlang/ternts/vite';
+export default defineConfig({ plugins: [ternts()] });</pre></div></div>
+    <div><h3>Node</h3><div class="block code"><pre># run TypeScript directly (Node 22.15+)
+node --import @ternlang/ternts/register src/main.ts</pre></div></div>
+  </div>
+  <h3 class="limits-h">Not done yet</h3>
+  <ul class="limits">
+    <li><b>Type checking</b>, by design: keep <code>tsc --noEmit</code> (or tsgo) for that, as swc users do.</li>
+    <li><b>Targets below ES2022.</b> Output uses class fields and static blocks: Node 16.11+ and current browsers.</li>
+    <li><b>TC39 standard decorators.</b> Only the legacy kind (<code>experimentalDecorators</code>), which NestJS, TypeORM and Angular use.</li>
+    <li><b>Windows</b> has the WebAssembly build for Jest, Vite and Node, but not <code>ternts build</code> yet.</li>
+  </ul>
+</section>
+
+<section class="wrap proof">
+  <div>
+    <p class="eyebrow">Written in Tern</p>
+    <h2>About 10,000 lines of Tern.</h2>
+    <p>ternTS is written in Tern, a compiled language built for AI agents to write, that compiles to native code faster than Rust and Go. There&rsquo;s no AST: the parser walks tokens and copies your source through, editing only what TypeScript adds.</p>
+    <a class="btn" href="../">Meet Tern &rarr;</a>
+  </div>
+  <div class="proof-stats">
+    <div><b>1 MB</b><span>the whole transpiler as WebAssembly: what this page runs</span></div>
+    <div><b>No postinstall</b><span>a prebuilt binary per platform, WebAssembly for the rest; nothing to compile</span></div>
+  </div>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../tern.svg" alt="" width="33" height="24"> ternTS is MIT or Apache-2.0. Samples: <a href="https://github.com/nestjs/nest/tree/master/sample">NestJS</a> (MIT).</div>
+  <div class="links"><a href="../">Tern</a><a href="https://www.npmjs.com/package/@ternlang/ternts">npm</a></div>
+</footer>
+<script src="../home.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern: the language for agent-written code</title>
+<meta name="description" content="Tern is a compiled language designed for AI agents to write: they get it right quickly, and what they write runs faster and leaner than Rust and Go.">
+<meta property="og:title" content="Tern: the language for agent-written code">
+<meta property="og:description" content="A compiled language built for AI agents to write, benchmarked against Rust and Go, and the products we've built with it.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="docs/style.css">
+<link rel="stylesheet" href="home.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="./"><img src="tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="opt" href="#agents">For agents</a>
+    <a href="#benchmarks">Benchmarks</a>
+    <a href="#built">Built with Tern</a>
+    <a href="ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main">
+<section class="hero wrap">
+  <div class="hero-text">
+    <p class="eyebrow">In development &middot; opening up soon</p>
+    <h1>The language for agent&#8209;written code.</h1>
+    <p class="lead">Agents write more of our code every month. Tern is a compiled language built for them: syntax models already know, errors that say exactly what to write instead, and checks that catch the bugs agents make. What they write compiles to native code that outruns Rust and Go.</p>
+    <div class="cta">
+      <a class="btn primary" href="#benchmarks">See the benchmarks</a>
+      <a class="btn" href="ts/">Try ternTS in your browser</a>
+    </div>
+  </div>
+  <figure class="hero-code">
+    <div class="hero-tabs" role="tablist" aria-label="Examples">
+      <button role="tab" aria-selected="true" aria-controls="ex-lang" id="t-lang">Language</button>
+      <button role="tab" aria-selected="false" aria-controls="ex-web" id="t-web" tabindex="-1">Web API</button>
+      <button role="tab" aria-selected="false" aria-controls="ex-par" id="t-par" tabindex="-1">Parallel</button>
+      <button role="tab" aria-selected="false" aria-controls="ex-sql" id="t-sql" tabindex="-1">Typed SQL</button>
+    </div>
+    <div class="exs">
+    <div class="ex" id="ex-lang" role="tabpanel" aria-labelledby="t-lang">
+      <div class="block code"><pre><code><span class="k">struct</span> <span class="t">Order</span>:
+    item: <span class="t">str</span>
+    qty: <span class="t">int</span>
+    price: <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">total</span>(orders: [<span class="t">Order</span>]) <span class="t">float</span>:
+    t <span class="o">=</span> <span class="n">0.0</span>
+    <span class="k">for</span> o <span class="k">in</span> orders:
+        t <span class="o">+</span><span class="o">=</span> <span class="t">float</span>(o.qty) <span class="o">*</span> o.price
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    orders <span class="o">=</span> [<span class="t">Order</span>(<span class="s">"tea"</span>, <span class="n">2</span>, <span class="n">3.5</span>), <span class="t">Order</span>(<span class="s">"scone"</span>, <span class="n">3</span>, <span class="n">2.25</span>)]
+    busiest <span class="o">=</span> orders.<span class="f">sort_by</span>(<span class="k">fn</span>(o) <span class="o">-</span>o.qty)[<span class="n">0</span>]
+    <span class="f">print</span>(<span class="s">f"total {total(orders)}, most ordered: {busiest.item}"</span>)</code></pre></div>
+      <div class="block out"><div class="label">Output</div><pre>total 13.75, most ordered: scone</pre></div>
+      <figcaption>Reads like Python, compiles to native code. Types are checked, and every value is a copy, so nothing can change behind your back.</figcaption>
+    </div>
+    <div class="ex" id="ex-web" role="tabpanel" aria-labelledby="t-web" hidden>
+      <div class="block code"><pre><code><span class="k">import</span> roost
+<span class="k">import</span> json
+<span class="k">import</span> sqlite
+<span class="k">from</span> todos_db <span class="k">import</span> list_todos         <span class="c"># typed, from queries.sql</span>
+
+<span class="k">fn</span> <span class="f">todos</span>(req: roost.<span class="t">Request</span>, d: sqlite.<span class="t">Db</span>) roost.<span class="t">Response</span>:
+    <span class="k">return</span> roost.<span class="f">json</span>(json.<span class="f">encode</span>(<span class="f">list_todos</span>(d)))
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">"todos.db"</span>)
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    r.<span class="f">get</span>(<span class="s">"/todos"</span>, <span class="k">fn</span>(req) <span class="f">todos</span>(req, d))
+    roost.<span class="f">serve</span>(r, <span class="n">8080</span>)</code></pre></div>
+      <div class="block out"><div class="label">curl localhost:8080/todos</div><pre>[{"id":1,"title":"ship it","done":false}]</pre></div>
+      <figcaption><code>roost</code>: routing, middleware, WebSockets and SSE on green threads, with no <code>async</code> anywhere. More requests per second on one thread than Rust&rsquo;s axum.</figcaption>
+    </div>
+    <div class="ex" id="ex-par" role="tabpanel" aria-labelledby="t-par" hidden>
+      <div class="block code"><pre><code><span class="k">fn</span> <span class="f">is_prime</span>(n: <span class="t">int</span>) <span class="t">bool</span>:
+    <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">2</span>:
+        <span class="k">return</span> <span class="k">false</span>
+    d <span class="o">=</span> <span class="n">2</span>
+    <span class="k">while</span> d <span class="o">*</span> d <span class="o">&lt;=</span> n:
+        <span class="k">if</span> n <span class="o">%</span> d <span class="o">==</span> <span class="n">0</span>:
+            <span class="k">return</span> <span class="k">false</span>
+        d <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> <span class="k">true</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">2_000_000</span>
+    found <span class="o">=</span> [<span class="k">false</span>] <span class="o">*</span> n
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span>n:        <span class="c"># on every core</span>
+        found[i] <span class="o">=</span> <span class="f">is_prime</span>(i)     <span class="c"># each i writes only found[i]</span>
+    <span class="f">print</span>(<span class="f">len</span>(found.<span class="f">filter</span>(<span class="k">fn</span>(p) p)), <span class="s">"primes below"</span>, n)</code></pre></div>
+      <div class="block out"><div class="label">Output</div><pre>148933 primes below 2000000</pre></div>
+      <figcaption>One word makes a loop parallel. If two iterations could write the same thing, it&rsquo;s a compile error, not a heisenbug.</figcaption>
+    </div>
+    <div class="ex" id="ex-sql" role="tabpanel" aria-labelledby="t-sql" hidden>
+      <div class="block code"><div class="label">queries.sql</div><pre>-- name: find_todo :one
+SELECT id, title, done FROM todos WHERE id = @id;
+
+-- name: add_todo :one
+INSERT INTO todos (title) VALUES (@title)
+RETURNING id;</pre></div>
+      <div class="block code"><div class="label">main.tn</div><pre><code><span class="k">import</span> sqlite
+<span class="k">import</span> todos_db             <span class="c"># tern sqlgen queries.sql -o todos_db.tn</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">"todos.db"</span>)
+    id <span class="o">=</span> todos_db.<span class="f">add_todo</span>(d, <span class="s">"ship it"</span>).<span class="f">unwrap</span>()
+    <span class="k">if</span> todos_db.<span class="f">find_todo</span>(d, id) is <span class="t">Some</span>(t):      <span class="c"># Option[Todo]</span>
+        <span class="f">print</span>(t.title, t.done)</code></pre></div>
+      <figcaption>Like sqlc: your SQL is checked against the migrations and turned into typed functions, for SQLite and PostgreSQL. A renamed column is a compile error.</figcaption>
+    </div>
+    </div>
+  </figure>
+</section>
+
+<section class="stats wrap" aria-label="Headline numbers">
+  <div class="stat"><b>10 of 10</b><span>compute benchmarks ahead of or tied with Rust</span><small>and ahead of Go on all 10</small></div>
+  <div class="stat"><b>169k</b><span>requests/s on one server thread</span><small>Rust axum 146k &middot; Go 115k</small></div>
+  <div class="stat"><b>0.67&nbsp;s</b><span>optimized rebuild of a web service after an edit</span><small>Go 2.5 s &middot; Rust release 26 s</small></div>
+  <div class="stat"><b>319&nbsp;KB</b><span>web server binary</span><small>Rust axum 1.3 MB &middot; Go 8.1 MB</small></div>
+</section>
+
+<section class="wrap" id="agents">
+  <p class="eyebrow">Made for agents</p>
+  <h2>Easy for a model to get right. Cheap to run once it does.</h2>
+  <p class="sub">We gave a coding agent the same spec, a link shortener with a database and click counts, and an empty directory in Tern, Go and TypeScript. All three apps pass the same 32 acceptance checks.</p>
+  <div class="table cmp bench-table">
+    <table>
+      <thead><tr><th>Agent-built app</th><th>Tern</th><th>Go</th><th>TypeScript</th></tr></thead>
+      <tbody>
+        <tr><td>Lines of code <small>excluding tests</small></td><td><b>273</b></td><td>805</td><td>502</td></tr>
+        <tr><td>Redirects per second</td><td>146k</td><td><b>154k</b></td><td>47k</td></tr>
+        <tr><td>CPU per redirect</td><td><b>23 &micro;s</b></td><td>32 &micro;s</td><td>21 &micro;s <small>one thread</small></td></tr>
+        <tr><td>Deployed size</td><td><b>408 KB</b></td><td>13.6 MB</td><td>25.8 MB</td></tr>
+        <tr><td>Memory at idle</td><td><b>4.4 MB</b></td><td>18.6 MB</td><td>89.6 MB</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>Looks like what models know</h3><p>Python-shaped syntax, so a model writes plausible Tern on the first try, and the compiler checks every type before anything runs.</p></div>
+    <div class="card"><h3>Errors that say what to write</h3><p>Every error names the fix, and habits from Python, Go, Rust and JavaScript get a hint: <code>append</code> becomes <code>push</code>, <code>range(n)</code> becomes <code>0..n</code>. Machine-readable with <code style="white-space:nowrap">--json</code>.</p></div>
+    <div class="card"><h3>One page to learn it</h3><p>The whole language fits in a reference a model reads in one go, and a plugin teaches Claude Code to write, check and test Tern.</p></div>
+  </div>
+</section>
+
+<section class="wrap" id="benchmarks">
+  <p class="eyebrow">Benchmarks</p>
+  <h2>Tern against Rust and Go, losses included.</h2>
+  <p class="sub">Each benchmark is the same program written in all three languages. All three print the same answer, and they run interleaved on an Apple M4 Pro. This is ongoing work: the numbers change as Tern does, and we keep adding benchmarks.</p>
+
+  <h3 class="bench-h">Core language</h3>
+  <div class="table cmp bench-table">
+    <table>
+      <thead><tr><th>Benchmark</th><th>Tern</th><th>Best Rust</th><th>Go</th></tr></thead>
+      <tbody>
+        <tr><td>n-body <small>floating point</small></td><td><b>896 ms</b></td><td>982 ms</td><td>2,671 ms</td></tr>
+        <tr><td>binary-trees <small>allocation, parallel</small></td><td><b>326 ms</b>, 99 MB</td><td>343 ms, <b>96 MB</b> <small>mimalloc</small></td><td>1,559 ms, 166 MB</td></tr>
+        <tr><td>word count <small>hash map of strings</small></td><td><b>122 ms</b>, 40 MB</td><td>166 ms, 40 MB <small>foldhash</small></td><td>207 ms, 199 MB</td></tr>
+        <tr><td>int map <small>2M keys</small></td><td><b>69 ms</b>, 67 MB</td><td>106 ms, 142 MB <small>foldhash</small></td><td>621 ms, 121 MB</td></tr>
+        <tr><td>JSON <small>encode + decode 300k structs</small></td><td><b>172 ms</b>, 107 MB</td><td>249 ms, 194 MB <small>serde</small></td><td>809 ms, 303 MB</td></tr>
+        <tr><td>sort <small>stable sort_by</small></td><td><b>169 ms</b>, 118 MB</td><td>255 ms, 189 MB</td><td>1,870 ms, 167 MB</td></tr>
+        <tr><td>lines <small>split and scan text</small></td><td><b>118 ms</b>, 55 MB</td><td>192 ms, 57 MB</td><td>370 ms, 257 MB</td></tr>
+        <tr><td>sieve <small>primes</small></td><td><b>229 ms</b>, 25 MB</td><td>642 ms, 192 MB</td><td>723 ms</td></tr>
+        <tr><td>fib <small>fork-join, all cores</small></td><td>114 ms</td><td>115 ms <small>rayon</small></td><td>168 ms</td></tr>
+        <tr><td>tasks <small>parallel for</small></td><td>25 ms</td><td>25 ms <small>rayon</small></td><td>36 ms</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="bench-h">Web servers and concurrency <small>one server thread</small></h3>
+  <div class="charts three">
+    <figure class="chart" style="--max:169">
+      <figcaption><b>HTTP plaintext</b><span>thousand requests/s, higher is better</span></figcaption>
+      <div class="row tern"><span>Tern roost</span><i style="--v:169"></i><em>169k</em></div>
+      <div class="row"><span>Rust axum</span><i style="--v:146"></i><em>146k</em></div>
+      <div class="row"><span>Go net/http</span><i style="--v:115"></i><em>115k</em></div>
+    </figure>
+    <figure class="chart" style="--max:160">
+      <figcaption><b>With middleware</b><span>thousand requests/s, higher is better</span></figcaption>
+      <div class="row tern"><span>Tern roost</span><i style="--v:160"></i><em>160k</em></div>
+      <div class="row"><span>Rust axum</span><i style="--v:95"></i><em>95k</em></div>
+      <div class="row"><span>Go net/http</span><i style="--v:101"></i><em>101k</em></div>
+    </figure>
+    <figure class="chart" style="--max:15.7">
+      <figcaption><b>SSE fan-out</b><span>million events/s, higher is better</span></figcaption>
+      <div class="row tern"><span>Tern roost</span><i style="--v:15.7"></i><em>15.7M</em></div>
+      <div class="row"><span>Rust axum</span><i style="--v:3.6"></i><em>3.6M</em></div>
+      <div class="row"><span>Go net/http</span><i style="--v:0.47"></i><em>0.47M</em></div>
+    </figure>
+    <figure class="chart" style="--max:102">
+      <figcaption><b>Server memory under load</b><span>peak MB, lower is better</span></figcaption>
+      <div class="row tern"><span>Tern roost</span><i style="--v:38.3"></i><em>38 MB</em></div>
+      <div class="row"><span>Rust axum</span><i style="--v:38.7"></i><em>39 MB</em></div>
+      <div class="row"><span>Go net/http</span><i style="--v:102"></i><em>102 MB</em></div>
+    </figure>
+    <figure class="chart" style="--max:326">
+      <figcaption><b>Spawn 1M tasks, join all</b><span>ms, lower is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:93"></i><em>93 ms</em></div>
+      <div class="row"><span>Rust tokio</span><i style="--v:249"></i><em>249 ms</em></div>
+      <div class="row"><span>Go</span><i style="--v:326"></i><em>326 ms</em></div>
+    </figure>
+    <figure class="chart" style="--max:276">
+      <figcaption><b>100k tasks all waiting</b><span>MB, lower is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:26"></i><em>26 MB</em></div>
+      <div class="row"><span>Rust tokio</span><i style="--v:29"></i><em>29 MB</em></div>
+      <div class="row"><span>Go</span><i style="--v:276"></i><em>276 MB</em></div>
+    </figure>
+  </div>
+
+  <h3 class="bench-h">Standard library <small>one thread; Tern&rsquo;s regex engine is written in Tern</small></h3>
+  <div class="charts three">
+    <figure class="chart" style="--max:1854">
+      <figcaption><b>Regex <code>(?i)error|warning|fatal</code></b><span>MB/s, higher is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:1854"></i><em>1,854</em></div>
+      <div class="row"><span>Rust regex</span><i style="--v:904"></i><em>904</em></div>
+      <div class="row"><span>Go regexp</span><i style="--v:26"></i><em>26</em></div>
+    </figure>
+    <figure class="chart" style="--max:2429">
+      <figcaption><b>Regex with capture groups</b><span>dates; MB/s, higher is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:2429"></i><em>2,429</em></div>
+      <div class="row"><span>Rust regex</span><i style="--v:1961"></i><em>1,961</em></div>
+      <div class="row"><span>Go regexp</span><i style="--v:59"></i><em>59</em></div>
+    </figure>
+    <figure class="chart" style="--max:928">
+      <figcaption><b>CSV, parse every row</b><span>MB/s, higher is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:928"></i><em>928</em></div>
+      <div class="row"><span>Rust csv</span><i style="--v:211"></i><em>211</em></div>
+      <div class="row"><span>Go encoding/csv</span><i style="--v:421"></i><em>421</em></div>
+    </figure>
+    <figure class="chart" style="--max:2936">
+      <figcaption><b>gunzip</b><span>MB/s, higher is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:2936"></i><em>2,936</em></div>
+      <div class="row"><span>Rust flate2</span><i style="--v:963"></i><em>963</em></div>
+      <div class="row"><span>Go</span><i style="--v:623"></i><em>623</em></div>
+    </figure>
+    <figure class="chart" style="--max:1326">
+      <figcaption><b>ChaCha20-Poly1305</b><span>1 MiB messages; MB/s, higher is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:1326"></i><em>1,326</em></div>
+      <div class="row"><span>Rust</span><i style="--v:709"></i><em>709</em></div>
+      <div class="row"><span>Go (assembly)</span><i style="--v:1214"></i><em>1,214</em></div>
+    </figure>
+    <figure class="chart" style="--max:18.4">
+      <figcaption><b>Argon2id password hash</b><span>19 MiB, t=2; ms, lower is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:10.4"></i><em>10.4 ms</em></div>
+      <div class="row"><span>Rust argon2</span><i style="--v:11.0"></i><em>11.0 ms</em></div>
+      <div class="row"><span>Go x/crypto</span><i style="--v:18.4"></i><em>18.4 ms</em></div>
+    </figure>
+  </div>
+
+  <h3 class="bench-h">Builds, binaries and WebAssembly</h3>
+  <div class="charts three">
+    <figure class="chart" style="--max:26.4">
+      <figcaption><b>Rebuild after a one-line edit</b><span>a JSON API on PostgreSQL + Redis; optimized builds; seconds, lower is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:0.67"></i><em>0.67 s</em></div>
+      <div class="row"><span>Go</span><i style="--v:2.54"></i><em>2.54 s</em></div>
+      <div class="row"><span>Rust --release</span><i style="--v:26.4"></i><em>26.4 s</em></div>
+    </figure>
+    <figure class="chart" style="--max:44.9">
+      <figcaption><b>Clean build, empty caches</b><span>same service; seconds, lower is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:1.67"></i><em>1.67 s</em></div>
+      <div class="row"><span>Go</span><i style="--v:9.69"></i><em>9.69 s</em></div>
+      <div class="row"><span>Rust --release</span><i style="--v:44.9"></i><em>44.9 s</em></div>
+    </figure>
+    <figure class="chart" style="--max:630">
+      <figcaption><b>WebAssembly binary-trees, 14 threads</b><span>ms, lower is better</span></figcaption>
+      <div class="row tern"><span>Tern</span><i style="--v:482"></i><em>482 ms</em></div>
+      <div class="row"><span>Rust + mimalloc</span><i style="--v:630"></i><em>630 ms</em></div>
+    </figure>
+  </div>
+
+  <div class="note">
+    <p><b>Where Rust still wins:</b> single-threaded WebAssembly binary-trees against Rust with mimalloc (2.84 s vs Tern&rsquo;s 3.75 s), and binary-trees memory natively (96 vs 99 MB). SHA-512 is a tie.</p>
+    <p>Rust release builds on the build charts; Rust&rsquo;s unoptimized debug build rebuilds in 0.94 s.</p>
+  </div>
+</section>
+
+<section class="wrap" id="built">
+  <p class="eyebrow">Built with Tern</p>
+  <h2>We&rsquo;re using it to build real products.</h2>
+  <p class="sub">The best test of a language is what you can ship with it. These two products are written in Tern.</p>
+
+  <div class="proof">
+    <div>
+      <p class="eyebrow">ternTS</p>
+      <h3 class="proof-h">TypeScript, transpiled exactly like tsc. Many times faster.</h3>
+      <p>A TypeScript-to-JavaScript transpiler whose output is identical to <code>tsc</code>&rsquo;s on 37,000 files from NestJS, VS Code, Grafana, Excalidraw, Immich and Twenty, decorator metadata included. Compiled to WebAssembly, the whole transpiler is 1 MB, so you can run it on your own project in your browser.</p>
+      <a class="btn" href="ts/">Try it in your browser &rarr;</a>
+    </div>
+    <div class="proof-stats">
+      <div><b>32 ms</b><span>transpile all 1,959 NestJS files<br>swc 202 ms &middot; tsc 1.44 s</span></div>
+      <div><b>1.33 s</b><span>all 13,454 VS Code files (177 MB)<br>swc 6.07 s &middot; tsc 40.2 s</span></div>
+      <div><b>108 ms</b><span>NestJS save-to-restart<br><code>nest start --watch</code> 676 ms</span></div>
+    </div>
+  </div>
+
+  <div class="proof">
+    <div>
+      <p class="eyebrow">StackGrep</p>
+      <h3 class="proof-h">Grep the source code of the web.</h3>
+      <p>Search the HTML of tens of millions of websites by text or regex, to find who uses a library, a tracker or a pattern. The whole thing is written in Tern: crawler, live fetcher, HTML-to-Markdown converter, a trigram index served straight from S3, the API and its MCP server for AI agents.</p>
+      <a class="btn" href="https://stackgrep.com">Visit StackGrep &rarr;</a>
+    </div>
+    <div class="proof-stats">
+      <div><b>38M</b><span>homepages from Common Crawl indexed;<br>the server starts in 0.5 s with 374 MB of RAM</span></div>
+      <div><b>15&times;</b><span>less CPU converting HTML to Markdown than Firecrawl&rsquo;s Go converter<br>5&times; less than Rust&rsquo;s fast_html2md</span></div>
+      <div><b>4,000 sites</b><span>fetched live in 68 s on 2 vCPUs, in 63 MB<br>half the CPU of Go&rsquo;s net/http</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap split">
+  <div>
+    <p class="eyebrow">Safe without references</p>
+    <h2>The compiler catches the race.</h2>
+    <p>Tern has no pointers and no borrow checker to satisfy. Because values can&rsquo;t point at each other, three simple rules are enough to rule out dangling data, aliasing bugs and data races:</p>
+    <ol class="rules">
+      <li><b>Everything is a value.</b> Nothing dangles, nothing forms a cycle, and reference counting frees it all.</li>
+      <li><b>Exclusivity.</b> An argument passed as <code>&amp;x</code> can&rsquo;t overlap any other argument of the call.</li>
+      <li><b>Race freedom.</b> In <code>parallel</code> code, what one task writes no other task touches.</li>
+    </ol>
+    <p>Errors say what&rsquo;s wrong and what to write instead, including when the code looks like Python, Go, Rust or JavaScript.</p>
+  </div>
+  <div>
+    <div class="block bad"><div class="label">race.tn</div><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">3</span>, <span class="n">1</span>, <span class="n">4</span>, <span class="n">1</span>, <span class="n">5</span>, <span class="n">9</span>, <span class="n">2</span>, <span class="n">6</span>]
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(xs):
+        total <span class="o">+</span><span class="o">=</span> xs[i]
+    <span class="f">print</span>(total)</code></pre></div>
+    <div class="block err"><div class="label">tern check race.tn</div><pre>race.tn:5: error: iterations of `parallel for` run at the same time, so writing `total` from every iteration would race; store per-iteration results in an array indexed by `i`, or combine results after the loop</pre></div>
+  </div>
+</section>
+
+<section class="wrap" id="features">
+  <p class="eyebrow">Batteries included</p>
+  <h2>Everything a server needs, in one small binary.</h2>
+  <div class="grid">
+    <div class="card"><h3>Parallel by default</h3><p><code>parallel:</code> blocks and <code>parallel for</code> loops on a work-stealing scheduler, checked for races at compile time.</p></div>
+    <div class="card"><h3>roost, the web framework</h3><p>Axum-style routing, middleware, WebSockets and SSE on green-thread tasks. No <code>async</code>/<code>await</code> anywhere.</p></div>
+    <div class="card"><h3>Typed SQL</h3><p>PostgreSQL and SQLite, with migrations and generated query functions: a renamed column is a compile error.</p></div>
+    <div class="card"><h3>Runs everywhere</h3><p>macOS, Linux (even a static binary in an empty container), WebAssembly with threads, iOS and Android.</p></div>
+    <div class="card"><h3>Talks to C</h3><p>Call C with no binding generator, or build Tern as a library for C, Swift, Kotlin, Python and JavaScript.</p></div>
+    <div class="card"><h3>Sub-second rebuilds</h3><p>An optimized rebuild after an edit takes well under a second, so an agent&rsquo;s edit, compile and test loop stays fast.</p></div>
+  </div>
+</section>
+
+<section class="wrap soon">
+  <img src="tern.svg" alt="" width="88" height="64">
+  <h2>Tern isn&rsquo;t public yet.</h2>
+  <p class="lead">We&rsquo;re opening it up soon: the compiler, the standard library, the docs and a package index. In the meantime, ternTS runs in your browser today.</p>
+  <div class="cta">
+    <a class="btn primary" href="ts/">Try ternTS</a>
+    <a class="btn" href="https://github.com/Ternlang-tn">Follow on GitHub</a>
+  </div>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="tern.svg" alt="" width="33" height="24"> Tern is in development. The language will change, and so will these numbers.</div>
+  <div class="links"><a href="#benchmarks">Benchmarks</a><a href="ts/">ternTS</a><a href="https://stackgrep.com">StackGrep</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="home.js"></script>
+</body>
+</html>
