@@ -286,18 +286,18 @@ RETURNING id;</pre></div>
 <section class="wrap" id="built">
   <p class="eyebrow">Built with Tern</p>
   <h2>We&rsquo;re using it to build real products.</h2>
-  <p class="sub">The best test of a language is what you can ship with it. These two products are written in Tern.</p>
+  <p class="sub">The best test of a language is what you can ship with it. These three products are written in Tern.</p>
 
   <div class="proof">
     <div>
       <p class="eyebrow">ternTS</p>
       <h3 class="proof-h">TypeScript, transpiled exactly like tsc. Many times faster.</h3>
-      <p>A TypeScript-to-JavaScript transpiler whose output is identical to <code>tsc</code>&rsquo;s on 37,000 files from NestJS, VS Code, Grafana, Excalidraw, Immich and Twenty, decorator metadata included. Compiled to WebAssembly, the whole transpiler is 1 MB, so you can run it on your own project in your browser.</p>
+      <p>A TypeScript-to-JavaScript transpiler whose output is identical to <code>tsc</code>&rsquo;s on 37,000+ files from NestJS, VS Code, Grafana, Excalidraw, Immich and Twenty, decorator metadata included. Compiled to WebAssembly, the whole transpiler is 2 MB, so you can run it on your own project in your browser.</p>
       <a class="btn" href="ts/">Try it in your browser &rarr;</a>
     </div>
     <div class="proof-stats">
-      <div><b>32 ms</b><span>transpile all 1,959 NestJS files<br>swc 202 ms &middot; tsc 1.44 s</span></div>
-      <div><b>1.33 s</b><span>all 13,454 VS Code files (177 MB)<br>swc 6.07 s &middot; tsc 40.2 s</span></div>
+      <div><b>32 ms</b><span>transpile all 1,959 NestJS files<br>swc 202 ms &middot; tsgo 624 ms &middot; tsc 1.44 s</span></div>
+      <div><b>1.33 s</b><span>all 13,454 VS Code files (177 MB)<br>swc 6.07 s &middot; tsgo 22.2 s &middot; tsc 40.2 s</span></div>
       <div><b>108 ms</b><span>NestJS save-to-restart<br><code>nest start --watch</code> 676 ms</span></div>
     </div>
   </div>
@@ -306,13 +306,26 @@ RETURNING id;</pre></div>
     <div>
       <p class="eyebrow">StackGrep</p>
       <h3 class="proof-h">Grep the source code of the web.</h3>
-      <p>Search the HTML of websites by text or regex, to find who uses a library, a tracker or a pattern. The whole thing is written in Tern: crawler, live fetcher, HTML-to-Markdown converter, a trigram index served straight from S3, the API and its MCP server for AI agents.</p>
+      <p>Search the HTML of 38M+ websites by text or regex, or filter by the 1,500+ technologies it detects, to find who uses a library, a tracker or a pattern. The whole thing is written in Tern: crawler, live fetcher, HTML-to-Markdown converter, a trigram index served straight from S3, technology detection, the API and its MCP server for AI agents.</p>
       <a class="btn" href="https://stackgrep.com">Visit StackGrep &rarr;</a>
     </div>
     <div class="proof-stats">
-      <div><b>38M</b><span>homepages from Common Crawl, indexed into object storage;<br>rolling out to stackgrep.com</span></div>
+      <div><b>38M+</b><span>homepages from Common Crawl, searchable on stackgrep.com<br>from one small server reading S3</span></div>
       <div><b>15&times;</b><span>less CPU converting HTML to Markdown than Firecrawl&rsquo;s Go converter<br>5&times; less than Rust&rsquo;s fast_html2md</span></div>
-      <div><b>4,000 sites</b><span>fetched live in 68 s on 2 vCPUs, in 63 MB<br>half the CPU of Go&rsquo;s net/http</span></div>
+      <div><b>4,000+ sites</b><span>fetched live in 68 s on 2 vCPUs, in 63 MB<br>half the CPU of Go&rsquo;s net/http</span></div>
+    </div>
+  </div>
+  <div class="proof">
+    <div>
+      <p class="eyebrow">SkimmerDB</p>
+      <h3 class="proof-h">Search for agents, on object storage.</h3>
+      <p>A search database for AI agents: full-text and vector search with filters behind one API, and an MCP server with OAuth and scoped keys. Every document lives in S3; the namespaces agents are using stay warm in RAM and NVMe, so idle data costs only its bytes. The whole thing is written in Tern: the storage engine, the text and vector indexes, the API and the MCP server.</p>
+      <a class="btn" href="https://skimmerdb.com">Visit SkimmerDB &rarr;</a>
+    </div>
+    <div class="proof-stats">
+      <div><b>0.8 ms</b><span>warm query p50<br>~33 ms from write to searchable</span></div>
+      <div><b>2</b><span>round trips to S3 for a cold query<br>$0 compute for an idle namespace</span></div>
+      <div><b>5,600</b><span>vector queries a second on one server<br>at 0.97 recall@10</span></div>
     </div>
   </div>
 </section>
@@ -366,7 +379,7 @@ RETURNING id;</pre></div>
 
 <footer class="foot wrap">
   <div><img src="tern.svg" alt="" width="33" height="24"> Tern is in development. The language will change, and so will these numbers.</div>
-  <div class="links"><a href="#benchmarks">Benchmarks</a><a href="ts/">ternTS</a><a href="https://stackgrep.com">StackGrep</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+  <div class="links"><a href="#benchmarks">Benchmarks</a><a href="ts/">ternTS</a><a href="https://stackgrep.com">StackGrep</a><a href="https://skimmerdb.com">SkimmerDB</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
 </footer>
 <script src="home.js"></script>
 </body>
