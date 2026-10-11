@@ -215,7 +215,7 @@ node --import @ternlang/ternts/register src/main.ts</pre></div></div>
   </div>
   <h3 class="limits-h">Not done yet</h3>
   <ul class="limits">
-    <li><b>Type checking</b>, by design: keep <code>tsc --noEmit</code> (or tsgo) for that, as swc users do.</li>
+    <li><b>Type errors.</b> ternTS turns TypeScript into JavaScript but never checks your types, so code with type errors still builds. Keep <code>tsc --noEmit</code> (or tsgo) running for that, as swc and esbuild users do.</li>
     <li><b>ES5 output.</b> Every <code>target</code> from ES2015 up is lowered as tsc does it; ES5 isn't.</li>
     <li><b>Windows</b> runs the WebAssembly build, <code>ternts build</code> included, but not <code>ternts dev</code> or <code>--watch</code> yet.</li>
   </ul>

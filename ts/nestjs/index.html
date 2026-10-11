@@ -90,7 +90,7 @@
   <h2>What isn&rsquo;t done yet</h2>
   <ul>
     <li>ternTS is <b>experimental</b>. If any file comes out differently from <code>tsc</code>, please <a href="https://github.com/Ternlang-tn/ternts/issues">open an issue</a>.</li>
-    <li>No type checking, by design (step 3).</li>
+    <li><b>It doesn&rsquo;t report type errors.</b> ternTS turns TypeScript into JavaScript, but like swc and esbuild it never checks that your types are right, so code with type errors still builds. Keep <code>tsc --noEmit</code> running for that, as in step 3 above.</li>
     <li>No ES5 output. Every target from ES2015 up is lowered the way tsc lowers it.</li>
     <li>On Windows, <code>ternts build</code> runs as WebAssembly. <code>ternts dev</code> doesn&rsquo;t run there yet.</li>
   </ul>
