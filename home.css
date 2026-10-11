@@ -250,3 +250,14 @@ code.plain { background: none; padding: 0; color: inherit; }
 .exs { display: grid; grid-template-columns: minmax(0, 1fr); }
 .ex { grid-area: 1 / 1; min-width: 0; }
 .ex[hidden] { display: block; visibility: hidden; }
+
+/* guide pages (ts/nestjs/, ts/jest/, ts/vs-swc/): one readable column */
+.guide section { padding-block: 28px; }
+.guide section:first-child { padding-top: 56px; }
+.guide h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); }
+.guide h2 { font-size: clamp(1.4rem, 2.6vw, 1.9rem); }
+.guide h3 { margin-top: 26px; }
+.guide p, .guide ul, .guide .block, .guide .chart { max-width: 46rem; }
+.guide li { margin-bottom: 6px; }
+.guide .eyebrow a { color: inherit; }
+.guide .stats { margin-top: 8px; }

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faster NestJS builds and restarts with ternTS</title>
+<meta name="description" content="Build NestJS 15x faster than tsc and restart 6x faster than nest start --watch: ternTS emits exactly what tsc does, decorator metadata included, so dependency injection, Swagger and GraphQL keep working.">
+<meta property="og:title" content="Faster NestJS builds and restarts with ternTS">
+<meta property="og:description" content="Replace nest build and nest start --watch with ternTS: tsc's exact output, decorator metadata included, in a fraction of the time.">
+<meta property="og:image" content="https://ternlang.dev/ts/og.png">
+<meta property="og:url" content="https://ternlang.dev/ts/nestjs/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/ts/nestjs/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "TechArticle", "headline": "Faster NestJS builds and restarts with ternTS",
+ "url": "https://ternlang.dev/ts/nestjs/", "about": "NestJS", "author": {"@type": "Organization", "name": "Tern", "url": "https://ternlang.dev/"}}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="cur" href="../">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow"><a href="../">ternTS</a> &middot; Guide</p>
+  <h1>Faster NestJS builds and restarts.</h1>
+  <p class="lead">A NestJS app runs on the decorator metadata <code>tsc</code> emits. ternTS emits that exact output in a fraction of the time, so you can swap out <code>nest build</code> and <code>nest start --watch</code> without your app noticing.</p>
+  <div class="stats ts-stats">
+    <div class="stat"><b>66 ms</b><span>build Nest&rsquo;s own packages, 971 files</span><small>tsc --noCheck 1,000 ms &middot; swc 185 ms</small></div>
+    <div class="stat"><b>108 ms</b><span>save to restarted app</span><small><code>nest start --watch</code> 661 ms</small></div>
+    <div class="stat"><b>288 ms</b><span>dev mode cold start</span><small><code>nest start</code> 1,620 ms</small></div>
+    <div class="stat"><b>267 ms</b><span>Jest transform, Nest repo</span><small>ts-jest 2,390 ms</small></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Why NestJS can&rsquo;t use just any fast compiler</h2>
+  <p>Nest&rsquo;s dependency injection reads the constructor parameter types that <code>emitDecoratorMetadata</code> writes into your compiled code (<code>design:paramtypes</code>). <code>@nestjs/swagger</code>, <code>@nestjs/graphql</code> and TypeORM read <code>design:type</code> as well. A compiler that skips that metadata, or gets it slightly wrong, gives you an app that builds fine and then fails at startup with &ldquo;Nest can&rsquo;t resolve dependencies&rdquo;, or quietly produces a different API schema.</p>
+  <p>esbuild doesn&rsquo;t emit decorator metadata at all. swc does, with its own helpers. ternTS writes the same program <code>tsc</code> does (the outputs are parsed and compared, ignoring only formatting and the numbering of temp names like <code>_a</code>), and that&rsquo;s checked three ways:</p>
+  <ul>
+    <li><b>All 1,959 files</b> in the NestJS repository compile to the same program as TypeScript 5.9&rsquo;s.</li>
+    <li><b>All 3,631 of Nest&rsquo;s unit tests</b> pass with ternTS as the transformer.</li>
+    <li><b>Nine Nest sample apps</b> built with tsc and with ternTS answer the same requests byte for byte, including the Swagger document and GraphQL schema Nest builds from metadata.</li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <h2>Switch in three steps</h2>
+  <h3>1. Install</h3>
+  <div class="block code"><pre><code>npm i -D @ternlang/ternts@experimental</code></pre></div>
+  <p>The package ships a native binary for macOS and Linux (arm64 and x64) and WebAssembly for everything else. There&rsquo;s no postinstall script and nothing to compile.</p>
+
+  <h3>2. Point your scripts at ternTS</h3>
+  <p>A project made by <code>nest new</code> builds with <code>tsconfig.build.json</code>, the config that leaves out tests. Give ternTS the same one:</p>
+  <div class="block code"><pre>// package.json
+"scripts": {
+  "build": "ternts build -p tsconfig.build.json",
+  "start:dev": "ternts dev -p tsconfig.build.json --warm",
+  "start:prod": "node dist/main"
+}</pre></div>
+  <p><code>ternts build</code> reads <code>outDir</code>, <code>module</code>, <code>target</code>, <code>paths</code> and the decorator options from your tsconfig, uses every core, and skips files that haven&rsquo;t changed. <code>ternts dev</code> builds, runs <code>node dist/main.js</code>, and restarts on every save. <code>--warm</code> keeps a standby Node process with your packages already loaded, so a restart doesn&rsquo;t pay for loading <code>@nestjs/core</code> again. To run something other than <code>node dist/main.js</code>, put it after <code>--</code>.</p>
+
+  <h3>3. Keep type checking</h3>
+  <p>ternTS only transpiles, like swc and esbuild. Keep <code>tsc --noEmit</code> (or tsgo) in CI or your editor so type errors still fail the build:</p>
+  <div class="block code"><pre>"typecheck": "tsc --noEmit -p tsconfig.build.json"</pre></div>
+</section>
+
+<section class="wrap">
+  <h2>Tests too</h2>
+  <p>Nest&rsquo;s default Jest config uses ts-jest. Change one line in the <code>jest</code> section of <code>package.json</code>:</p>
+  <div class="block code"><pre>"transform": {
+  "^.+\\.(t|j)s$": "@ternlang/ternts/jest"
+}</pre></div>
+  <p>ternTS hoists <code>jest.mock()</code> calls the way ts-jest and @swc/jest do. On the Nest repository, one worker, source maps on, the transform takes 267 ms against ts-jest&rsquo;s 2,390 ms. More in the <a href="../jest/">Jest guide</a>.</p>
+</section>
+
+<section class="wrap">
+  <h2>What isn&rsquo;t done yet</h2>
+  <ul>
+    <li>ternTS is <b>experimental</b>. If any file comes out differently from <code>tsc</code>, please <a href="https://github.com/Ternlang-tn/ternts/issues">open an issue</a>.</li>
+    <li>No type checking, by design (step 3).</li>
+    <li>No ES5 output. Every target from ES2015 up is lowered the way tsc lowers it.</li>
+    <li>On Windows, <code>ternts build</code> runs as WebAssembly. <code>ternts dev</code> doesn&rsquo;t run there yet.</li>
+  </ul>
+  <p class="note">Numbers are from an Apple M4 Pro with Node 24, swc 1.16.12, TypeScript 5.9.3 and tsgo 7.0.2. Dev-mode times are the median of 20 edits to Nest&rsquo;s cats sample. <code>node bench/run.mjs</code> in the <a href="https://github.com/Ternlang-tn/ternts">ternTS repository</a> reproduces them.</p>
+  <div class="next">
+    <a href="../#try"><b>Try it in your browser</b><span>Paste a controller, or load your repo, and compare with tsc</span></a>
+    <a href="../jest/"><b>A faster Jest transform</b><span>From ts-jest or @swc/jest in one line</span></a>
+    <a href="../vs-swc/"><b>ternTS vs swc, esbuild, tsc</b><span>Which one to use, and when</span></a>
+  </div>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> ternTS is MIT or Apache-2.0.</div>
+  <div class="links"><a href="../">ternTS</a><a href="../jest/">Jest</a><a href="../vs-swc/">vs swc</a><a href="https://github.com/Ternlang-tn/ternts">GitHub</a><a href="https://www.npmjs.com/package/@ternlang/ternts">npm</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

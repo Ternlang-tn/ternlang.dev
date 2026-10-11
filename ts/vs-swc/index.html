@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ternTS vs swc, esbuild, tsc and tsgo: TypeScript transpilers compared</title>
+<meta name="description" content="How ternTS compares with swc, esbuild, tsc and tsgo: transpile speed on NestJS and VS Code, decorator metadata, type checking, and whether the output matches tsc.">
+<meta property="og:title" content="ternTS vs swc, esbuild, tsc and tsgo">
+<meta property="og:description" content="TypeScript transpilers compared on speed, decorator metadata, type checking and tsc-identical output.">
+<meta property="og:image" content="https://ternlang.dev/ts/og.png">
+<meta property="og:url" content="https://ternlang.dev/ts/vs-swc/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/ts/vs-swc/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "TechArticle", "headline": "ternTS vs swc, esbuild, tsc and tsgo",
+ "url": "https://ternlang.dev/ts/vs-swc/", "about": "TypeScript transpilers", "author": {"@type": "Organization", "name": "Tern", "url": "https://ternlang.dev/"}}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="cur" href="../">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow"><a href="../">ternTS</a> &middot; Comparison</p>
+  <h1>ternTS vs swc, esbuild, tsc and tsgo.</h1>
+  <p class="lead">Every TypeScript project ends up choosing a transpiler. Here&rsquo;s how they differ on what matters day to day: speed, decorator metadata, type checking, and whether you get the JavaScript <code>tsc</code> would have written.</p>
+</section>
+
+<section class="wrap">
+  <h2>At a glance</h2>
+  <div class="table cmp">
+  <table>
+    <thead><tr><th></th><th>ternTS</th><th>swc</th><th>esbuild</th><th>tsgo</th><th>tsc</th></tr></thead>
+    <tbody>
+      <tr><td>NestJS, 1,959 files, one thread</td><td><b>32 ms</b></td><td>202 ms</td><td>not measured</td><td>624 ms</td><td>1,440 ms</td></tr>
+      <tr><td>VS Code, 13,454 files, one thread</td><td><b>1.33 s</b></td><td>6.07 s</td><td>not measured</td><td>22.2 s</td><td>40.2 s</td></tr>
+      <tr><td>Type checking</td><td>no</td><td>no</td><td>no</td><td><b>yes</b></td><td><b>yes</b></td></tr>
+      <tr><td>Decorator metadata (<code>emitDecoratorMetadata</code>)</td><td><b>yes</b></td><td>yes</td><td>no</td><td>yes</td><td><b>yes</b></td></tr>
+      <tr><td>Output identical to tsc&rsquo;s</td><td><b>yes</b>, checked on 37,319 files</td><td>no: its own helpers and output</td><td>no</td><td>close, not checked</td><td>&mdash;</td></tr>
+      <tr><td>Lowest target</td><td>ES2015</td><td>ES5</td><td>ES2015 (ES5 only in part)</td><td>ES2015</td><td>ES5</td></tr>
+      <tr><td>Bundling</td><td>no</td><td>no</td><td><b>yes</b></td><td>no</td><td>no</td></tr>
+      <tr><td>Written in</td><td>Tern</td><td>Rust</td><td>Go</td><td>Go</td><td>TypeScript</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">Timings: transpiling in-process on an Apple M4 Pro with Node 24, swc 1.16.12, TypeScript 5.9.3 and tsgo 7.0.2; <code>node bench/run.mjs</code> in the <a href="https://github.com/Ternlang-tn/ternts">ternTS repository</a> reproduces them. esbuild isn&rsquo;t in that benchmark. Its lack of metadata support is in esbuild&rsquo;s own TypeScript caveats.</p>
+</section>
+
+<section class="wrap">
+  <h2>Which one to use</h2>
+  <h3>You need type errors: tsc or tsgo</h3>
+  <p>Only <code>tsc</code> and tsgo (the Go port that becomes TypeScript 7) check types. Everyone else, ternTS included, assumes you run one of them as well, in CI or your editor, usually as <code>tsc --noEmit</code>. A common setup is a fast transpiler for builds, dev servers and tests, plus a type check that runs on its own.</p>
+
+  <h3>You use decorators with metadata: ternTS</h3>
+  <p>NestJS, TypeORM, Angular, type-graphql and InversifyJS read the types that <code>emitDecoratorMetadata</code> writes. esbuild doesn&rsquo;t emit them, so those apps break under it. swc emits them with its own helpers, and its output isn&rsquo;t <code>tsc</code>&rsquo;s. ternTS writes what <code>tsc</code> writes, checked file by file against TypeScript 5.9: the whole NestJS repository, all of Nest&rsquo;s 3,631 unit tests, and nine Nest apps that answer the same requests byte for byte, Swagger and GraphQL schemas included. See the <a href="../nestjs/">NestJS guide</a>.</p>
+
+  <h3>You&rsquo;re replacing ts-jest or @swc/jest: ternTS</h3>
+  <p>On Nest&rsquo;s repository the ternTS Jest transform takes 267 ms, against 392 ms for @swc/jest and 2,390 ms for ts-jest, with one line of config to switch. See the <a href="../jest/">Jest guide</a>.</p>
+
+  <h3>You need ES5 output: swc or tsc</h3>
+  <p>ternTS lowers every target from ES2015 up exactly as <code>tsc</code> does. If you still ship to browsers without ES2015, use swc or <code>tsc</code>.</p>
+
+  <h3>You&rsquo;re bundling a frontend: esbuild (or Vite)</h3>
+  <p>esbuild is a bundler first. If you don&rsquo;t need decorator metadata, it&rsquo;s a fine way to strip types while you bundle. If you do, the ternTS Vite plugin (<code>@ternlang/ternts/vite</code>) compiles TypeScript the way <code>tsc</code> does before Vite bundles it.</p>
+</section>
+
+<section class="wrap">
+  <h2>Why ternTS is faster</h2>
+  <p>ternTS has no syntax tree for most of a file. Its parser walks the tokens and copies your source straight through, editing only the parts TypeScript adds: types, decorators, enums, parameter properties. Most TypeScript is already JavaScript, so most bytes are copied, never rebuilt. It&rsquo;s written in <a href="../../">Tern</a>, a compiled language, and the whole transpiler is about 10,000 lines. It runs as a native binary, or as 1 MB of WebAssembly in the <a href="../#try">playground</a>.</p>
+  <div class="next">
+    <a href="../#folder"><b>Run it on your project</b><span>In the browser, compared against tsc, nothing uploaded</span></a>
+    <a href="../nestjs/"><b>Faster NestJS builds</b><span>Replace nest build and nest start --watch</span></a>
+    <a href="../jest/"><b>A faster Jest transform</b><span>From ts-jest or @swc/jest in one line</span></a>
+  </div>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> ternTS is MIT or Apache-2.0.</div>
+  <div class="links"><a href="../">ternTS</a><a href="../nestjs/">NestJS</a><a href="../jest/">Jest</a><a href="https://github.com/Ternlang-tn/ternts">GitHub</a><a href="https://www.npmjs.com/package/@ternlang/ternts">npm</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

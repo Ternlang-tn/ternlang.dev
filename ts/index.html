@@ -8,7 +8,19 @@
 <meta property="og:title" content="ternTS: TypeScript, exactly like tsc, 6x faster than swc">
 <meta property="og:description" content="The same output as tsc on 37,000 real files, NestJS decorator metadata included. Try it on your own project, in your browser.">
 <meta property="og:image" content="https://ternlang.dev/ts/og.png">
+<meta property="og:url" content="https://ternlang.dev/ts/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tern">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/ts/">
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "ternTS",
+ "url": "https://ternlang.dev/ts/", "applicationCategory": "DeveloperApplication", "operatingSystem": "macOS, Linux, Windows",
+ "description": "A TypeScript to JavaScript transpiler that emits exactly what tsc does, decorator metadata included, 6x faster than swc.",
+ "license": "https://opensource.org/licenses/MIT", "downloadUrl": "https://www.npmjs.com/package/@ternlang/ternts",
+ "sameAs": ["https://github.com/Ternlang-tn/ternts", "https://www.npmjs.com/package/@ternlang/ternts"],
+ "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}
+</script>
 <link rel="stylesheet" href="../docs/style.css">
 <link rel="stylesheet" href="../home.css">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
@@ -204,10 +216,19 @@ node --import @ternlang/ternts/register src/main.ts</pre></div></div>
   <h3 class="limits-h">Not done yet</h3>
   <ul class="limits">
     <li><b>Type checking</b>, by design: keep <code>tsc --noEmit</code> (or tsgo) for that, as swc users do.</li>
-    <li><b>Targets below ES2022.</b> Output uses class fields and static blocks: Node 16.11+ and current browsers.</li>
-    <li><b>TC39 standard decorators.</b> Only the legacy kind (<code>experimentalDecorators</code>), which NestJS, TypeORM and Angular use.</li>
-    <li><b>Windows</b> has the WebAssembly build for Jest, Vite and Node, but not <code>ternts build</code> yet.</li>
+    <li><b>ES5 output.</b> Every <code>target</code> from ES2015 up is lowered as tsc does it; ES5 isn't.</li>
+    <li><b>Windows</b> runs the WebAssembly build, <code>ternts build</code> included, but not <code>ternts dev</code> or <code>--watch</code> yet.</li>
   </ul>
+</section>
+
+<section class="wrap" id="guides">
+  <p class="eyebrow">Guides</p>
+  <h2>Switching to ternTS.</h2>
+  <div class="next">
+    <a href="nestjs/"><b>Faster NestJS builds and restarts</b><span>Replace <code>nest build</code> and <code>nest start --watch</code>, metadata intact</span></a>
+    <a href="jest/"><b>A faster Jest transform</b><span>From ts-jest or @swc/jest in one line of config</span></a>
+    <a href="vs-swc/"><b>ternTS vs swc, esbuild, tsc and tsgo</b><span>Speed, decorator metadata, and what each one leaves out</span></a>
+  </div>
 </section>
 
 <section class="wrap proof">
@@ -226,7 +247,7 @@ node --import @ternlang/ternts/register src/main.ts</pre></div></div>
 
 <footer class="foot wrap">
   <div><img src="../tern.svg" alt="" width="33" height="24"> ternTS is MIT or Apache-2.0. Samples: <a href="https://github.com/nestjs/nest/tree/master/sample">NestJS</a> (MIT).</div>
-  <div class="links"><a href="../">Tern</a><a href="https://www.npmjs.com/package/@ternlang/ternts">npm</a></div>
+  <div class="links"><a href="nestjs/">NestJS</a><a href="jest/">Jest</a><a href="vs-swc/">vs swc</a><a href="../">Tern</a><a href="https://github.com/Ternlang-tn/ternts">GitHub</a><a href="https://www.npmjs.com/package/@ternlang/ternts">npm</a></div>
 </footer>
 <script src="../home.js"></script>
 <script src="app.js"></script>
