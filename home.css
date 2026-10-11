@@ -266,5 +266,7 @@ code.plain { background: none; padding: 0; color: inherit; }
 /* packages page cards */
 .pkg { display: flex; flex-direction: column; }
 .pkg p { flex: 1; }
-.pkg code { align-self: flex-start; font-size: 13px; margin-top: 10px; }
+.pkg > div { margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pkg code { font-size: 13px; }
+.pkg small { color: var(--muted); font-size: 12.5px; }
 .guide .grid { max-width: none; }
