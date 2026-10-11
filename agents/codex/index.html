@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to write Tern with OpenAI Codex: AGENTS.md and the check loop</title>
+<meta name="description" content="Set up OpenAI Codex to write Tern: install Tern, start from tern new (AGENTS.md included), and let tern check --json hints steer it to code that compiles and passes its tests.">
+<meta property="og:title" content="Write Tern with Codex">
+<meta property="og:description" content="Set up OpenAI Codex to write Tern: install Tern, start from tern new (AGENTS.md included), and let tern check --json hints steer it to code that compiles and passes its tests.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/agents/codex/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/agents/codex/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "HowTo", "name": "Write Tern with Codex", "url": "https://ternlang.dev/agents/codex/",
+ "step": [{"@type": "HowToStep", "name": "Install Tern"}, {"@type": "HowToStep", "name": "Start from a template"}, {"@type": "HowToStep", "name": "Let the compiler steer"}]}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="cur" href="../">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow"><a href="../">For agents</a> &middot; Codex</p>
+  <h1>Write Tern with Codex.</h1>
+  <p class="lead">Codex reads <code>AGENTS.md</code>, and every Tern project starts with one. It tells Codex how to look up the language, how to check its work, and when it&rsquo;s done.</p>
+</section>
+
+<section class="wrap">
+  <h2>1. Install Tern</h2>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh</code></pre></div>
+  <p>macOS or Linux, arm64 or x86_64, plus clang (<code>xcode-select --install</code> on a Mac, <code>sudo apt install clang</code> on Debian or Ubuntu). If Codex runs in a sandbox or a cloud container, install Tern and clang in its setup script the same way.</p>
+
+  <h2>2. Start from a template</h2>
+  <div class="block code"><pre><code>tern new myapp --template web<span class="c">   # or cli, or lib</span>
+cd myapp &amp;&amp; codex</code></pre></div>
+  <p>The project&rsquo;s <code>AGENTS.md</code> tells Codex what Tern is and how to work in it:</p>
+  <ul>
+    <li><b>Before writing:</b> <code>tern guide short</code>, the rules that differ from Python, and <code>tern guide NAME</code> for any library&rsquo;s API, so it doesn&rsquo;t guess function names.</li>
+    <li><b>After every change:</b> <code>tern check --json main.tn</code>, which reports every error at once with a hint for each.</li>
+    <li><b>Before it&rsquo;s done:</b> <code>tern test</code>, which must pass.</li>
+    <li><b>The layout:</b> where logic and tests go, how errors are returned, and how to add packages.</li>
+  </ul>
+
+  <h2>3. Let the compiler steer</h2>
+  <p>An agent new to Tern will sometimes write Python habits. That&rsquo;s fine, because the compiler answers in a form it can act on:</p>
+  <div class="block err"><div class="label">tern check --json main.tn</div><pre>{"file": "main.tn", "line": 4, "message": "unknown function `append`",
+ "hint": "arrays grow with `xs.push(value)`", "source": "xs.append(i)"}</pre></div>
+  <p>Every check reports all errors in one pass, and an optimized rebuild after an edit takes well under a second, so each fix-and-check round stays short.</p>
+</section>
+
+<section class="wrap">
+  <h2>An existing repository</h2>
+  <p>No <code>tern new</code>? Copy the <code>AGENTS.md</code> from a fresh template into your repository and edit its &ldquo;This project&rdquo; section. For any other model, <a href="../../llms.txt">ternlang.dev/llms.txt</a> indexes the docs, and <code>llms-full.txt</code> has the whole reference and standard library in one file.</p>
+  <div class="next">
+    <a href="../claude-code/"><b>Tern with Claude Code</b><span>CLAUDE.md and the Tern skill</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>The Tern tour</b><span>For you, while the agent works</span></a>
+    <a href="../"><b>Why Tern for agents</b><span>The agent-built app, in numbers</span></a>
+  </div>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Codex is a product of OpenAI; Tern isn&rsquo;t affiliated with it.</div>
+  <div class="links"><a href="../">For agents</a><a href="../claude-code/">Claude Code</a><a href="../../docs/">Docs</a><a href="../../#benchmarks">Benchmarks</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://ternlang.dev/agents/claude-code/</loc></url>
+  <url><loc>https://ternlang.dev/agents/codex/</loc></url>
+  <url><loc>https://ternlang.dev/agents/</loc></url>
   <url><loc>https://ternlang.dev/docs/builtins.html</loc></url>
   <url><loc>https://ternlang.dev/docs/cli.html</loc></url>
   <url><loc>https://ternlang.dev/docs/errors.html</loc></url>

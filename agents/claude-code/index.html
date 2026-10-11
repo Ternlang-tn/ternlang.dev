@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to write Tern with Claude Code: setup, skill and first app</title>
+<meta name="description" content="Set up Claude Code to write Tern: install Tern, add the Tern skill, start from tern new (CLAUDE.md included), and let the compiler's hints correct it.">
+<meta property="og:title" content="Write Tern with Claude Code">
+<meta property="og:description" content="Set up Claude Code to write Tern: install Tern, add the Tern skill, start from tern new (CLAUDE.md included), and let the compiler's hints correct it.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/agents/claude-code/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/agents/claude-code/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "HowTo", "name": "Write Tern with Claude Code", "url": "https://ternlang.dev/agents/claude-code/",
+ "step": [{"@type": "HowToStep", "name": "Install Tern"}, {"@type": "HowToStep", "name": "Add the Tern skill"}, {"@type": "HowToStep", "name": "Start from a template"}, {"@type": "HowToStep", "name": "Ask for something"}]}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="cur" href="../">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow"><a href="../">For agents</a> &middot; Claude Code</p>
+  <h1>Write Tern with Claude Code.</h1>
+  <p class="lead">Claude Code hasn&rsquo;t seen much Tern, so the setup gives it what it needs to get Tern right anyway: a project file that tells it how to check its work, and a skill that teaches it the language.</p>
+</section>
+
+<section class="wrap">
+  <h2>1. Install Tern</h2>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh</code></pre></div>
+  <p>macOS or Linux, arm64 or x86_64. Tern compiles through C, so it also needs clang (<code>xcode-select --install</code> on a Mac, <code>sudo apt install clang</code> on Debian or Ubuntu).</p>
+
+  <h2>2. Add the Tern skill</h2>
+  <p>A skill is instructions Claude Code loads when a task needs them. The Tern skill loads whenever it touches a <code>.tn</code> file or a <code>tern.mod</code>, and covers the rules that differ from Python, where the docs live, and the check-and-test loop.</p>
+  <div class="block code"><pre><code>mkdir -p ~/.claude/skills/tern
+<span class="k">curl</span> -fsSL https://ternlang.dev/agents/claude-code/SKILL.md -o ~/.claude/skills/tern/SKILL.md</code></pre></div>
+  <p>That installs it for every project. To share it with a team, put it in the repository at <code>.claude/skills/tern/SKILL.md</code> instead. <a href="SKILL.md">Read it first</a>: it&rsquo;s about a hundred lines.</p>
+
+  <h2>3. Start from a template</h2>
+  <div class="block code"><pre><code>tern new myapp --template web<span class="c">   # or cli, or lib</span>
+cd myapp &amp;&amp; claude</code></pre></div>
+  <p>The project has a <code>CLAUDE.md</code> (it includes <code>AGENTS.md</code>) with the rules for this project: read <code>tern guide</code> before calling a library, run <code>tern check --json</code> after every change and follow each hint, and finish with <code>tern test</code>. The web template is a working JSON API with accounts on SQLite, migrations, tests and a page, so Claude Code extends something that already passes.</p>
+
+  <h2>4. Ask for something</h2>
+  <p>Describe the app the way you would for any language, for example:</p>
+  <div class="block code"><pre>Build a link shortener: POST /links takes a URL and returns a slug,
+GET /{slug} redirects and counts the click, GET /links/{slug}/stats
+returns the count. Store links in SQLite. Write tests for each endpoint.</pre></div>
+  <p>From a fuller spec of that app and an empty directory, an agent built it in 273 lines of Tern, passing all 32 acceptance checks. The app was 408 KB and idled in 4.4 MB (<a href="../">the full comparison with Go and TypeScript</a>).</p>
+</section>
+
+<section class="wrap">
+  <h2>When it gets stuck</h2>
+  <ul>
+    <li><b>It writes Python.</b> <code>range()</code>, <code>append</code>, <code>xs.sort()</code>: the compiler&rsquo;s hint says what to write instead, and the skill tells Claude Code to follow hints rather than guess again.</li>
+    <li><b>It invents a function.</b> Tell it to run <code>tern guide NAME</code> for that module (<code>tern guide json</code>, <code>tern guide sqlite</code>). The guide prints the real API.</li>
+    <li><b>It wants the whole language.</b> <code>tern version</code> prints Tern&rsquo;s install directory. <code>docs/reference.md</code> there is the whole language on one page, and <code>llms-full.txt</code> adds every library.</li>
+  </ul>
+  <div class="next">
+    <a href="../codex/"><b>Tern with Codex</b><span>AGENTS.md and the same loop</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>The Tern tour</b><span>For you, while the agent works</span></a>
+    <a href="../"><b>Why Tern for agents</b><span>What makes a language good for them</span></a>
+  </div>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Claude Code is a product of Anthropic; Tern isn&rsquo;t affiliated with it.</div>
+  <div class="links"><a href="../">For agents</a><a href="../codex/">Codex</a><a href="../../docs/">Docs</a><a href="../../#benchmarks">Benchmarks</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

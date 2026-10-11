@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The best programming language for AI coding agents (Claude Code, Codex, Cursor)</title>
+<meta name="description" content="What should Claude Code, Codex or Cursor write your app in? Tern is a compiled language built for AI agents: errors that name the fix, a reference that fits in context, and apps a third the size of Go's that idle in 4 MB.">
+<meta property="og:title" content="The best programming language for AI coding agents">
+<meta property="og:description" content="Same spec, same agent, three languages: the Tern app was a third the code of Go's, 408 KB on disk, and idled in 4.4 MB.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/agents/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/agents/">
+<link rel="stylesheet" href="../docs/style.css">
+<link rel="stylesheet" href="../home.css">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+ {"@type": "Question", "name": "What is the best programming language for AI coding agents?",
+  "acceptedAnswer": {"@type": "Answer", "text": "One the agent can get right without running it: static types checked before anything runs, compiler errors that say what to write instead, a language small enough that its whole reference fits in the agent's context, a fast edit-compile-test loop, and output that is cheap to run. Tern is built around those, and compiles to native code that benchmarks faster than Rust and Go."}},
+ {"@type": "Question", "name": "Can Claude Code write Tern?",
+  "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every project made by tern new has a CLAUDE.md that tells Claude Code how to check and test it, and a Claude Code skill teaches it the language. In our test a coding agent built a link shortener in Tern from an empty directory that passed all 32 acceptance checks."}},
+ {"@type": "Question", "name": "Does Codex work with Tern?",
+  "acceptedAnswer": {"@type": "Answer", "text": "Yes. Codex reads AGENTS.md, which every tern new project includes: it points the agent at tern guide for the language, tern check --json for errors with fix hints, and tern test."}},
+ {"@type": "Question", "name": "Why not just let the agent write Python or TypeScript?",
+  "acceptedAnswer": {"@type": "Answer", "text": "Models know them best, but Python reports type mistakes only when the code runs, and both need a runtime that costs memory. In our test the TypeScript app idled at 89.6 MB and took 25.8 MB on disk; the Tern app idled at 4.4 MB and was 408 KB."}}
+]}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../"><img src="../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="opt" href="../#benchmarks">Benchmarks</a>
+    <a class="cur" href="./">For agents</a>
+    <a href="../docs/">Docs</a>
+    <a href="../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">For Claude Code, Codex, Cursor and other agents</p>
+  <h1>What should your coding agent write in?</h1>
+  <p class="lead">When an agent writes most of the code, the best language is the one it can get right without you: mistakes caught before anything runs, errors that say what to write, and a result that&rsquo;s cheap to deploy. That&rsquo;s what Tern is built for.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp --template web<span class="c">     # AGENTS.md and CLAUDE.md included</span></code></pre></div>
+</section>
+
+<section class="wrap">
+  <h2>What makes a language good for agents</h2>
+  <p>A human picks a language for its ecosystem and what the team knows. An agent has different weak spots: it writes fast, guesses names it half remembers, and only finds out it was wrong when something checks. So the language should:</p>
+  <ul>
+    <li><b>Catch mistakes before the code runs.</b> Every type checked at compile time, so a wrong guess is an error message, not a bug found in production.</li>
+    <li><b>Say what to write instead.</b> An error the agent can act on in one step saves a turn of guessing. Tern&rsquo;s errors name the fix, and habits from other languages get a hint.</li>
+    <li><b>Fit in context.</b> The whole language is one reference page an agent can read before it starts, and <code>tern guide NAME</code> prints any library&rsquo;s API so it doesn&rsquo;t invent functions.</li>
+    <li><b>Look like what models already know.</b> Tern reads like Python, so first drafts are close.</li>
+    <li><b>Keep the loop fast.</b> An optimized rebuild after an edit takes well under a second, so check, fix and test cycles stay short.</li>
+    <li><b>Be cheap to run.</b> Agents write more code than people review closely. Native code with no runtime keeps whatever they write small and fast by default.</li>
+  </ul>
+  <p>Here&rsquo;s what an agent sees when it writes Python habits into Tern. <code>tern check --json</code> gives the same thing as data:</p>
+  <div class="block err"><div class="label">tern check main.tn</div><pre>main.tn:3: error: unknown function `range`
+main.tn:3: hint: there is no range(): write `for i in 0..n:` (or `for i in a..b:`; the end is exclusive)
+main.tn:4: error: unknown function `append`
+main.tn:4: hint: arrays grow with `xs.push(value)`</pre></div>
+</section>
+
+<section class="wrap">
+  <h2>Same spec, same agent, three languages</h2>
+  <p>We gave a coding agent a spec for a link shortener (a database, click counts, a JSON API) and an empty directory, once each in Tern, Go and TypeScript. All three apps pass the same 32 black-box acceptance checks.</p>
+  <div class="table cmp bench-table">
+  <table>
+    <thead><tr><th>Agent-built app</th><th>Tern</th><th>Go</th><th>TypeScript</th></tr></thead>
+    <tbody>
+      <tr><td>Lines of code <small>excluding tests</small></td><td><b>273</b></td><td>805</td><td>502</td></tr>
+      <tr><td>Redirects per second</td><td>146k</td><td><b>154k</b></td><td>47k</td></tr>
+      <tr><td>CPU per redirect</td><td><b>23 &micro;s</b></td><td>32 &micro;s</td><td>21 &micro;s <small>one thread</small></td></tr>
+      <tr><td>Deployed size</td><td><b>408 KB</b></td><td>13.6 MB</td><td>25.8 MB</td></tr>
+      <tr><td>Memory at idle</td><td><b>4.4 MB</b></td><td>18.6 MB</td><td>89.6 MB</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Less code means less for you to review. A 408 KB binary that idles in 4 MB means the cheapest server you can rent will run it. Go served slightly more redirects per second, and we show that too. More numbers, losses included, are on the <a href="../#benchmarks">benchmarks</a>.</p>
+</section>
+
+<section class="wrap">
+  <h2>How it compares with what agents usually write</h2>
+  <ul>
+    <li><b>Python.</b> Models know it best, but type mistakes surface only when that line runs, and it&rsquo;s slow and heavy to deploy. Tern keeps the syntax and checks everything before it runs.</li>
+    <li><b>TypeScript.</b> Types help, but it runs on Node: in our test, 25.8 MB on disk and 89.6 MB at idle against Tern&rsquo;s 408 KB and 4.4 MB.</li>
+    <li><b>Go.</b> Simple and fast, and a strong choice for agents. The same app took 805 lines against Tern&rsquo;s 273.</li>
+    <li><b>Rust.</b> As fast as anything, but agents spend turns on lifetimes and the borrow checker. Tern has no references (every value is a copy), so there&rsquo;s no borrow checker to satisfy, and data races are compile errors.</li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <h2>Set up your agent</h2>
+  <p>Every project from <code>tern new</code> includes <code>AGENTS.md</code>, the file Codex, Cursor and most other agents read, and <code>CLAUDE.md</code> for Claude Code. They tell the agent to read <code>tern guide</code> before writing, to run <code>tern check --json</code> after every change, and to finish with <code>tern test</code>.</p>
+  <div class="next">
+    <a href="claude-code/"><b>Tern with Claude Code</b><span>CLAUDE.md, the Tern skill, and a first app</span></a>
+    <a href="codex/"><b>Tern with Codex</b><span>AGENTS.md and the check-and-test loop</span></a>
+    <a href="../llms.txt"><b>llms.txt</b><span>The docs in one file, for any model</span></a>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>The honest caveats</h2>
+  <ul>
+    <li><b>Models have seen very little Tern.</b> The first time, agents look things up more than they would in Python. That&rsquo;s why the errors, hints and guides are built the way they are. We watch where agents trip and fix it in the compiler, docs and templates.</li>
+    <li><b>It&rsquo;s an early release.</b> The language will still change, and the package index is small.</li>
+    <li><b>macOS and Linux only</b> for now (arm64 and x86_64). Tern also builds WebAssembly, iOS and Android apps from those machines.</li>
+  </ul>
+  <p class="note">Claude Code is a product of Anthropic, Codex of OpenAI, Cursor of Anysphere. Tern isn&rsquo;t affiliated with any of them. Benchmark: macOS on Apple silicon, 128 keep-alive connections for 5 s, medians of three alternating rounds.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="claude-code/">Claude Code</a><a href="codex/">Codex</a><a href="../docs/">Docs</a><a href="../#benchmarks">Benchmarks</a><a href="../ts/">ternTS</a></div>
+</footer>
+<script src="../home.js"></script>
+</body>
+</html>
