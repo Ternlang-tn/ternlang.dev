@@ -262,3 +262,9 @@ code.plain { background: none; padding: 0; color: inherit; }
 .guide .eyebrow a { color: inherit; }
 .guide .stats { margin-top: 8px; }
 .soon .block { max-width: 34rem; margin: 0 auto 24px !important; text-align: left; }
+
+/* packages page cards */
+.pkg { display: flex; flex-direction: column; }
+.pkg p { flex: 1; }
+.pkg code { align-self: flex-start; font-size: 13px; margin-top: 10px; }
+.guide .grid { max-width: none; }

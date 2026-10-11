@@ -15,6 +15,7 @@
   <url><loc>https://ternlang.dev/docs/guides/openapi-clients.html</loc></url>
   <url><loc>https://ternlang.dev/docs/guides/parallelism.html</loc></url>
   <url><loc>https://ternlang.dev/docs/guides/performance.html</loc></url>
+  <url><loc>https://ternlang.dev/docs/guides/publishing-packages.html</loc></url>
   <url><loc>https://ternlang.dev/docs/guides/wasm.html</loc></url>
   <url><loc>https://ternlang.dev/docs/guides/web-apps.html</loc></url>
   <url><loc>https://ternlang.dev/docs/</loc></url>
@@ -70,6 +71,7 @@
   <url><loc>https://ternlang.dev/docs/tour/12-modules.html</loc></url>
   <url><loc>https://ternlang.dev/docs/tour/13-next-steps.html</loc></url>
   <url><loc>https://ternlang.dev/</loc></url>
+  <url><loc>https://ternlang.dev/packages/</loc></url>
   <url><loc>https://ternlang.dev/ts/</loc></url>
   <url><loc>https://ternlang.dev/ts/jest/</loc></url>
   <url><loc>https://ternlang.dev/ts/nestjs/</loc></url>

@@ -30,6 +30,7 @@ AGENTS.md for coding agents. Workflow: write `prog.tn`, run `tern check --json p
 - [Tour of Tern](docs/tour/01-getting-started.md): the tutorial, 13 chapters
 - [Packages](docs/packages/index.md): first-party packages, imported by name like std (migrate, pg, redis, sqlgen, sqlite)
 - [Clients for other APIs](docs/guides/openapi-clients.md): a typed Tern package from any OpenAPI 3 spec (Stripe, GitHub, ...): `tern openapi-client`
+- [Writing and publishing a package](docs/guides/publishing-packages.md): a package is a git repository with `.tn` files at the top; header comment, in-package tests, `git tag v0.1.0`, `tern add NAME URL`, capabilities
 - [Command line](docs/cli.md): every command, flag, exit code, and environment variable
 - [AGENTS.md](AGENTS.md): how to build, test, and change the compiler itself
 

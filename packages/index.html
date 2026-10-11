@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern packages: web framework, databases, auth, and more</title>
+<meta name="description" content="Packages for Tern: the roost web framework, PostgreSQL, SQLite, Redis, migrations, typed SQL, JWT auth, OpenAPI, Sentry and gRPC. Publish your own from any git repository.">
+<meta property="og:title" content="Tern packages">
+<meta property="og:description" content="The roost web framework, PostgreSQL, SQLite, Redis, typed SQL, auth, OpenAPI and more, and how to publish your own.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/packages/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/packages/">
+<link rel="stylesheet" href="../docs/style.css">
+<link rel="stylesheet" href="../home.css">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../"><img src="../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="opt" href="../agents/">For agents</a>
+    <a href="../docs/">Docs</a>
+    <a class="cur" href="./">Packages</a>
+    <a href="../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Packages</p>
+  <h1>Tern packages.</h1>
+  <p class="lead">Beyond the <a href="../docs/std/index.html">standard library</a>: a web framework, database clients and the rest of a server, maintained with the language. Any git repository can be a package too.</p>
+  <div class="block code"><pre><code>tern search WORD<span class="c">          # find one</span>
+tern add roost<span class="c">            # add it to tern.mod and fetch it</span>
+tern add geo GIT-URL<span class="c">      # or any git repository</span></code></pre></div>
+</section>
+
+<section class="wrap">
+  <h2>Built in</h2>
+  <p class="sub">Shipped with Tern. Just import them.</p>
+  <div class="grid pkgs">
+<div class="card pkg" id="migrate"><h3><a href="../docs/packages/migrate.html">migrate</a></h3><p>Schema migrations for PostgreSQL and SQLite from numbered .sql files: up, down, status, locking</p><code>import migrate</code></div>
+<div class="card pkg" id="pg"><h3><a href="../docs/packages/pg.html">pg</a></h3><p>A PostgreSQL client with a connection pool shared by tasks</p><code>import pg</code></div>
+<div class="card pkg" id="redis"><h3><a href="../docs/packages/redis.html">redis</a></h3><p>A Redis client with automatic pipelining</p><code>import redis</code></div>
+<div class="card pkg" id="sqlgen"><h3><a href="../docs/packages/sqlgen.html">sqlgen</a></h3><p>Typed Tern functions generated from SQL queries, checked against PostgreSQL or SQLite (like sqlc)</p><code>import sqlgen</code></div>
+<div class="card pkg" id="sqlite"><h3><a href="../docs/packages/sqlite.html">sqlite</a></h3><p>SQLite databases with bound parameters and typed row reading</p><code>import sqlite</code></div>
+
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Add to your project</h2>
+  <p class="sub"><code>tern add NAME</code> writes it to <code>tern.mod</code> and pins its exact files in <code>tern.lock</code>. An installed Tern carries the first-party ones, so this works offline.</p>
+  <div class="grid pkgs">
+<div class="card pkg" id="auth"><h3><a href="../docs/packages/auth.html">auth</a></h3><p>JSON Web Tokens and signed-cookie sessions</p><code>tern add auth</code></div>
+<div class="card pkg" id="grpc"><h3>grpc</h3><p>A gRPC server (unary calls) over HTTP/2, in Tern: what OTLP/gRPC exporters and most unary clients need.</p><code>tern add grpc</code></div>
+<div class="card pkg" id="openapi"><h3><a href="../docs/packages/openapi.html">openapi</a></h3><p>OpenAPI 3.1 documents, Swagger UI and a typed TypeScript client from roost routes described with Tern types</p><code>tern add openapi</code></div>
+<div class="card pkg" id="queue"><h3>queue</h3><p>A client for ternq, the message queue broker.</p><code>tern add queue</code></div>
+<div class="card pkg" id="roost"><h3><a href="../docs/packages/roost.html">roost</a></h3><p>A web framework on the http engine: routing, middleware, WebSockets, SSE, static files, uploads, validation, rate limits, metrics</p><code>tern add roost</code></div>
+<div class="card pkg" id="sentry"><h3><a href="../docs/packages/sentry.html">sentry</a></h3><p>Error reporting to Sentry: runtime errors with stack traces, request data, breadcrumbs</p><code>tern add sentry</code></div>
+
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Publish your own</h2>
+  <p>A package is a git repository with <code>.tn</code> files at the top. Push it, tag <code>v0.1.0</code>, and anyone can <code>tern add</code> it. There&rsquo;s no account to create and nothing to upload. Fetching and building never run a package&rsquo;s code, and every user sees what yours can reach (network, files, processes) before they accept an update that adds to it.</p>
+  <div class="cta"><a class="btn primary" href="../docs/guides/publishing-packages.html">Writing and publishing a package</a></div>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../docs/">Docs</a><a href="../agents/">For agents</a><a href="../#benchmarks">Benchmarks</a><a href="../ts/">ternTS</a></div>
+</footer>
+<script src="../home.js"></script>
+</body>
+</html>

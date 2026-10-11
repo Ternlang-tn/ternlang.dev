@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Writing and publishing a package · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/publishing-packages.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/publishing-packages.html" class="cur" aria-current="page">Writing and publishing a package</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="writing-and-publishing-a-package"><a class="anchor" href="#writing-and-publishing-a-package" aria-hidden="true">#</a>Writing and publishing a package</h1>
+<p>A Tern package is a git repository. There's no registry to sign up for and nothing to upload: you push the code, tag a version, and anyone can use it with <code>tern add NAME https://...</code>. This page walks through writing one, testing it, publishing it, and what the people who depend on it will see.</p>
+<h2 id="what-a-package-is"><a class="anchor" href="#what-a-package-is" aria-hidden="true">#</a>What a package is</h2>
+<p>A package is a git repository whose top level holds <code>.tn</code> files. Together those files are one module, imported by the name the user gives the package (<code>import geo</code>). Files in it see each other's names without imports, the same as any directory of <code>.tn</code> files (see <a href="../tour/12-modules.html">chapter 12</a> of the tour).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern-geo/                  the repository
+    geo.tn                 named after the package: the overview comment goes here
+    distance.tn            more of the same module
+    distance_test.tn       tests: never part of the package
+    tern.mod               only if it uses other packages
+    README.md
+    LICENSE</code></pre></div>
+<p>Name the main file after the package (<code>geo.tn</code> for <code>geo</code>). Users and their tools open it first: <code>tern add</code> prints <code>its API is in the comment at the top of deps/geo/geo.tn</code>.</p>
+<p><code>tern new geo --template lib</code> starts one: a module file, a test file, a <code>tern.mod</code>, a README, and an <code>AGENTS.md</code> for coding agents.</p>
+<h2 id="document-it-at-the-top"><a class="anchor" href="#document-it-at-the-top" aria-hidden="true">#</a>Document it at the top</h2>
+<p>Begin <code>geo.tn</code> with a comment that says what the package is for and lists every public function with its signature, one per line. That comment is the package's documentation: people read it in <code>deps/</code>, and coding agents read it before calling anything.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># geo: distances and bearings on the Earth's surface.</span>
+<span class="c">#</span>
+<span class="c">#   fn point(lat: float, lon: float) Point</span>
+<span class="c">#   fn km(a: Point, b: Point) float               great-circle distance</span>
+<span class="c">#   fn bearing(a: Point, b: Point) float          degrees clockwise from north</span>
+<span class="c">#</span>
+<span class="c"># Points are in degrees; distances use a spherical Earth (radius 6371 km).</span>
+
+<span class="k">struct</span> <span class="t">Point</span>:
+    lat: <span class="t">float</span>
+    lon: <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">point</span>(lat: <span class="t">float</span>, lon: <span class="t">float</span>) <span class="t">Point</span>:
+    <span class="k">return</span> <span class="t">Point</span>(lat, lon)</code></pre></div>
+<p>Names starting with <code>_</code> are private to the package. Everything else is its public API, so keep helpers underscored.</p>
+<h2 id="test-it-from-inside"><a class="anchor" href="#test-it-from-inside" aria-hidden="true">#</a>Test it from inside</h2>
+<p>A <code>*_test.tn</code> file in the package's directory is part of the package: it calls the package's functions and uses its types by their plain names, private ones included, with no import.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># distance_test.tn</span>
+<span class="k">import</span> testing
+
+<span class="k">fn</span> <span class="f">test_same_point</span>():
+    p <span class="o">=</span> <span class="f">point</span>(<span class="n">51.5</span>, <span class="o">-</span><span class="n">0.1</span>)
+    testing.<span class="f">near</span>(<span class="f">km</span>(p, p), <span class="n">0.0</span>, <span class="n">0.000001</span>)
+
+<span class="k">fn</span> <span class="f">test_london_paris</span>():
+    testing.<span class="f">near</span>(<span class="f">km</span>(<span class="f">point</span>(<span class="n">51.5074</span>, <span class="o">-</span><span class="n">0.1278</span>), <span class="f">point</span>(<span class="n">48.8566</span>, <span class="n">2.3522</span>)), <span class="n">343.5</span>, <span class="n">1.0</span>)</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern test<span class="c">          # every *_test.tn below here</span></code></pre></div>
+<p>Test files never ship: anyone who adds your package gets its code without them.</p>
+<h2 id="other-packages-it-needs"><a class="anchor" href="#other-packages-it-needs" aria-hidden="true">#</a>Other packages it needs</h2>
+<p>If your package imports another package, list it in your repository's <code>tern.mod</code>, exactly as a program would (<code>tern add NAME URL</code> writes the line). When someone adds your package, <code>tern get</code> reads your <code>tern.mod</code> too and fetches what it lists. All packages in a project share one <code>deps/</code> directory, and the project's own <code>tern.mod</code> decides when two packages want different versions of a third.</p>
+<h2 id="publish-it"><a class="anchor" href="#publish-it" aria-hidden="true">#</a>Publish it</h2>
+<ol><li>Push the repository to a public git host over https. GitHub, GitLab, Codeberg, Bitbucket and sourcehut all work.</li><li>Tag a release with a semantic version and push the tag:</li></ol>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>git tag v0.1.0
+git push origin v0.1.0</code></pre></div>
+<p>That's it. A version is a <code>vMAJOR.MINOR.PATCH</code> tag (<code>v1.2.0</code>, or <code>v1.3.0-beta.1</code> for a pre-release). Bump the patch for fixes, the minor version for additions, and the major version when existing code would stop compiling.</p>
+<p><strong>Never move or reuse a tag.</strong> Everyone who depends on <code>v0.1.0</code> has the hash of its files in their <code>tern.lock</code>, so if the tag later points at different code, their next <code>tern get</code> fails. If a release is broken, tag a new one.</p>
+<h2 id="how-people-use-it"><a class="anchor" href="#how-people-use-it" aria-hidden="true">#</a>How people use it</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern add geo https://github.com/you/tern-geo<span class="c">           # the newest vX.Y.Z tag</span>
+tern add geo@v0.1.0 https://github.com/you/tern-geo<span class="c">    # a particular version</span></code></pre></div>
+<p>That writes a line to their <code>tern.mod</code>, fetches the package into <code>deps/geo/</code>, and records it in <code>tern.lock</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code># tern.mod
+geo = https://github.com/you/tern-geo@v0.1.0</code></pre></div>
+<p>Then <code>import geo</code> works from any file in their project. They can call it anything they like: the name on the left of <code>=</code> is the import name.</p>
+<h2 id="what-your-users-see"><a class="anchor" href="#what-your-users-see" aria-hidden="true">#</a>What your users see</h2>
+<p><code>tern.lock</code> records each package's exact commit, a hash of its files, and its <strong>capabilities</strong>: what its code can reach, worked out from its imports.</p>
+<div class="table"><table><thead><tr><th>Capability</th><th>When the package's code (tests excluded) has</th></tr></thead><tbody><tr><td><code>net</code></td><td><code>import roost</code>, <code>http</code>, <code>net</code>, <code>tls</code>, <code>grpc</code>, <code>pg</code>, <code>redis</code>, <code>queue</code> or <code>sentry</code></td></tr><tr><td><code>fs</code></td><td><code>import fs</code></td></tr><tr><td><code>os</code></td><td><code>import os</code> (processes, environment variables)</td></tr><tr><td><code>db</code></td><td><code>import sqlite</code></td></tr><tr><td><code>c</code></td><td>an <code>extern</code> block (C code)</td></tr><tr><td><code>dep:NAME</code></td><td>an import of another package, <code>NAME</code></td></tr></tbody></table></div>
+<p>An update that adds a capability is refused until the user accepts it with <code>tern get --accept geo</code>. A string library that suddenly gains <code>net</code> is how a hijacked package usually gives itself away, so users get to see it. Keep capabilities small: a parsing package that takes a string, rather than reading a file itself, needs no <code>fs</code>.</p>
+<p>Neither fetching nor building runs any of your code. Tern has no install scripts, build scripts or macros, so there's nothing to hide code in, and nothing for you to maintain.</p>
+<h2 id="the-rules-a-package-must-follow"><a class="anchor" href="#the-rules-a-package-must-follow" aria-hidden="true">#</a>The rules a package must follow</h2>
+<p><code>tern get</code> refuses a package that breaks any of these:</p>
+<ul><li>at least one <code>.tn</code> file at the top level</li><li>regular files only: no symlinks, submodules or special files</li><li>at most 5,000 files and 20 MB</li><li>plain path names: no two that differ only in case, no <code>..</code>, and no control characters or <code>\ : * ? " &lt; &gt; |</code></li></ul>
+<h2 id="a-short-name-in-the-index"><a class="anchor" href="#a-short-name-in-the-index" aria-hidden="true">#</a>A short name in the index</h2>
+<p><code>tern search WORD</code> and <code>tern add NAME</code> (with no URL) look names up in the package index, a curated list that maps short names to repositories. The index is opening to submissions: until then, share the <code>tern add NAME URL</code> line in your README, which works for everyone today.</p>
+<h2 id="private-packages"><a class="anchor" href="#private-packages" aria-hidden="true">#</a>Private packages</h2>
+<p>A package can be private: give <code>tern add</code> an ssh URL (<code>git@github.com:yourco/geo.git</code>), and <code>tern get</code> uses your own git credentials. <code>TERN_PRIVATE</code> (comma-separated prefixes such as <code>github.com/yourco/</code>) marks https URLs that should always go straight to git, never through a public mirror.</p>
+</article>
+<div class="pn"><a class="prev" href="../guides/openapi-clients.html"><span>Previous</span>Clients for other APIs (OpenAPI)</a><a class="next" href="../guides/parallelism.html"><span>Next</span>Parallel programming</a></div>
+<footer>Source: <code>docs/guides/publishing-packages.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#what-a-package-is">What a package is</a></li><li class="l2"><a href="#document-it-at-the-top">Document it at the top</a></li><li class="l2"><a href="#test-it-from-inside">Test it from inside</a></li><li class="l2"><a href="#other-packages-it-needs">Other packages it needs</a></li><li class="l2"><a href="#publish-it">Publish it</a></li><li class="l2"><a href="#how-people-use-it">How people use it</a></li><li class="l2"><a href="#what-your-users-see">What your users see</a></li><li class="l2"><a href="#the-rules-a-package-must-follow">The rules a package must follow</a></li><li class="l2"><a href="#a-short-name-in-the-index">A short name in the index</a></li><li class="l2"><a href="#private-packages">Private packages</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>
