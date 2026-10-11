@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building web apps · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/web-apps.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html" class="cur" aria-current="page">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="building-web-apps"><a class="anchor" href="#building-web-apps" aria-hidden="true">#</a>Building web apps</h1>
+<p>This guide builds HTTP services with the <code>http</code>, <code>json</code>, and <code>sqlite</code> modules, from the smallest server to a JSON API backed by SQLite. It covers the shape of a handler, routing, query parameters and headers, JSON in and out, status codes, shared state (read-only and changing), the database, what happens when a handler fails, the server's limits, deploying the single binary, and testing, both by calling handlers directly and with <code>curl</code>.</p>
+<h2 id="the-smallest-server"><a class="anchor" href="#the-smallest-server" aria-hidden="true">#</a>The smallest server</h2>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    <span class="k">return</span> http.<span class="f">text</span>(<span class="s">"Hello, World!"</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    http.<span class="f">serve</span>(<span class="n">8080</span>, handle)</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern run hello.tn<span class="c">                      # prints: tern: serving http://localhost:8080 on 14 threads</span>
+<span class="k">curl</span> localhost:8080/anything<span class="c">           # Hello, World!</span></code></pre></div>
+<p><code>http.serve</code> never returns. It runs an HTTP/1.1 server with an event loop on every core, keep-alive, and pipelining, and calls your handler once per request. The handler is an ordinary function: it gets a <code>Request</code> value and returns a <code>Response</code> value.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Request</span>:
+    method: <span class="t">str</span>                 <span class="c"># "GET", "POST", ...</span>
+    path: <span class="t">str</span>                   <span class="c"># "/users/42" (without the query string)</span>
+    raw_query: <span class="t">str</span>              <span class="c"># "page=2&amp;sort=name" (read values with req.query(name))</span>
+    head: <span class="t">str</span>                   <span class="c"># header lines as received (read them with req.header(name))</span>
+    body: <span class="t">str</span>
+    <span class="o">..</span>.                         <span class="c"># route parameters, middleware values, the connection</span>
+
+<span class="k">struct</span> <span class="t">Response</span>:
+    status: <span class="t">int</span>
+    content_type: <span class="t">str</span>
+    body: <span class="t">str</span>
+    headers: <span class="t">str</span>                <span class="c"># extra header lines (add them with res.set_header)</span>
+    upgrade: <span class="t">int</span></code></pre></div>
+<p><a href="../std/http.html">http</a> lists every field and function.</p>
+<p>The <code>http</code> module has helpers that build common responses: <code>http.text(s)</code>, <code>http.html(s)</code>, <code>http.json(s)</code> (all status 200), <code>http.status(code, s)</code> (plain text with any status), <code>http.not_found()</code>, and <code>http.redirect(url)</code> (a 302). You can also build a <code>Response</code> yourself, or change the one a helper returns.</p>
+<h2 id="handler-shapes"><a class="anchor" href="#handler-shapes" aria-hidden="true">#</a>Handler shapes</h2>
+<p>A handler takes one of three forms, and the form decides how requests share data:</p>
+<div class="table"><table><thead><tr><th>Handler</th><th>Serve with</th><th>Requests run</th></tr></thead><tbody><tr><td><code>fn handle(req: http.Request) http.Response</code></td><td><code>http.serve(port, handle)</code></td><td>in parallel</td></tr><tr><td><code>fn handle(req: http.Request, app: App) http.Response</code></td><td><code>http.serve(port, handle, app)</code></td><td>in parallel; <code>app</code> is read-only</td></tr><tr><td><code>fn handle(req: http.Request, app: mut App) http.Response</code></td><td><code>http.serve(port, handle, &amp;app)</code></td><td>one at a time</td></tr></tbody></table></div>
+<p><code>App</code> is any type you like: a struct of settings, a map, a <code>sqlite.Db</code>. The last two forms are covered in <a href="#app-state-read-only-or-mut">App state</a> below.</p>
+<h2 id="test-handlers-without-a-server"><a class="anchor" href="#test-handlers-without-a-server" aria-hidden="true">#</a>Test handlers without a server</h2>
+<p>A handler is a plain function, so you can call it with a request you build yourself with <code>http.new_request(method, target, body)</code>, where <code>target</code> is the path with its query string. This is the quickest way to test routing and responses: no port, no <code>curl</code>, and the output is exact.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/"</span>:
+        <span class="k">return</span> http.<span class="f">html</span>(<span class="s">"&lt;h1&gt;Home&lt;/h1&gt;"</span>)
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/health"</span>:
+        <span class="k">return</span> http.<span class="f">text</span>(<span class="s">"ok"</span>)
+    <span class="k">return</span> http.<span class="f">not_found</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> path <span class="k">in</span> [<span class="s">"/"</span>, <span class="s">"/health"</span>, <span class="s">"/nope"</span>]:
+        res <span class="o">=</span> <span class="f">handle</span>(http.<span class="f">new_request</span>(<span class="s">"GET"</span>, path, <span class="s">""</span>))
+        <span class="f">print</span>(res.status, res.content_type, res.body)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>200 text/html; charset=utf-8 &lt;h1&gt;Home&lt;/h1&gt;
+200 text/plain; charset=utf-8 ok
+404 text/plain; charset=utf-8 not found</code></pre></div>
+<p>The rest of this guide uses the same trick: every tested example below calls its handler directly.</p>
+<h2 id="routing"><a class="anchor" href="#routing" aria-hidden="true">#</a>Routing</h2>
+<p>There is no router object. A handler is a series of <code>if</code> checks on <code>req.method</code> and <code>req.path</code>, usually handing each route to its own function. For paths with parameters, <code>http.match(path, pattern, &amp;params)</code> compares a path with a pattern such as <code>"/users/{id}/posts/{post}"</code>. On a match it returns <code>true</code> and fills <code>params</code> with the (URL-decoded) values; otherwise it returns <code>false</code> and leaves <code>params</code> alone.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">show_post</span>(user: <span class="t">str</span>, post: <span class="t">str</span>) http.<span class="t">Response</span>:
+    <span class="k">return</span> http.<span class="f">text</span>(<span class="s">f"post {post} by user {user}"</span>)
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    params: {<span class="t">str</span>: <span class="t">str</span>} <span class="o">=</span> {}
+    <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"GET"</span> <span class="k">and</span> req.path <span class="o">==</span> <span class="s">"/users"</span>:
+        <span class="k">return</span> http.<span class="f">json</span>(<span class="s">"[]"</span>)
+    <span class="k">if</span> http.<span class="k">match</span>(req.path, <span class="s">"/users/{id}"</span>, <span class="o">&amp;</span>params):
+        <span class="k">if</span> req.method <span class="o">!=</span> <span class="s">"GET"</span>:
+            <span class="k">return</span> http.<span class="f">status</span>(<span class="n">405</span>, <span class="s">"method not allowed"</span>)
+        id <span class="o">=</span> params[<span class="s">"id"</span>].<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+        <span class="k">if</span> id <span class="o">&lt;</span> <span class="n">1</span>:
+            <span class="k">return</span> http.<span class="f">status</span>(<span class="n">400</span>, <span class="s">"id must be a positive number"</span>)
+        <span class="k">return</span> http.<span class="f">text</span>(<span class="s">f"user {id}"</span>)
+    <span class="k">if</span> http.<span class="k">match</span>(req.path, <span class="s">"/users/{user}/posts/{post}"</span>, <span class="o">&amp;</span>params):
+        <span class="k">return</span> <span class="f">show_post</span>(params[<span class="s">"user"</span>], params[<span class="s">"post"</span>])
+    <span class="k">return</span> http.<span class="f">not_found</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> p <span class="k">in</span> [<span class="s">"/users"</span>, <span class="s">"/users/42"</span>, <span class="s">"/users/abc"</span>, <span class="s">"/users/7/posts/hello%20world"</span>, <span class="s">"/users/7/likes"</span>]:
+        res <span class="o">=</span> <span class="f">handle</span>(http.<span class="f">new_request</span>(<span class="s">"GET"</span>, p, <span class="s">""</span>))
+        <span class="f">print</span>(res.status, res.body)
+    <span class="f">print</span>(<span class="f">handle</span>(http.<span class="f">new_request</span>(<span class="s">"DELETE"</span>, <span class="s">"/users/42"</span>, <span class="s">""</span>)).status)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>200 []
+200 user 42
+400 id must be a positive number
+200 post hello world by user 7
+404 not found
+405</code></pre></div>
+<p><code>http.match</code> compares whole segments: <code>/users/{id}</code> doesn't match <code>/users/7/likes</code>, and a trailing slash makes a different path. Parameters are always strings; convert them with <code>to_int</code> and reject bad values with a <code>400</code>.</p>
+<h2 id="query-parameters-and-headers"><a class="anchor" href="#query-parameters-and-headers" aria-hidden="true">#</a>Query parameters and headers</h2>
+<p><code>req.query(name)</code> returns the decoded value of one query parameter, or <code>""</code> when it is missing. <code>req.header(name)</code> looks up a request header, ignoring case, and also returns <code>""</code> when it is missing; <code>req.cookie(name)</code> reads one cookie. To add a response header, call <code>res.set_header(name, value)</code>; <code>res.get_header(name)</code> reads one back.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">search</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    q <span class="o">=</span> req.<span class="f">query</span>(<span class="s">"q"</span>)
+    <span class="k">if</span> q <span class="o">==</span> <span class="s">""</span>:
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">400</span>, <span class="s">"missing ?q="</span>)
+    page <span class="o">=</span> req.<span class="f">query</span>(<span class="s">"page"</span>).<span class="f">to_int</span>(<span class="n">1</span>)
+    lang <span class="o">=</span> req.<span class="f">header</span>(<span class="s">"accept-language"</span>)
+    res <span class="o">=</span> http.<span class="f">text</span>(<span class="s">f"searching for [{q}], page {page}, language [{lang}]"</span>)
+    res.<span class="f">set_header</span>(<span class="s">"Cache-Control"</span>, <span class="s">"no-store"</span>)
+    <span class="k">return</span> res
+
+<span class="k">fn</span> <span class="f">main</span>():
+    req <span class="o">=</span> http.<span class="f">new_request</span>(<span class="s">"GET"</span>, <span class="s">"/search?q=tern+lang%21&amp;page=3"</span>, <span class="s">""</span>)
+    req.<span class="f">add_header</span>(<span class="s">"Accept-Language"</span>, <span class="s">"en-US"</span>)
+    res <span class="o">=</span> <span class="f">search</span>(req)
+    <span class="f">print</span>(res.status, res.body, res.<span class="f">get_header</span>(<span class="s">"cache-control"</span>))
+    <span class="f">print</span>(<span class="f">search</span>(http.<span class="f">new_request</span>(<span class="s">"GET"</span>, <span class="s">"/search"</span>, <span class="s">""</span>)).body)
+    old <span class="o">=</span> http.<span class="f">redirect</span>(<span class="s">"/new-home"</span>)
+    <span class="f">print</span>(old.status, old.<span class="f">get_header</span>(<span class="s">"location"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>200 searching for [tern lang!], page 3, language [en-US] no-store
+missing ?q=
+302 /new-home</code></pre></div>
+<p><code>+</code> and <code>%21</code> in the query are decoded. The raw query string is in <code>req.raw_query</code> if you need to handle repeated parameters yourself, and <code>req.queries()</code> and <code>req.headers()</code> return them all as maps.</p>
+<h2 id="json-in-and-out"><a class="anchor" href="#json-in-and-out" aria-hidden="true">#</a>JSON in and out</h2>
+<p><code>json.encode</code> turns any value into JSON text, and <code>json.decode(text, &amp;value)</code> fills a value from JSON. Decoding is all-or-nothing: if the body isn't valid JSON of the right shape, it returns <code>false</code> and changes nothing, which maps directly to a <code>400</code>. Keys missing from the body keep the value you started with, so start from sensible defaults, and validate required fields yourself.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+<span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Signup</span>:
+    email: <span class="t">str</span>
+    name: <span class="t">str</span>
+    newsletter: <span class="t">bool</span>
+
+<span class="k">struct</span> <span class="t">Created</span>:
+    id: <span class="t">int</span>
+    email: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">signup</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    <span class="k">if</span> req.method <span class="o">!=</span> <span class="s">"POST"</span>:
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">405</span>, <span class="s">"use POST"</span>)
+    input <span class="o">=</span> <span class="t">Signup</span>(<span class="s">""</span>, <span class="s">""</span>, <span class="k">false</span>)
+    <span class="k">if</span> <span class="k">not</span> json.<span class="f">decode</span>(req.body, <span class="o">&amp;</span>input):
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">400</span>, <span class="s">`body must be JSON like {"email": "...", "name": "..."}`</span>)
+    <span class="k">if</span> <span class="k">not</span> input.email.<span class="f">contains</span>(<span class="s">"@"</span>):
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">422</span>, <span class="s">"email is required"</span>)
+    res <span class="o">=</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(<span class="t">Created</span>(<span class="n">1001</span>, input.email)))
+    res.status <span class="o">=</span> <span class="n">201</span>
+    res.<span class="f">set_header</span>(<span class="s">"Location"</span>, <span class="s">"/users/1001"</span>)
+    <span class="k">return</span> res
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> body <span class="k">in</span> [<span class="s">`{"email": "ada@example.com", "name": "Ada"}`</span>, <span class="s">`{"name": "no email"}`</span>, <span class="s">"email=ada"</span>]:
+        res <span class="o">=</span> <span class="f">signup</span>(http.<span class="f">new_request</span>(<span class="s">"POST"</span>, <span class="s">"/signup"</span>, body))
+        <span class="f">print</span>(res.status, res.content_type, res.body)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>201 application/json {"id":1001,"email":"ada@example.com"}
+422 text/plain; charset=utf-8 email is required
+400 text/plain; charset=utf-8 body must be JSON like {"email": "...", "name": "..."}</code></pre></div>
+<p>Unknown keys in the body are ignored, and a JSON <code>null</code> keeps the default. For output, encode a struct or an array of structs; field names become the JSON keys. If you need a key that isn't a valid field name, build the text by hand with <code>json_quote(s)</code>, which returns <code>s</code> as a quoted, escaped JSON string (see <code>examples/web/api.tn</code>).</p>
+<h2 id="status-codes"><a class="anchor" href="#status-codes" aria-hidden="true">#</a>Status codes</h2>
+<p>Use <code>http.status(code, message)</code> for any status with a plain-text body, or set <code>res.status</code> on a response built by another helper. The conventions the examples here follow:</p>
+<div class="table"><table><thead><tr><th>Status</th><th>When</th></tr></thead><tbody><tr><td>200</td><td>success (<code>http.text</code>, <code>http.html</code>, <code>http.json</code>)</td></tr><tr><td>201</td><td>created something; add a <code>Location</code> header</td></tr><tr><td>204</td><td>success with no body: <code>http.status(204, "")</code></td></tr><tr><td>302</td><td><code>http.redirect(url)</code></td></tr><tr><td>400</td><td>the request is malformed (bad JSON, a non-numeric id)</td></tr><tr><td>404</td><td><code>http.not_found()</code>, or <code>http.status(404, "no note 7")</code></td></tr><tr><td>405</td><td>the path exists but not with this method</td></tr><tr><td>422</td><td>well-formed but invalid (a required field is empty)</td></tr><tr><td>500</td><td>sent for you when a handler hits a runtime error</td></tr></tbody></table></div>
+<p>Any number works as a status. The server writes the standard reason phrase ("Not Found") for the common codes above and the generic word <code>Status</code> for the rest (for example <code>HTTP/1.1 429 Status</code>); clients go by the number.</p>
+<h2 id="app-state-read-only-or-mut"><a class="anchor" href="#app-state-read-only-or-mut" aria-hidden="true">#</a>App state: read-only or mut</h2>
+<p>Most services need data that outlives one request: configuration, a cache, a database handle. Pass it as the handler's second parameter.</p>
+<p><strong>Read-only state</strong> (<code>app: App</code>) is shared by every server thread at once. It can't be changed after the server starts, so requests never wait on each other:</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">struct</span> <span class="t">App</span>:
+    greeting: <span class="t">str</span>
+    motd: {<span class="t">str</span>: <span class="t">str</span>}
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>, app: <span class="t">App</span>) http.<span class="t">Response</span>:
+    lang <span class="o">=</span> req.<span class="f">query</span>(<span class="s">"lang"</span>)
+    <span class="k">return</span> http.<span class="f">text</span>(app.greeting <span class="o">+</span> <span class="s">" "</span> <span class="o">+</span> app.motd.<span class="f">get</span>(lang, <span class="s">"(no message)"</span>))
+
+<span class="k">fn</span> <span class="f">main</span>():
+    app <span class="o">=</span> <span class="t">App</span>(<span class="s">"hello!"</span>, {<span class="s">"en"</span>: <span class="s">"Ship it."</span>, <span class="s">"fr"</span>: <span class="s">"Expediez-le."</span>})
+    http.<span class="f">serve</span>(<span class="n">8080</span>, handle, app)</code></pre></div>
+<p><strong>Changing state</strong> (<code>app: mut App</code>, served with <code>&amp;app</code>) runs requests one at a time: the server holds a lock around each call to the handler. That is the whole concurrency story for shared state: no data races are possible, and there is no lock to forget.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+<span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">App</span>:
+    visits: {<span class="t">str</span>: <span class="t">int</span>}
+    total: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>, app: <span class="k">mut</span> <span class="t">App</span>) http.<span class="t">Response</span>:
+    <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"POST"</span> <span class="k">and</span> req.path.<span class="f">starts_with</span>(<span class="s">"/visit/"</span>):
+        page <span class="o">=</span> req.path[<span class="f">len</span>(<span class="s">"/visit/"</span>)<span class="o">..</span>]
+        app.visits[page] <span class="o">=</span> app.visits.<span class="f">get</span>(page, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+        app.total <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">204</span>, <span class="s">""</span>)
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/stats"</span>:
+        <span class="k">return</span> http.<span class="f">text</span>(<span class="s">f"{app.total} visits: {json.encode(app.visits)}"</span>)
+    <span class="k">return</span> http.<span class="f">not_found</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    app <span class="o">=</span> <span class="t">App</span>({}, <span class="n">0</span>)
+    <span class="k">for</span> page <span class="k">in</span> [<span class="s">"home"</span>, <span class="s">"docs"</span>, <span class="s">"home"</span>]:
+        <span class="f">handle</span>(http.<span class="f">new_request</span>(<span class="s">"POST"</span>, <span class="s">"/visit/"</span> <span class="o">+</span> page, <span class="s">""</span>), <span class="o">&amp;</span>app)
+    <span class="f">print</span>(<span class="f">handle</span>(http.<span class="f">new_request</span>(<span class="s">"GET"</span>, <span class="s">"/stats"</span>, <span class="s">""</span>), <span class="o">&amp;</span>app).body)
+    <span class="c"># a real server: http.serve(8080, handle, &amp;app)</span></code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 visits: {"home":2,"docs":1}</code></pre></div>
+<p>Why the two shapes? Tern values are never shared by reference, and a read-only parameter can't change, so any number of threads can read the same <code>App</code> safely. A <code>mut</code> parameter can change, so the server must never run two such calls at once. The type of the handler tells the server which case it is in.</p>
+<p>The trade-off: with <code>mut</code> state, a slow request holds up every other request. Keep the changing part small. Put read-mostly data in a read-only <code>App</code>, and put data that many requests write into the database, which handles concurrent writers itself.</p>
+<h2 id="sqlite"><a class="anchor" href="#sqlite" aria-hidden="true">#</a>SQLite</h2>
+<p><code>import sqlite</code> links the system SQLite. <code>sqlite.open(path)</code> opens (or creates) a database file. Then:</p>
+<ul><li><code>d.exec(sql, params) int</code> runs a statement and returns the last inserted row id.</li><li><code>d.query(sql, params) [{str: str}]</code> returns rows as maps from column name to text.</li><li><code>d.query_into(sql, params, &amp;out) int</code> reads rows into your structs, matching columns to fields by name, and returns the number of rows. <code>out</code> can be an array of structs (it is replaced by the rows) or one struct (filled from the first row, if there is one).</li></ul>
+<p>Parameters are always a <code>[str]</code> and are bound with <code>?</code> placeholders, never pasted into the SQL, so user input can't inject SQL. SQLite converts them to the column's type, so <code>[str(id)]</code> works for an <code>INTEGER</code> column.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+<span class="k">import</span> os
+
+<span class="k">struct</span> <span class="t">Note</span>:
+    id: <span class="t">int</span>
+    title: <span class="t">str</span>
+    pinned: <span class="t">bool</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(os.<span class="f">env</span>(<span class="s">"DBPATH"</span>, <span class="s">"notes.db"</span>))
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY, title TEXT NOT NULL, pinned INTEGER NOT NULL)"</span>, [])
+    first <span class="o">=</span> d.<span class="f">exec</span>(<span class="s">"INSERT INTO notes (title, pinned) VALUES (?, ?)"</span>, [<span class="s">"groceries"</span>, <span class="s">"0"</span>])
+    d.<span class="f">exec</span>(<span class="s">"INSERT INTO notes (title, pinned) VALUES (?, ?)"</span>, [<span class="s">"it's a trap'; DROP TABLE notes; --"</span>, <span class="s">"1"</span>])
+    <span class="f">print</span>(<span class="s">"first id"</span>, first)
+
+    notes: [<span class="t">Note</span>] <span class="o">=</span> []
+    n <span class="o">=</span> d.<span class="f">query_into</span>(<span class="s">"SELECT id, title, pinned FROM notes ORDER BY id"</span>, [], <span class="o">&amp;</span>notes)
+    <span class="f">print</span>(n, notes)
+
+    one <span class="o">=</span> <span class="t">Note</span>(<span class="n">0</span>, <span class="s">""</span>, <span class="k">false</span>)
+    <span class="k">if</span> d.<span class="f">query_into</span>(<span class="s">"SELECT id, title, pinned FROM notes WHERE id = ?"</span>, [<span class="t">str</span>(first)], <span class="o">&amp;</span>one) <span class="o">&gt;</span> <span class="n">0</span>:
+        <span class="f">print</span>(<span class="s">"found"</span>, one.title)
+    missing <span class="o">=</span> <span class="t">Note</span>(<span class="n">0</span>, <span class="s">"none"</span>, <span class="k">false</span>)
+    <span class="f">print</span>(d.<span class="f">query_into</span>(<span class="s">"SELECT id, title, pinned FROM notes WHERE id = ?"</span>, [<span class="s">"999"</span>], <span class="o">&amp;</span>missing), missing.title)
+
+    rows <span class="o">=</span> d.<span class="f">query</span>(<span class="s">"SELECT pinned, count(*) AS n FROM notes GROUP BY pinned"</span>, [])
+    <span class="f">print</span>(rows)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>first id 1
+2 [Note{id: 1, title: "groceries", pinned: false}, Note{id: 2, title: "it's a trap'; DROP TABLE notes; --", pinned: true}]
+found groceries
+0 none
+[{"pinned": "0", "n": "1"}, {"pinned": "1", "n": "1"}]</code></pre></div>
+<p>Prefer <code>query_into</code> with a struct: the fields are typed, and the struct encodes straight to JSON. <code>query</code> is handy for ad-hoc results like the <code>count(*)</code> above; every value in it is text.</p>
+<p>(The test suite runs this with <code>DBPATH=:memory:</code>, an in-memory database. Don't do that for a server; see below.)</p>
+<h3 id="the-database-in-a-server"><a class="anchor" href="#the-database-in-a-server" aria-hidden="true">#</a>The database in a server</h3>
+<p>A <code>sqlite.Db</code> is a small handle, so put it in your app state (or pass it as the app itself). A read-only <code>d: sqlite.Db</code> parameter can still run <code>INSERT</code>s: the data lives in the database file, not in a Tern value, and "read-only" is about Tern values. So the usual shape is a read-only app, with requests running in parallel and SQLite coordinating the writes.</p>
+<p>What the runtime does for you:</p>
+<ul><li>Each server thread opens its own connection with its own prepared-statement cache, so queries run in parallel. The file is put in WAL mode, which lets readers and a writer work at the same time. A writer waits up to 5 seconds for the write lock.</li><li><strong>Request snapshots.</strong> Inside one request, all read queries share one read transaction, committed when the response is sent. Every read in a request sees the same consistent data, and a request makes one lock round-trip instead of one per query. A statement that writes ends the snapshot first, so writes behave exactly as they would without it. Set <code>TERN_DB_SNAPSHOT=0</code> to turn snapshots off.</li><li><strong>Use a file, not <code>:memory:</code>.</strong> Because each thread has its own connection, an in-memory database would be a different, empty database on every server thread.</li></ul>
+<h2 id="a-complete-api"><a class="anchor" href="#a-complete-api" aria-hidden="true">#</a>A complete API</h2>
+<p>Here is a notes API with everything above: routing with parameters, JSON in and out, status codes, and SQLite. It reads its port and database path from the environment.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+<span class="k">import</span> sqlite
+<span class="k">import</span> json
+<span class="k">import</span> os
+
+<span class="k">struct</span> <span class="t">Note</span>:
+    id: <span class="t">int</span>
+    title: <span class="t">str</span>
+    body: <span class="t">str</span>
+
+<span class="k">struct</span> <span class="t">NewNote</span>:
+    title: <span class="t">str</span>
+    body: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">list_notes</span>(d: sqlite.<span class="t">Db</span>) http.<span class="t">Response</span>:
+    notes: [<span class="t">Note</span>] <span class="o">=</span> []
+    d.<span class="f">query_into</span>(<span class="s">"SELECT id, title, body FROM notes ORDER BY id"</span>, [], <span class="o">&amp;</span>notes)
+    <span class="k">return</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(notes))
+
+<span class="k">fn</span> <span class="f">show_note</span>(d: sqlite.<span class="t">Db</span>, id: <span class="t">str</span>) http.<span class="t">Response</span>:
+    n <span class="o">=</span> <span class="t">Note</span>(<span class="n">0</span>, <span class="s">""</span>, <span class="s">""</span>)
+    <span class="k">if</span> d.<span class="f">query_into</span>(<span class="s">"SELECT id, title, body FROM notes WHERE id = ?"</span>, [id], <span class="o">&amp;</span>n) <span class="o">==</span> <span class="n">0</span>:
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">404</span>, <span class="s">f"no note {id}"</span>)
+    <span class="k">return</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(n))
+
+<span class="k">fn</span> <span class="f">create_note</span>(d: sqlite.<span class="t">Db</span>, req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    input <span class="o">=</span> <span class="t">NewNote</span>(<span class="s">""</span>, <span class="s">""</span>)
+    <span class="k">if</span> <span class="k">not</span> json.<span class="f">decode</span>(req.body, <span class="o">&amp;</span>input):
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">400</span>, <span class="s">`body must be JSON: {"title": ..., "body": ...}`</span>)
+    <span class="k">if</span> input.title.<span class="f">trim</span>() <span class="o">==</span> <span class="s">""</span>:
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">422</span>, <span class="s">"title is required"</span>)
+    id <span class="o">=</span> d.<span class="f">exec</span>(<span class="s">"INSERT INTO notes (title, body) VALUES (?, ?)"</span>, [input.title, input.body])
+    res <span class="o">=</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(<span class="t">Note</span>(id, input.title, input.body)))
+    res.status <span class="o">=</span> <span class="n">201</span>
+    res.<span class="f">set_header</span>(<span class="s">"Location"</span>, <span class="s">f"/notes/{id}"</span>)
+    <span class="k">return</span> res
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>, d: sqlite.<span class="t">Db</span>) http.<span class="t">Response</span>:
+    params: {<span class="t">str</span>: <span class="t">str</span>} <span class="o">=</span> {}
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/notes"</span>:
+        <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"GET"</span>:
+            <span class="k">return</span> <span class="f">list_notes</span>(d)
+        <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"POST"</span>:
+            <span class="k">return</span> <span class="f">create_note</span>(d, req)
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">405</span>, <span class="s">"method not allowed"</span>)
+    <span class="k">if</span> http.<span class="k">match</span>(req.path, <span class="s">"/notes/{id}"</span>, <span class="o">&amp;</span>params):
+        <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"DELETE"</span>:
+            d.<span class="f">exec</span>(<span class="s">"DELETE FROM notes WHERE id = ?"</span>, [params[<span class="s">"id"</span>]])
+            <span class="k">return</span> http.<span class="f">status</span>(<span class="n">204</span>, <span class="s">""</span>)
+        <span class="k">return</span> <span class="f">show_note</span>(d, params[<span class="s">"id"</span>])
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/search"</span>:
+        q <span class="o">=</span> req.<span class="f">query</span>(<span class="s">"q"</span>)
+        rows <span class="o">=</span> d.<span class="f">query</span>(<span class="s">"SELECT id, title FROM notes WHERE title LIKE ?"</span>, [<span class="s">"%"</span> <span class="o">+</span> q <span class="o">+</span> <span class="s">"%"</span>])
+        <span class="k">return</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(rows))
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/broken"</span>:
+        rows <span class="o">=</span> d.<span class="f">query</span>(<span class="s">"SELECT no_such_column FROM notes"</span>, [])
+        <span class="k">return</span> http.<span class="f">text</span>(<span class="t">str</span>(<span class="f">len</span>(rows)))
+    <span class="k">return</span> http.<span class="f">not_found</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(os.<span class="f">env</span>(<span class="s">"DBPATH"</span>, <span class="s">"notes.db"</span>))
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY, title TEXT NOT NULL, body TEXT NOT NULL)"</span>, [])
+    port <span class="o">=</span> os.<span class="f">env</span>(<span class="s">"PORT"</span>, <span class="s">"8080"</span>).<span class="f">to_int</span>(<span class="n">8080</span>)
+    http.<span class="f">serve</span>(port, handle, d)</code></pre></div>
+<h2 id="testing-with-curl"><a class="anchor" href="#testing-with-curl" aria-hidden="true">#</a>Testing with curl</h2>
+<p>Build it, start it on a free port, and try each route. This is a real session with the program above (<code>-i</code> shows the status line and headers):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$ tern build notes.tn -o notes
+$ PORT=8090 ./notes &amp;
+tern: serving http://localhost:8090 on 14 threads
+
+$ curl -i -X POST localhost:8090/notes -d '{"title": "groceries", "body": "eggs, milk"}'
+HTTP/1.1 201 Created
+Content-Type: application/json
+Location: /notes/1
+Content-Length: 48
+
+{"id":1,"title":"groceries","body":"eggs, milk"}
+
+$ curl -X POST localhost:8090/notes -d '{"title": "ideas", "body": "write docs"}'
+{"id":2,"title":"ideas","body":"write docs"}
+
+$ curl localhost:8090/notes
+[{"id":1,"title":"groceries","body":"eggs, milk"},{"id":2,"title":"ideas","body":"write docs"}]
+
+$ curl -i localhost:8090/notes/99
+HTTP/1.1 404 Not Found
+Content-Type: text/plain; charset=utf-8
+Content-Length: 10
+
+no note 99
+
+$ curl -i -X POST localhost:8090/notes -d 'not json'
+HTTP/1.1 400 Bad Request
+Content-Type: text/plain; charset=utf-8
+Content-Length: 46
+
+body must be JSON: {"title": ..., "body": ...}
+
+$ curl 'localhost:8090/search?q=gro'
+[{"id":"1","title":"groceries"}]
+
+$ curl -i -X DELETE localhost:8090/notes/1
+HTTP/1.1 204 No Content
+Content-Type: text/plain; charset=utf-8
+Content-Length: 0
+
+$ curl -i localhost:8090/broken
+HTTP/1.1 500 Internal Server Error
+Content-Type: text/plain; charset=utf-8
+Content-Length: 21
+
+internal server error</code></pre></div>
+<p>Note that <code>/search</code> returns ids as strings (<code>"id":"1"</code>): <code>d.query</code> returns every value as text. Use <code>query_into</code> when the JSON types matter.</p>
+<h2 id="when-a-handler-fails"><a class="anchor" href="#when-a-handler-fails" aria-hidden="true">#</a>When a handler fails</h2>
+<p>A runtime error inside a handler (a missing map key, an index out of range, division by zero, a failed SQL statement, even inside a <code>parallel</code> block in the handler) doesn't stop the server. That request gets a <code>500</code> with the body <code>internal server error</code>, the error is logged to stderr, and the server keeps serving. The <code>/broken</code> route above logged:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern: GET /broken failed: runtime error: sqlite: no such column: no_such_column</code></pre></div>
+<p>The failed request's open database snapshot is closed, and with <code>mut</code> state, the lock is released. What the handler changed in a <code>mut</code> app before the error stays changed, so validate input before you start changing state.</p>
+<p>Don't rely on 500s for expected problems. Bad input is the client's error: check it and return a <code>400</code> or <code>422</code> with a message, as the examples do. Use <code>m.get(k, default)</code> or <code>k in m</code> instead of <code>m[k]</code> for keys that come from requests, and <code>to_int(-1)</code> with a range check for numbers.</p>
+<h2 id="timeouts-and-limits"><a class="anchor" href="#timeouts-and-limits" aria-hidden="true">#</a>Timeouts and limits</h2>
+<p>The server enforces a few limits on its own. Change them with environment variables when starting the binary:</p>
+<div class="table"><table><thead><tr><th>Limit</th><th>Default</th><th>Environment variable</th></tr></thead><tbody><tr><td>Server threads</td><td>one per core</td><td><code>TERN_HTTP_THREADS</code></td></tr><tr><td>Idle keep-alive connections closed after</td><td>60 seconds</td><td><code>TERN_HTTP_IDLE_SEC</code></td></tr><tr><td>A request must arrive completely within</td><td>10 seconds</td><td><code>TERN_HTTP_HEADER_SEC</code></td></tr><tr><td>Largest request body (larger gets <code>413 Payload Too Large</code>)</td><td>16 MB</td><td><code>TERN_HTTP_MAX_BODY_MB</code></td></tr><tr><td>Largest header block (larger gets <code>400 Bad Request</code>)</td><td>64 KB</td><td></td></tr><tr><td>Headers per request (the rest are ignored)</td><td>64</td><td></td></tr></tbody></table></div>
+<p>There is no time limit on the handler itself. Each server thread runs an event loop for many connections, and a handler runs on that thread until it returns, so a handler that takes two seconds delays the other connections on its thread for two seconds. Keep handlers fast; do slow work with a time budget of your own.</p>
+<p>Other gaps in <code>http.serve</code> to know about: no TLS, no HTTP/2, no chunked request bodies (clients must send <code>Content-Length</code>, which <code>curl</code> and browsers do for ordinary requests), and no WebSockets. The <a href="../std/http.html#the-engine">engine</a> (<code>http.new_server</code>), and <a href="../packages/roost.html">roost</a> on top of it, have HTTPS (with <a href="../std/tls.html">tls</a>), streamed and chunked bodies, WebSockets and server-sent events.</p>
+<h2 id="building-and-deploying"><a class="anchor" href="#building-and-deploying" aria-hidden="true">#</a>Building and deploying</h2>
+<p>A Tern web app builds to one native binary:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern build notes.tn -o notes</code></pre></div>
+<p>It depends only on the C library and, if you import <code>sqlite</code>, the system SQLite (<code>libsqlite3</code>). Copy it to a server built for the same OS and CPU (build on Linux for Linux) and run it. It binds to the port on all network interfaces, and it logs to stderr.</p>
+<p>TLS belongs in a reverse proxy in front of the binary. With Caddy, which gets certificates automatically, the whole configuration is:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>notes.example.com {
+    reverse_proxy localhost:8090
+}</code></pre></div>
+<p>With nginx, proxy to <code>http://127.0.0.1:8090</code> and set a <code>client_max_body_size</code> that matches <code>TERN_HTTP_MAX_BODY_MB</code>. Since the proxy faces the internet, firewall the app's own port so only the proxy can reach it.</p>
+<p>To keep it running, use your system's service manager. A systemd unit:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>[Unit]
+Description=notes API
+After=network.target
+
+[Service]
+ExecStart=/opt/notes/notes
+Environment=PORT=8090 DBPATH=/var/lib/notes/notes.db
+Restart=always
+User=notes
+
+[Install]
+WantedBy=multi-user.target</code></pre></div>
+<p>Back up the database with SQLite's own tools (<code>sqlite3 notes.db ".backup backup.db"</code>), which work while the server is running.</p>
+<h2 id="errors-with-result-web-pg-and-"><a class="anchor" href="#errors-with-result-web-pg-and-" aria-hidden="true">#</a>Errors with Result: web, pg and <code>?</code></h2>
+<p>The <code>roost</code> framework and the <code>pg</code>, <code>redis</code>, <code>fs</code>, <code>tls</code> and <code>auth</code> packages also return <code>Result</code> values (the <code>try_</code> functions, and <code>pg.fetch</code>), so a handler can write the happy path straight down and turn every failure into a response in one place. Errors are strings that say which module failed, what, and why: <code>"pg: query failed: ERROR 42P01: relation \"users\" does not exist"</code>.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+<span class="k">import</span> log
+<span class="k">import</span> pg
+<span class="k">import</span> roost
+
+<span class="k">struct</span> <span class="t">User</span>:
+    id: <span class="t">int</span>
+    name: <span class="t">str</span>
+    email: <span class="t">str</span>
+
+<span class="c"># a helper that returns Result: `?` hands an Err back to the caller as it is</span>
+<span class="k">fn</span> <span class="f">find_user</span>(db: pg.<span class="t">Pool</span>, id: <span class="t">int</span>) <span class="t">Result</span>[<span class="t">Option</span>[<span class="t">User</span>], <span class="t">str</span>]:
+    <span class="k">return</span> db.fetch_one[<span class="t">User</span>](<span class="s">"SELECT id, name, email FROM users WHERE id = $1"</span>, [<span class="t">str</span>(id)])
+
+<span class="k">fn</span> <span class="f">team</span>(db: pg.<span class="t">Pool</span>, name: <span class="t">str</span>) <span class="t">Result</span>[[<span class="t">User</span>], <span class="t">str</span>]:
+    users: [<span class="t">User</span>] <span class="o">=</span> db.<span class="f">fetch</span>(<span class="s">"SELECT id, name, email FROM users WHERE team = $1 ORDER BY id"</span>, [name])?
+    <span class="k">return</span> <span class="t">Ok</span>(users)
+
+<span class="c"># the handler maps the outcomes to responses: 404 for "no such user", 500 for a failure</span>
+<span class="k">fn</span> <span class="f">show_user</span>(db: pg.<span class="t">Pool</span>, req: roost.<span class="t">Request</span>) roost.<span class="t">Response</span>:
+    <span class="k">match</span> <span class="f">find_user</span>(db, req.<span class="f">param_int</span>(<span class="s">"id"</span>, <span class="n">0</span>)):
+        <span class="t">Ok</span>(found):
+            <span class="k">if</span> found is <span class="t">Some</span>(u):
+                <span class="k">return</span> roost.<span class="f">json</span>(json.<span class="f">encode</span>(u))
+            <span class="k">return</span> roost.<span class="f">status</span>(<span class="n">404</span>, <span class="s">"no such user"</span>)
+        <span class="t">Err</span>(e):
+            log.<span class="f">error</span>(e)                              <span class="c"># the details go to the log...</span>
+            <span class="k">return</span> roost.<span class="f">status</span>(<span class="n">500</span>, <span class="s">"internal error"</span>)  <span class="c"># ...not to the client</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    db <span class="o">=</span> pg.<span class="f">pool</span>(<span class="s">"postgres://app:secret@localhost/app"</span>, <span class="n">16</span>)
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    r.<span class="f">get</span>(<span class="s">"/users/{id}"</span>, <span class="k">fn</span>(req) <span class="f">show_user</span>(db, req))
+    roost.<span class="f">serve</span>(r, <span class="n">8080</span>)</code></pre></div>
+<p><code>users: [User] = db.fetch(...)?</code> needs no type argument: <code>?</code> passes the type the result is assigned to into the call. Where there's nothing to infer from, write it: <code>db.fetch[User](sql, params)</code>. The functions without <code>try_</code> stay as they were (<code>fs.read</code> returns <code>""</code> and <code>fs.error()</code> says why), for scripts where that's all you need.</p>
+<h2 id="where-to-look-next"><a class="anchor" href="#where-to-look-next" aria-hidden="true">#</a>Where to look next</h2>
+<ul><li><code>examples/web/</code>: <code>hello.tn</code>, <code>api.tn</code> (read-only shared data), <code>todo.tn</code> (changing state with <code>mut</code>), and <code>crash.tn</code> (runtime errors becoming 500s).</li><li>The <a href="../std/http.html">http</a>, <a href="../std/json.html">json</a>, and <a href="../packages/sqlite.html">sqlite</a> module pages.</li><li><a href="parallelism.html">Parallel programming</a>, for speeding up one slow request.</li></ul>
+</article>
+<div class="pn"><a class="prev" href="../guides/coming-from.html"><span>Previous</span>Coming from Python, Go, Rust, or JavaScript</a><a class="next" href="../guides/openapi-clients.html"><span>Next</span>Clients for other APIs (OpenAPI)</a></div>
+<footer>Source: <code>docs/guides/web-apps.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#the-smallest-server">The smallest server</a></li><li class="l2"><a href="#handler-shapes">Handler shapes</a></li><li class="l2"><a href="#test-handlers-without-a-server">Test handlers without a server</a></li><li class="l2"><a href="#routing">Routing</a></li><li class="l2"><a href="#query-parameters-and-headers">Query parameters and headers</a></li><li class="l2"><a href="#json-in-and-out">JSON in and out</a></li><li class="l2"><a href="#status-codes">Status codes</a></li><li class="l2"><a href="#app-state-read-only-or-mut">App state: read-only or mut</a></li><li class="l2"><a href="#sqlite">SQLite</a></li><li class="l3"><a href="#the-database-in-a-server">The database in a server</a></li><li class="l2"><a href="#a-complete-api">A complete API</a></li><li class="l2"><a href="#testing-with-curl">Testing with curl</a></li><li class="l2"><a href="#when-a-handler-fails">When a handler fails</a></li><li class="l2"><a href="#timeouts-and-limits">Timeouts and limits</a></li><li class="l2"><a href="#building-and-deploying">Building and deploying</a></li><li class="l2"><a href="#errors-with-result-web-pg-and-">Errors with Result: web, pg and ?</a></li><li class="l2"><a href="#where-to-look-next">Where to look next</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parallel programming · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/parallelism.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html" class="cur" aria-current="page">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="parallel-programming"><a class="anchor" href="#parallel-programming" aria-hidden="true">#</a>Parallel programming</h1>
+<p>This guide goes past the <a href="../tour/11-parallelism.html">tour chapter on parallelism</a>. It explains how <code>parallel:</code> and <code>parallel for</code> actually run (fork-join on a work-stealing scheduler), exactly what the compiler's race checker allows and refuses and why, the patterns that cover most real programs, how to tell whether parallelism will pay off, and what happens on WebAssembly and when a task hits a runtime error.</p>
+<h2 id="the-model-fork-join"><a class="anchor" href="#the-model-fork-join" aria-hidden="true">#</a>The model: fork-join</h2>
+<p>Tern has two parallel statements, and both are <em>fork-join</em>: the program forks into tasks at the start of the block and joins them at the end. Nothing started inside a block outlives it, so when the next line after the block runs, every task has finished and every result is in place.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">count_multiples</span>(n: <span class="t">int</span>, k: <span class="t">int</span>) <span class="t">int</span>:
+    c <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">1</span><span class="o">..</span>n <span class="o">+</span> <span class="n">1</span>:
+        <span class="k">if</span> i <span class="o">%</span> k <span class="o">==</span> <span class="n">0</span>:
+            c <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> c
+
+<span class="k">fn</span> <span class="f">main</span>():
+    both <span class="o">=</span> <span class="n">0</span>
+    <span class="k">parallel</span>:                               <span class="c"># each line is one task</span>
+        threes <span class="o">=</span> <span class="f">count_multiples</span>(<span class="n">1_000_000</span>, <span class="n">3</span>)
+        fives <span class="o">=</span> <span class="f">count_multiples</span>(<span class="n">1_000_000</span>, <span class="n">5</span>)
+        <span class="k">do</span>:                                 <span class="c"># `do:` makes several lines one task</span>
+            fifteens <span class="o">=</span> <span class="f">count_multiples</span>(<span class="n">1_000_000</span>, <span class="n">15</span>)
+            both <span class="o">=</span> fifteens
+    <span class="f">print</span>(threes, fives, both)
+
+    squares <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">10</span>
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(squares):      <span class="c"># iterations spread across cores</span>
+        squares[i] <span class="o">=</span> i <span class="o">*</span> i
+    <span class="f">print</span>(squares)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>333333 200000 66666
+[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]</code></pre></div>
+<ul><li>In <code>parallel:</code>, every line is a task, and <code>do:</code> groups several lines into one task. A variable created by a one-line task (<code>threes = ...</code>) is visible after the block. Variables created inside a <code>do:</code> are local to it (<code>fifteens</code> is gone after the block), so create a variable before the block, like <code>both</code>, when a <code>do:</code> task should fill it.</li><li><code>parallel for i in a..b:</code> runs the body once per <code>i</code>, with iterations spread across all cores. It only works on a range: to process an array, loop over its indexes, <code>parallel for i in 0..len(xs):</code>.</li><li><code>return</code> isn't allowed inside either one. Assign to a variable and return after the block.</li></ul>
+<p>There are no threads, locks, futures, or channels to manage. You write what can happen at the same time; the runtime decides where it runs.</p>
+<h2 id="how-it-runs-work-stealing"><a class="anchor" href="#how-it-runs-work-stealing" aria-hidden="true">#</a>How it runs: work stealing</h2>
+<p>The runtime starts one worker thread per core the first time a parallel block runs (set <code>TERN_THREADS=4</code> in the environment to use a different number). Each worker has its own queue of tasks:</p>
+<ul><li>Starting a block pushes its tasks onto the current worker's queue. The task records live on the stack, so starting a task doesn't allocate.</li><li>A worker takes its own newest task first (it is likely still in the cache). A worker with nothing to do <em>steals</em> the oldest task from another worker's queue, which tends to be the biggest piece of remaining work.</li><li>The thread waiting at the end of a block doesn't sleep: it runs queued tasks until its own block's tasks are done. So blocks can nest (a task can start its own <code>parallel:</code> block, and recursive functions can use <code>parallel:</code>) without running out of threads.</li><li><code>parallel for</code> doesn't make one task per iteration. It cuts the range into up to eight chunks per worker (at most 256), and each chunk runs its iterations in an ordinary loop. A loop of ten million cheap iterations is a few hundred tasks, not ten million.</li></ul>
+<p>Values make this simple. A task reads the variables it uses directly: nothing is copied to start it, even a large array, because nothing else can change that array while the block runs. The race checker below is what guarantees that.</p>
+<h2 id="what-the-race-checker-allows"><a class="anchor" href="#what-the-race-checker-allows" aria-hidden="true">#</a>What the race checker allows</h2>
+<p>The rule for <code>parallel:</code> is: <strong>a variable that one task writes can't be read or written by any other task in the same block.</strong> Reading a variable from any number of tasks is fine.</p>
+<p>The rule for <code>parallel for</code> is: <strong>iteration <code>i</code> may write only element <code>i</code> of an array</strong> (<code>out[i] = ...</code>, <code>out[i].field = ...</code>, <code>fill(&amp;out[i])</code>), and if it writes <code>out[i]</code>, it may read only <code>out[i]</code> from that array. Variables created inside the loop body belong to one iteration, so they are free to use.</p>
+<p>These are allowed:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Stats</span>:
+    total: <span class="t">int</span>
+    biggest: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">stats_of</span>(xs: [<span class="t">int</span>]) <span class="t">Stats</span>:
+    s <span class="o">=</span> <span class="t">Stats</span>(<span class="n">0</span>, <span class="n">0</span>)
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        s.total <span class="o">+</span><span class="o">=</span> x
+        s.biggest <span class="o">=</span> <span class="f">max</span>(s.biggest, x)
+    <span class="k">return</span> s
+
+<span class="k">fn</span> <span class="f">normalize</span>(row: <span class="k">mut</span> [<span class="t">float</span>]):
+    t <span class="o">=</span> <span class="n">0.0</span>
+    <span class="k">for</span> x <span class="k">in</span> row:
+        t <span class="o">+</span><span class="o">=</span> x
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(row):
+        row[i] <span class="o">=</span> row[i] <span class="o">/</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    data <span class="o">=</span> [<span class="n">4</span>, <span class="n">8</span>, <span class="n">15</span>, <span class="n">16</span>, <span class="n">23</span>, <span class="n">42</span>]
+    <span class="k">parallel</span>:                               <span class="c"># both tasks read `data`: fine</span>
+        s <span class="o">=</span> <span class="f">stats_of</span>(data)
+        doubled <span class="o">=</span> data.<span class="f">map</span>(<span class="k">fn</span>(x) x <span class="o">*</span> <span class="n">2</span>)
+    <span class="f">print</span>(s, doubled)
+
+    rows <span class="o">=</span> [[<span class="n">1.0</span>, <span class="n">3.0</span>], [<span class="n">2.0</span>, <span class="n">2.0</span>], [<span class="n">5.0</span>, <span class="n">15.0</span>]]
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(rows):
+        <span class="f">normalize</span>(<span class="o">&amp;</span>rows[i])                 <span class="c"># `&amp;rows[i]`: writes only element i</span>
+    <span class="f">print</span>(rows)
+
+    prices <span class="o">=</span> [<span class="n">10</span>, <span class="n">20</span>, <span class="n">30</span>]
+    with_tax <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="f">len</span>(prices)
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(prices):
+        tax <span class="o">=</span> prices[i] <span class="o">/</span> <span class="n">10</span>                <span class="c"># a local variable of this iteration</span>
+        with_tax[i] <span class="o">=</span> prices[i] <span class="o">+</span> tax       <span class="c"># reads any of `prices`, writes with_tax[i]</span>
+    <span class="f">print</span>(with_tax)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Stats{total: 108, biggest: 42} [8, 16, 30, 32, 46, 84]
+[[0.25, 0.75], [0.5, 0.5], [0.25, 0.75]]
+[11, 22, 33]</code></pre></div>
+<h2 id="what-it-refuses-and-why"><a class="anchor" href="#what-it-refuses-and-why" aria-hidden="true">#</a>What it refuses, and why</h2>
+<p>Each of these would be a data race: two threads touching the same memory at the same time, with at least one of them writing. In most languages that compiles and fails sometimes, at random, under load. Tern refuses it.</p>
+<p>Two tasks writing one variable:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    hits <span class="o">=</span> <span class="n">0</span>
+    <span class="k">parallel</span>:
+        hits <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        hits <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="f">print</span>(hits)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>5: error: data race on `hits`: the task on line 4 writes it while the task on line 5 writes it at the same time. Give each task its own variable and combine them after the block</code></pre></div>
+<p>One task writing what another reads. <code>bump(&amp;count)</code> counts as a write, since <code>&amp;</code> marks an argument the function may change:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">bump</span>(n: <span class="k">mut</span> <span class="t">int</span>):
+    n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    count <span class="o">=</span> <span class="n">0</span>
+    <span class="k">parallel</span>:
+        <span class="f">bump</span>(<span class="o">&amp;</span>count)
+        <span class="f">print</span>(count)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>8: error: data race on `count`: the task on line 7 writes it while the task on line 8 reads it at the same time. Give each task its own variable and combine them after the block</code></pre></div>
+<p>Every iteration writing one shared variable. This is the most common mistake, and the message says how to fix it:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">100</span>:
+        total <span class="o">+</span><span class="o">=</span> i
+    <span class="f">print</span>(total)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: iterations of `parallel for` run at the same time, so writing `total` from every iteration would race; store per-iteration results in an array indexed by `i`, or combine results after the loop</code></pre></div>
+<p>Writing any element other than <code>out[i]</code>, including pushing onto a shared array:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    evens <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">10</span>
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">5</span>:
+        evens[i <span class="o">*</span> <span class="n">2</span>] <span class="o">=</span> i
+    found: [<span class="t">int</span>] <span class="o">=</span> []
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">5</span>:
+        found.<span class="f">push</span>(i)
+    <span class="f">print</span>(evens, found)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: iterations of `parallel for` run at the same time, so writing `evens` from every iteration would race; write only `evens[i]`, or combine results after the loop
+7: error: iterations of `parallel for` run at the same time, so writing `found` from every iteration would race; write only `found[i]`, or combine results after the loop</code></pre></div>
+<p><code>i * 2</code> never collides with another iteration's index, but the checker doesn't do arithmetic: it accepts exactly the loop variable as the index. Compute into <code>out[i]</code> and rearrange afterwards, or loop over the indexes you want to write.</p>
+<p>Reading a neighbor while writing your own element:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>, <span class="n">4</span>, <span class="n">5</span>]
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">4</span>:
+        xs[i] <span class="o">=</span> xs[i <span class="o">+</span> <span class="n">1</span>] <span class="o">-</span> xs[i]
+    <span class="f">print</span>(xs)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: each iteration writes `xs[i]`, so reading any other part of `xs` inside the loop would race</code></pre></div>
+<p>Iteration 1 reads <code>xs[2]</code> while iteration 2 may be overwriting it, so the result would depend on timing. Read from one array and write another: <code>diffs[i] = xs[i + 1] - xs[i]</code>.</p>
+<p>Maps can't be written from <code>parallel for</code> at all, since two keys can land in the same internal table:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    squares: {<span class="t">int</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">10</span>:
+        squares[i] <span class="o">=</span> i <span class="o">*</span> i
+    <span class="f">print</span>(squares)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: `squares` is not an array</code></pre></div>
+<p>Fill an array in parallel, then build the map from it afterwards.</p>
+<h3 id="why-the-checker-can-be-this-simple"><a class="anchor" href="#why-the-checker-can-be-this-simple" aria-hidden="true">#</a>Why the checker can be this simple</h3>
+<p>The checker works because of how the rest of Tern is built. There are no references or pointers, so two variables never share memory: checking by <em>name</em> is checking by memory. Parameters are read-only unless declared <code>mut</code>, and a <code>mut</code> argument is marked with <code>&amp;</code> at the call site, so the checker sees every write a task can make by reading the task itself, without following calls into other functions. Closures capture copies, so a closure can't be a hidden way to write a variable either.</p>
+<p>The checker is conservative: it refuses some programs that would be fine, like <code>evens[i * 2]</code> above. It never accepts a program that races on a Tern value.</p>
+<p>What it does not check is the outside world. Two tasks can both print, append to the same file, or write to the same database; each of those operations is safe on its own, but their order is not defined. <code>print</code> lines from different tasks can appear in any order.</p>
+<h2 id="pattern-per-task-results-combined-after"><a class="anchor" href="#pattern-per-task-results-combined-after" aria-hidden="true">#</a>Pattern: per-task results, combined after</h2>
+<p>Give each task its own result variable, then combine them after the block. This is the fix the error messages suggest, and it is usually the fastest way too, since tasks never wait for each other.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Range</span>:
+    lo, hi: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">sum_squares</span>(r: <span class="t">Range</span>) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> r.lo<span class="o">..</span>r.hi:
+        t <span class="o">+</span><span class="o">=</span> i <span class="o">*</span> i
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">3_000_000</span>
+    third <span class="o">=</span> n <span class="o">/</span> <span class="n">3</span>
+    <span class="k">parallel</span>:
+        a <span class="o">=</span> <span class="f">sum_squares</span>(<span class="t">Range</span>(<span class="n">0</span>, third))
+        b <span class="o">=</span> <span class="f">sum_squares</span>(<span class="t">Range</span>(third, <span class="n">2</span> <span class="o">*</span> third))
+        c <span class="o">=</span> <span class="f">sum_squares</span>(<span class="t">Range</span>(<span class="n">2</span> <span class="o">*</span> third, n))
+    <span class="f">print</span>(a <span class="o">+</span> b <span class="o">+</span> c)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>8999995500000500000</code></pre></div>
+<h2 id="pattern-parallel-for-writing-outi"><a class="anchor" href="#pattern-parallel-for-writing-outi" aria-hidden="true">#</a>Pattern: parallel for writing out[i]</h2>
+<p>When every element can be computed on its own, allocate the output first and have iteration <code>i</code> fill <code>out[i]</code>. Then do anything that needs the whole array (a sum, a max, a sort) in an ordinary loop afterwards.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">collatz_steps</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+    steps <span class="o">=</span> <span class="n">0</span>
+    x <span class="o">=</span> n
+    <span class="k">while</span> x <span class="o">!=</span> <span class="n">1</span>:
+        <span class="k">if</span> x <span class="o">%</span> <span class="n">2</span> <span class="o">==</span> <span class="n">0</span>:
+            x <span class="o">=</span> x <span class="o">/</span> <span class="n">2</span>
+        <span class="k">else</span>:
+            x <span class="o">=</span> <span class="n">3</span> <span class="o">*</span> x <span class="o">+</span> <span class="n">1</span>
+        steps <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> steps
+
+<span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">100_000</span>
+    steps <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> n
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span>n:
+        steps[i] <span class="o">=</span> <span class="f">collatz_steps</span>(i <span class="o">+</span> <span class="n">1</span>)
+    best <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span>n:
+        <span class="k">if</span> steps[i] <span class="o">&gt;</span> steps[best]:
+            best <span class="o">=</span> i
+    <span class="f">print</span>(<span class="s">"longest chain below"</span>, n <span class="o">+</span> <span class="n">1</span>, <span class="s">"starts at"</span>, best <span class="o">+</span> <span class="n">1</span>, <span class="s">"with"</span>, steps[best], <span class="s">"steps"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>longest chain below 100001 starts at 77031 with 350 steps</code></pre></div>
+<h2 id="pattern-chunking"><a class="anchor" href="#pattern-chunking" aria-hidden="true">#</a>Pattern: chunking</h2>
+<p><code>parallel for</code> already chunks its range, so a loop over elements is fine as it is. Chunk by hand when each task needs its own running state: a partial sum, a map, a buffer. Loop over chunk numbers, and give each chunk one slot of the output.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    readings: [<span class="t">int</span>] <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">1_000_000</span>:
+        readings.<span class="f">push</span>((i <span class="o">*</span> <span class="n">7919</span>) <span class="o">%</span> <span class="n">1000</span>)
+    chunks <span class="o">=</span> <span class="n">16</span>
+    size <span class="o">=</span> (<span class="f">len</span>(readings) <span class="o">+</span> chunks <span class="o">-</span> <span class="n">1</span>) <span class="o">/</span> chunks
+    over <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> chunks                     <span class="c"># one partial count per chunk</span>
+    <span class="k">parallel</span> <span class="k">for</span> c <span class="k">in</span> <span class="n">0</span><span class="o">..</span>chunks:
+        lo <span class="o">=</span> c <span class="o">*</span> size
+        hi <span class="o">=</span> <span class="f">min</span>(lo <span class="o">+</span> size, <span class="f">len</span>(readings))
+        n <span class="o">=</span> <span class="n">0</span>
+        <span class="k">for</span> i <span class="k">in</span> lo<span class="o">..</span>hi:
+            <span class="k">if</span> readings[i] <span class="o">&gt;</span> <span class="n">990</span>:
+                n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        over[c] <span class="o">=</span> n
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> n <span class="k">in</span> over:
+        total <span class="o">+</span><span class="o">=</span> n
+    <span class="f">print</span>(total, <span class="s">"readings over 990"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>9000 readings over 990</code></pre></div>
+<p>A few times more chunks than cores (16 to 64 on a typical machine) gives the scheduler room to balance uneven chunks without adding much overhead.</p>
+<h2 id="pattern-parallel-map-reduce"><a class="anchor" href="#pattern-parallel-map-reduce" aria-hidden="true">#</a>Pattern: parallel map-reduce</h2>
+<p>Map each chunk to a partial result (here, a word-count map), then reduce the partial results into one. The partial results live in an array with one slot per chunk, so the map step passes the race checker; the reduce step is an ordinary loop.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">count_words</span>(lines: [<span class="t">str</span>], lo: <span class="t">int</span>, hi: <span class="t">int</span>) {<span class="t">str</span>: <span class="t">int</span>}:
+    counts: {<span class="t">str</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">for</span> i <span class="k">in</span> lo<span class="o">..</span>hi:
+        <span class="k">for</span> w <span class="k">in</span> lines[i].<span class="f">split</span>(<span class="s">" "</span>):
+            <span class="k">if</span> w <span class="o">!=</span> <span class="s">""</span>:
+                counts[w] <span class="o">=</span> counts.<span class="f">get</span>(w, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+    <span class="k">return</span> counts
+
+<span class="k">fn</span> <span class="f">main</span>():
+    lines: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">10_000</span>:
+        lines.<span class="f">push</span>(<span class="s">"the quick brown fox"</span>)
+        lines.<span class="f">push</span>(<span class="s">"jumps over the lazy dog"</span>)
+    chunks <span class="o">=</span> <span class="n">8</span>
+    size <span class="o">=</span> (<span class="f">len</span>(lines) <span class="o">+</span> chunks <span class="o">-</span> <span class="n">1</span>) <span class="o">/</span> chunks
+    partial: [{<span class="t">str</span>: <span class="t">int</span>}] <span class="o">=</span> [{}] <span class="o">*</span> chunks
+    <span class="k">parallel</span> <span class="k">for</span> c <span class="k">in</span> <span class="n">0</span><span class="o">..</span>chunks:            <span class="c"># map</span>
+        partial[c] <span class="o">=</span> <span class="f">count_words</span>(lines, c <span class="o">*</span> size, <span class="f">min</span>((c <span class="o">+</span> <span class="n">1</span>) <span class="o">*</span> size, <span class="f">len</span>(lines)))
+    total: {<span class="t">str</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">for</span> p <span class="k">in</span> partial:                       <span class="c"># reduce</span>
+        <span class="k">for</span> w, n <span class="k">in</span> p:
+            total[w] <span class="o">=</span> total.<span class="f">get</span>(w, <span class="n">0</span>) <span class="o">+</span> n
+    <span class="f">print</span>(total)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"the": 20000, "quick": 10000, "brown": 10000, "fox": 10000, "jumps": 10000, "over": 10000, "lazy": 10000, "dog": 10000}</code></pre></div>
+<h2 id="pattern-recursive-divide-and-conquer"><a class="anchor" href="#pattern-recursive-divide-and-conquer" aria-hidden="true">#</a>Pattern: recursive divide and conquer</h2>
+<p>A recursive function can split its work with <code>parallel:</code> at each level. Below a cutoff size it runs sequentially, so the program doesn't create millions of tiny tasks.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sum_range</span>(xs: [<span class="t">int</span>], lo: <span class="t">int</span>, hi: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">if</span> hi <span class="o">-</span> lo <span class="o">&lt;=</span> <span class="n">10_000</span>:                   <span class="c"># small enough: just loop</span>
+        t <span class="o">=</span> <span class="n">0</span>
+        <span class="k">for</span> i <span class="k">in</span> lo<span class="o">..</span>hi:
+            t <span class="o">+</span><span class="o">=</span> xs[i]
+        <span class="k">return</span> t
+    mid <span class="o">=</span> (lo <span class="o">+</span> hi) <span class="o">/</span> <span class="n">2</span>
+    <span class="k">parallel</span>:
+        left <span class="o">=</span> <span class="f">sum_range</span>(xs, lo, mid)
+        right <span class="o">=</span> <span class="f">sum_range</span>(xs, mid, hi)
+    <span class="k">return</span> left <span class="o">+</span> right
+
+<span class="k">fn</span> <span class="f">main</span>():
+    xs: [<span class="t">int</span>] <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">1_000_000</span>:
+        xs.<span class="f">push</span>(i)
+    <span class="f">print</span>(<span class="f">sum_range</span>(xs, <span class="n">0</span>, <span class="f">len</span>(xs)))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>499999500000</code></pre></div>
+<h2 id="performance-when-it-pays-off"><a class="anchor" href="#performance-when-it-pays-off" aria-hidden="true">#</a>Performance: when it pays off</h2>
+<p>Parallelism has a fixed cost per block: tasks must be queued, idle workers woken, and everyone joined at the end. On a 14-core laptop that cost is a few microseconds for a small <code>parallel:</code> block and can reach a few hundred microseconds for a <code>parallel for</code> when many sleeping workers have to be woken. Some measurements from that machine:</p>
+<div class="table"><table><thead><tr><th>Work</th><th>Sequential</th><th><code>parallel for</code></th></tr></thead><tbody><tr><td>2,000,000 Collatz chains (about 100ns each)</td><td>220ms</td><td>23ms</td></tr><tr><td>10,000,000 × <code>out[i] = i * 2</code></td><td>6ms</td><td>2ms</td></tr><tr><td>a <code>parallel for</code> over 64 elements, repeated 100,000 times</td><td>1ms</td><td>over 9s</td></tr></tbody></table></div>
+<p>The rules of thumb that follow:</p>
+<ul><li><strong>Give each block real work.</strong> Aim for at least a millisecond of total work per <code>parallel</code> block, and ideally much more. Put the parallel loop <em>outside</em> your hot loop, never inside it: one <code>parallel for</code> over a million items beats a million small blocks.</li><li><strong>Cheap per-element work is limited by memory, not cores.</strong> Copying or adding arrays speeds up only a little, because every core waits on the same memory.</li><li><strong>Uneven work is fine.</strong> If some iterations take much longer than others, idle workers steal the remaining chunks. For very uneven work, make more chunks by hand.</li><li><strong>Don't parallelize what is already parallel.</strong> A web server already handles requests on every core; under load, a <code>parallel</code> block inside a handler only adds overhead. It still helps a single slow request when the server is idle.</li><li><strong>Measure.</strong> <code>time.now_ms()</code> before and after, with <code>TERN_THREADS=1</code> for a sequential baseline of the very same binary:</li></ul>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern build crunch.tn -o crunch
+TERN_THREADS=1 ./crunch<span class="c">     # everything on one core</span>
+<span class="k">./crunch</span><span class="c">                    # all cores</span></code></pre></div>
+<h2 id="on-webassembly"><a class="anchor" href="#on-webassembly" aria-hidden="true">#</a>On WebAssembly</h2>
+<p>The <code>wasm</code> target has one thread, so <code>parallel:</code> and <code>parallel for</code> run their tasks one after another, in order, on that thread. The program means the same thing, since the race checker guarantees that tasks can't observe each other; it just doesn't run faster. The race checks still apply, so code that compiles for wasm also compiles, and is race-free, natively.</p>
+<p>You can see the sequential behavior on a native build with <code>TERN_THREADS=1</code>.</p>
+<h2 id="runtime-errors-inside-tasks"><a class="anchor" href="#runtime-errors-inside-tasks" aria-hidden="true">#</a>Runtime errors inside tasks</h2>
+<p>A runtime error inside a task (an index out of range, a missing map key, division by zero) behaves like one anywhere else:</p>
+<ul><li><strong>In a program</strong>, it prints <code>runtime error in f (prog.tn:N): ...</code> and ends the program with exit status 2. The block never completes, and no code after it runs.</li><li><strong>In a web request</strong>, the block first waits for all of its tasks to finish, then the error is raised in the request, which answers <code>500</code> while the server keeps running. See <a href="web-apps.html">Building web apps</a>.</li></ul>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    out <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">1000</span>
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">1000</span>:
+        out[i] <span class="o">=</span> <span class="n">100</span> <span class="o">/</span> (<span class="n">500</span> <span class="o">-</span> i)            <span class="c"># iteration 500 divides by zero</span>
+    <span class="f">print</span>(<span class="s">"never printed"</span>, out[<span class="n">0</span>])</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$ tern run divide.tn
+runtime error in main (divide.tn:4): division by zero
+$ echo $?
+2</code></pre></div>
+<p>There is no way to catch the error inside the task. When a task can fail in an expected way (bad input, say), return a status in its result instead, and check it after the block:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Parsed</span>:
+    ok: <span class="t">bool</span>
+    value: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">parse_all</span>(lines: [<span class="t">str</span>]) [<span class="t">Parsed</span>]:
+    out <span class="o">=</span> [<span class="t">Parsed</span>(<span class="k">false</span>, <span class="n">0</span>)] <span class="o">*</span> <span class="f">len</span>(lines)
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(lines):
+        n <span class="o">=</span> lines[i].<span class="f">trim</span>().<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+        <span class="k">if</span> n <span class="o">&gt;=</span> <span class="n">0</span>:
+            out[i] <span class="o">=</span> <span class="t">Parsed</span>(<span class="k">true</span>, n)
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">main</span>():
+    results <span class="o">=</span> <span class="f">parse_all</span>([<span class="s">"12"</span>, <span class="s">"7"</span>, <span class="s">"oops"</span>, <span class="s">"30"</span>])
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i, r <span class="k">in</span> results:
+        <span class="k">if</span> r.ok:
+            total <span class="o">+</span><span class="o">=</span> r.value
+        <span class="k">else</span>:
+            <span class="f">print</span>(<span class="s">"line"</span>, i <span class="o">+</span> <span class="n">1</span>, <span class="s">"is not a number"</span>)
+    <span class="f">print</span>(<span class="s">"total"</span>, total)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>line 3 is not a number
+total 49</code></pre></div>
+<h2 id="long-running-tasks"><a class="anchor" href="#long-running-tasks" aria-hidden="true">#</a>Long-running tasks</h2>
+<p><code>parallel</code> is for work that starts and finishes together. For tasks that outlive a block, channels between tasks, or shared state behind a lock, there is the <code>task</code> module, which is documented separately.</p>
+</article>
+<div class="pn"><a class="prev" href="../guides/openapi-clients.html"><span>Previous</span>Clients for other APIs (OpenAPI)</a><a class="next" href="../guides/memory.html"><span>Next</span>How memory works</a></div>
+<footer>Source: <code>docs/guides/parallelism.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#the-model-fork-join">The model: fork-join</a></li><li class="l2"><a href="#how-it-runs-work-stealing">How it runs: work stealing</a></li><li class="l2"><a href="#what-the-race-checker-allows">What the race checker allows</a></li><li class="l2"><a href="#what-it-refuses-and-why">What it refuses, and why</a></li><li class="l3"><a href="#why-the-checker-can-be-this-simple">Why the checker can be this simple</a></li><li class="l2"><a href="#pattern-per-task-results-combined-after">Pattern: per-task results, combined after</a></li><li class="l2"><a href="#pattern-parallel-for-writing-outi">Pattern: parallel for writing out[i]</a></li><li class="l2"><a href="#pattern-chunking">Pattern: chunking</a></li><li class="l2"><a href="#pattern-parallel-map-reduce">Pattern: parallel map-reduce</a></li><li class="l2"><a href="#pattern-recursive-divide-and-conquer">Pattern: recursive divide and conquer</a></li><li class="l2"><a href="#performance-when-it-pays-off">Performance: when it pays off</a></li><li class="l2"><a href="#on-webassembly">On WebAssembly</a></li><li class="l2"><a href="#runtime-errors-inside-tasks">Runtime errors inside tasks</a></li><li class="l2"><a href="#long-running-tasks">Long-running tasks</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

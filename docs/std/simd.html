@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>simd · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/simd.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html" class="cur" aria-current="page">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="simd"><a class="anchor" href="#simd" aria-hidden="true">#</a>simd</h1>
+<p>The <code>simd</code> module works on 16 bytes at once. A <code>bytes16</code> is a value like an <code>int</code> (no allocation), and each operation is one instruction on ARM (NEON), x86 (SSE2/SSSE3) and wasm (SIMD128), or a short loop where there's none: for scanning text, parsing, byte tables and checksums. <code>std re</code> finds where a match may start with it.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> simd
+
+<span class="c"># the first digit in s, 16 bytes a step</span>
+<span class="k">fn</span> <span class="f">first_digit</span>(s: <span class="t">str</span>) <span class="t">int</span>:
+    zero <span class="o">=</span> simd.<span class="f">splat</span>(<span class="n">48</span>)
+    nine <span class="o">=</span> simd.<span class="f">splat</span>(<span class="n">9</span>)
+    i <span class="o">=</span> <span class="n">0</span>
+    <span class="k">while</span> i <span class="o">+</span> <span class="n">16</span> <span class="o">&lt;=</span> <span class="f">len</span>(s):
+        k <span class="o">=</span> simd.<span class="f">first_lane</span>(simd.<span class="f">le</span>(simd.<span class="f">load</span>(s, i) <span class="o">-</span> zero, nine))   <span class="c"># '0'..'9' -&gt; 0..9</span>
+        <span class="k">if</span> k <span class="o">&lt;</span> <span class="n">16</span>:
+            <span class="k">return</span> i <span class="o">+</span> k
+        i <span class="o">+</span><span class="o">=</span> <span class="n">16</span>
+    <span class="k">while</span> i <span class="o">&lt;</span> <span class="f">len</span>(s):                      <span class="c"># the last few bytes one at a time</span>
+        <span class="k">if</span> s.<span class="f">byte</span>(i) <span class="o">&gt;=</span> <span class="n">48</span> <span class="k">and</span> s.<span class="f">byte</span>(i) <span class="o">&lt;=</span> <span class="n">57</span>:
+            <span class="k">return</span> i
+        i <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">first_digit</span>(<span class="s">"order number: 4711, shipped"</span>), <span class="f">first_digit</span>(<span class="s">"none here"</span>))
+    v <span class="o">=</span> simd.<span class="f">load</span>(<span class="s">"Hello, bytes16!!"</span>, <span class="n">0</span>)
+    <span class="f">print</span>(simd.<span class="f">bits</span>(simd.<span class="f">eq</span>(v, simd.<span class="f">splat</span>(<span class="n">108</span>))))           <span class="c"># lanes holding 'l'</span>
+    hex <span class="o">=</span> simd.<span class="f">of</span>(<span class="s">"0123456789abcdef"</span>)                        <span class="c"># a 16-entry table</span>
+    <span class="f">print</span>(simd.<span class="f">to_str</span>(simd.<span class="f">lookup</span>(hex, simd.<span class="f">load</span>(<span class="s">"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"</span>, <span class="n">0</span>))))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>14 -1
+12
+0123456789abcdef</code></pre></div>
+<h2 id="functions-and-operators"><a class="anchor" href="#functions-and-operators" aria-hidden="true">#</a>Functions and operators</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>simd.load(s: str, i: int) bytes16      s[i..i+16] (a runtime error past the end)
+simd.of(t: str) bytes16                a 16-byte string as a bytes16 (a table for lookup)
+simd.splat(b: int) bytes16             every lane b (0 to 255)
+simd.to_str(v: bytes16) str            the 16 bytes as a string
+a &amp; b, a | b, a ^ b, ~a                lane by lane
+a + b, a - b                           lane by lane, wrapping (250 + 10 is 4)
+a &lt;&lt; n, a &gt;&gt; n                         every lane shifted by n (0 to 7), zeros shifted in
+a == b, a != b                         all 16 lanes equal (a bool)
+simd.eq(a, b) bytes16                  255 in the lanes where a == b, else 0
+simd.lt(a, b), simd.le(a, b)           ... where a &lt; b / a &lt;= b (as bytes: 0 to 255)
+simd.min(a, b), simd.max(a, b)         lane by lane
+simd.lookup(t, i) bytes16              lane k is t's lane i[k] (0 if i[k] &gt;= 16)
+simd.bits(v) int                       bit k set when lane k isn't 0 (16 bits)
+simd.first_lane(v) int                 the first lane that isn't 0 (16 if none)
+simd.any(v) bool                       a lane isn't 0
+simd.lane(v, k) int                    lane k (0 to 15)
+simd.popcount(v) bytes16               lane k is the number of bits set in lane k (0 to 8)
+simd.sum(v) int                        the 16 lanes added up
+simd.first(m) int                      the lowest set bit of m (64 if none)</code></pre></div>
+<p><code>simd.lookup</code> is the building block of byte-classification tricks: split each byte into its low and high nibble (<code>v &amp; simd.splat(15)</code>, <code>v &gt;&gt; 4</code>), look each up in a table of 16, and AND the two; that is how <code>re</code> checks three bytes of a few literal strings at 16 positions in a handful of instructions (Teddy). A <code>bytes16</code> can be a struct field or an array element and compares with <code>==</code>; it can't be a map key or go to JSON.</p>
+<h2 id="four-f32s-at-once-f32x4"><a class="anchor" href="#four-f32s-at-once-f32x4" aria-hidden="true">#</a>Four f32s at once: f32x4</h2>
+<p>An <code>f32x4</code> holds four <code>f32</code>s (§ 32-bit floats in the reference) and works on them in one instruction: dot products, distances and sums over <code>[f32]</code> vectors. Like a <code>bytes16</code> it is a value (no allocation); <code>+ - * /</code> work lane by lane, with another <code>f32x4</code> or with an <code>f32</code> (which goes to every lane).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> simd
+
+<span class="c"># a dot product, 8 lanes a step (two sums, so each add needn't wait for the one before)</span>
+<span class="k">fn</span> <span class="f">dot</span>(a: [f32], b: [f32]) f32:
+    s0 <span class="o">=</span> simd.<span class="f">splat_f32</span>(<span class="n">0.0</span>)
+    s1 <span class="o">=</span> simd.<span class="f">splat_f32</span>(<span class="n">0.0</span>)
+    i <span class="o">=</span> <span class="n">0</span>
+    <span class="k">while</span> i <span class="o">+</span> <span class="n">8</span> <span class="o">&lt;=</span> <span class="f">len</span>(a):
+        s0 <span class="o">=</span> simd.<span class="f">fma</span>(simd.<span class="f">load_f32</span>(a, i), simd.<span class="f">load_f32</span>(b, i), s0)
+        s1 <span class="o">=</span> simd.<span class="f">fma</span>(simd.<span class="f">load_f32</span>(a, i <span class="o">+</span> <span class="n">4</span>), simd.<span class="f">load_f32</span>(b, i <span class="o">+</span> <span class="n">4</span>), s1)
+        i <span class="o">+</span><span class="o">=</span> <span class="n">8</span>
+    s <span class="o">=</span> simd.<span class="f">sum_f32</span>(s0 <span class="o">+</span> s1)
+    <span class="k">while</span> i <span class="o">&lt;</span> <span class="f">len</span>(a):                      <span class="c"># the last few one at a time</span>
+        s <span class="o">+</span><span class="o">=</span> a[i] <span class="o">*</span> b[i]
+        i <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> s
+
+<span class="k">fn</span> <span class="f">main</span>():
+    a: [f32] <span class="o">=</span> []
+    b: [f32] <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">10</span>:
+        a.<span class="f">push</span>(<span class="f">f32</span>(i))
+        b.<span class="f">push</span>(<span class="n">0.5</span>)
+    <span class="f">print</span>(<span class="f">dot</span>(a, b))
+    v <span class="o">=</span> simd.<span class="f">f32x4</span>(<span class="n">1.0</span>, <span class="n">4.0</span>, <span class="n">9.0</span>, <span class="n">16.0</span>)
+    <span class="f">print</span>(simd.<span class="f">sqrt_f32</span>(v) <span class="o">*</span> <span class="n">2.0</span>, simd.<span class="f">lane_f32</span>(v, <span class="n">3</span>), simd.<span class="f">max_f32</span>(v, simd.<span class="f">splat_f32</span>(<span class="n">5.0</span>)))
+    simd.<span class="f">store_f32</span>(<span class="o">&amp;</span>a, <span class="n">0</span>, v)
+    <span class="f">print</span>(a[<span class="o">..</span><span class="n">5</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>22.5
+f32x4[2.0, 4.0, 6.0, 8.0] 16.0 f32x4[5.0, 5.0, 9.0, 16.0]
+[1.0, 4.0, 9.0, 16.0, 4.0]</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>simd.load_f32(xs: [f32], i: int) f32x4     xs[i..i+4] (a runtime error past the end)
+simd.store_f32(xs: mut [f32], i, v)        xs[i..i+4] = v's lanes
+simd.splat_f32(x: f32) f32x4               every lane x
+simd.f32x4(a, b, c, d: f32) f32x4          these four
+a + b, a - b, a * b, a / b, -a             lane by lane (b may be an f32)
+a == b, a != b                             all four lanes equal (a bool)
+simd.fma(a, b, c) f32x4                    a * b + c, rounded once (one instruction on arm64 and x86 with FMA)
+simd.sum_f32(v) f32                        the four lanes added up
+simd.min_f32(a, b), simd.max_f32(a, b)     lane by lane
+simd.abs_f32(v), simd.sqrt_f32(v)          lane by lane
+simd.lane_f32(v, k) f32                    lane k (0 to 3)</code></pre></div>
+<p>The lanes are added in a different order than a loop over the elements would, so a sum can differ from one in the last bits.</p>
+<p>Loads in a loop shaped like the dot product's (<code>while i + k &lt;= n:</code> or <code>while i &lt; n:</code>, ending in <code>i += step</code>, and loading <code>xs[base + i + c]</code> where the loop never changes <code>i</code> otherwise, nor <code>n</code>, <code>xs</code>, or <code>base</code>) cost no bounds check: before the loop one test shows every index it can reach is in range, and then it runs without them. (If the test fails it runs with them, so an out-of-range load stops the program on the same line as always.) <code>simd.load</code> on a string works the same way. A tiled matrix multiply written like this runs at the speed of C's. An <code>f32x4</code> can be a struct field or an array element and compares with <code>==</code>; it can't be a map key or go to JSON.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/re.html"><span>Previous</span>re</a><a class="next" href="../std/http.html"><span>Next</span>http</a></div>
+<footer>Source: <code>docs/std/simd.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

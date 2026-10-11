@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sqlite · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/packages/sqlite.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html" class="cur" aria-current="page">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="sqlite"><a class="anchor" href="#sqlite" aria-hidden="true">#</a>sqlite</h1>
+<p>The <code>sqlite</code> package uses SQLite, the embedded SQL database, through the system's SQLite library. You open a database file, run statements with <code>exec</code>, and read rows either as maps of strings with <code>query</code> or straight into your own structs with <code>query_into</code>. This page covers the four functions, how parameters are bound, what happens on errors, and how connections work across threads and web requests.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">struct</span> <span class="t">Todo</span>:
+    id: <span class="t">int</span>
+    title: <span class="t">str</span>
+    done: <span class="t">bool</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE todos (id INTEGER PRIMARY KEY, title TEXT, done INTEGER)"</span>, [])
+    id <span class="o">=</span> d.<span class="f">exec</span>(<span class="s">"INSERT INTO todos (title, done) VALUES (?, ?)"</span>, [<span class="s">"write docs"</span>, <span class="s">"0"</span>])
+    todos: [<span class="t">Todo</span>] <span class="o">=</span> []
+    d.<span class="f">query_into</span>(<span class="s">"SELECT id, title, done FROM todos"</span>, [], <span class="o">&amp;</span>todos)
+    <span class="f">print</span>(id, todos)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1 [Todo{id: 1, title: "write docs", done: false}]</code></pre></div>
+<p>SQLite is linked only into programs that <code>import sqlite</code>. It is available on macOS, Linux, and iOS, but not on Android (the NDK doesn't ship it) or WebAssembly; importing <code>sqlite</code> there is a compile error.</p>
+<h2 id="the-db-type"><a class="anchor" href="#the-db-type" aria-hidden="true">#</a>The Db type</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Db</span>:
+    handle: <span class="t">int</span></code></pre></div>
+<p>A <code>sqlite.Db</code> names an open database. It is a small handle, so copying it is free and every copy refers to the same database. That is also why a read-only parameter <code>d: sqlite.Db</code> can still run <code>INSERT</code>s: the database lives outside the program's values, and "read-only" is about Tern values only.</p>
+<p>All four functions can be called with method syntax: <code>d.exec(...)</code> is <code>sqlite.exec(d, ...)</code>.</p>
+<h2 id="open"><a class="anchor" href="#open" aria-hidden="true">#</a>open</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">open</span>(path: <span class="t">str</span>) <span class="t">Db</span></code></pre></div>
+<p>Opens the SQLite database file at <code>path</code>, creating it if it doesn't exist. If it can't be opened (for example, the directory doesn't exist), the program stops with a runtime error.</p>
+<ul><li>File databases are switched to SQLite's WAL mode, which lets readers and a writer work at the same time. SQLite then keeps two helper files next to the database, <code>name-wal</code> and <code>name-shm</code>; leave them alone.</li><li><code>":memory:"</code> opens a temporary in-memory database. <strong>Each thread gets its own, separate in-memory database</strong> (see <a href="#threads-and-connections">Threads</a> below), so use a file whenever <code>parallel</code> code or a web server needs to see the same data.</li><li>Connections wait up to 5 seconds for a lock held by another connection before failing with "database is locked".</li><li>A program can call <code>open</code> at most 64 times. Open each database once, at start-up, and pass the <code>Db</code> around.</li></ul>
+<h2 id="exec"><a class="anchor" href="#exec" aria-hidden="true">#</a>exec</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">exec</span>(d: <span class="t">Db</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) <span class="t">int</span></code></pre></div>
+<p>Runs one SQL statement (<code>CREATE</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>BEGIN</code>, ...) and returns the row id of the most recent successful <code>INSERT</code> on this connection. After an <code>INSERT</code> into a table with an <code>INTEGER PRIMARY KEY</code>, that is the new row's id. For other statements the value is left over from an earlier insert (or <code>0</code>), so ignore it.</p>
+<p><code>sql</code> may hold several statements separated by <code>;</code> (a schema, say), and they run in order. With <code>?</code> parameters, write one statement per call: SQLite would bind the parameters to the first statement only, so that is a runtime error. (<code>query</code> and <code>query_into</code> take exactly one statement.)</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT); CREATE INDEX users_name ON users (name);"</span>, [])
+    d.<span class="f">exec</span>(<span class="s">"INSERT INTO users (name) VALUES (?)"</span>, [<span class="s">"ada"</span>])
+    <span class="f">print</span>(d.<span class="f">query</span>(<span class="s">"SELECT name FROM sqlite_master WHERE type = 'index'"</span>, []), d.<span class="f">query</span>(<span class="s">"SELECT name FROM users"</span>, []))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[{"name": "users_name"}] [{"name": "ada"}]</code></pre></div>
+<p>To find out how many rows an <code>UPDATE</code> or <code>DELETE</code> changed, follow it with <code>d.query("SELECT changes() AS n", [])</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT UNIQUE, visits INTEGER DEFAULT 0)"</span>, [])
+    a <span class="o">=</span> d.<span class="f">exec</span>(<span class="s">"INSERT INTO users (email) VALUES (?)"</span>, [<span class="s">"ada@example.com"</span>])
+    b <span class="o">=</span> d.<span class="f">exec</span>(<span class="s">"INSERT INTO users (email) VALUES (?)"</span>, [<span class="s">"bob@example.com"</span>])
+    d.<span class="f">exec</span>(<span class="s">"UPDATE users SET visits = visits + 1 WHERE id = ?"</span>, [<span class="t">str</span>(b)])
+    changed <span class="o">=</span> d.<span class="f">query</span>(<span class="s">"SELECT changes() AS n"</span>, [])[<span class="n">0</span>][<span class="s">"n"</span>]
+    <span class="f">print</span>(a, b, changed)
+    d.<span class="f">exec</span>(<span class="s">"BEGIN"</span>, [])
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">3</span>:
+        d.<span class="f">exec</span>(<span class="s">"INSERT INTO users (email) VALUES (?)"</span>, [<span class="s">f"user{i}@example.com"</span>])
+    d.<span class="f">exec</span>(<span class="s">"COMMIT"</span>, [])
+    <span class="f">print</span>(d.<span class="f">query</span>(<span class="s">"SELECT count(*) AS n FROM users"</span>, []))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1 2 1
+[{"n": "5"}]</code></pre></div>
+<p>Wrapping many inserts in <code>BEGIN</code> / <code>COMMIT</code> makes them much faster, since SQLite then writes to disk once instead of once per statement.</p>
+<h2 id="query"><a class="anchor" href="#query" aria-hidden="true">#</a>query</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">query</span>(d: <span class="t">Db</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) [{<span class="t">str</span>: <span class="t">str</span>}]</code></pre></div>
+<p>Runs a <code>SELECT</code> (or any statement that returns rows) and returns every row as a map from column name to value, as text. Numbers come back as their text (<code>"42"</code>, <code>"9.5"</code>), and <code>NULL</code> comes back as <code>""</code>. Each map keeps the columns in the order of the <code>SELECT</code>. Use <code>AS</code> to name computed columns; if two columns have the same name, the last one wins.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE items (name TEXT, price REAL, note TEXT)"</span>, [])
+    d.<span class="f">exec</span>(<span class="s">"INSERT INTO items VALUES (?, ?, NULL)"</span>, [<span class="s">"tea"</span>, <span class="s">"3.5"</span>])
+    d.<span class="f">exec</span>(<span class="s">"INSERT INTO items VALUES (?, ?, ?)"</span>, [<span class="s">"cake"</span>, <span class="s">"4"</span>, <span class="s">"fresh"</span>])
+    rows <span class="o">=</span> d.<span class="f">query</span>(<span class="s">"SELECT name, price, note FROM items ORDER BY name"</span>, [])
+    <span class="f">print</span>(rows)
+    <span class="k">for</span> r <span class="k">in</span> rows:
+        <span class="f">print</span>(r[<span class="s">"name"</span>], r[<span class="s">"price"</span>].<span class="f">to_float</span>(<span class="n">0.0</span>) <span class="o">*</span> <span class="n">2.0</span>, <span class="s">"["</span> <span class="o">+</span> r[<span class="s">"note"</span>] <span class="o">+</span> <span class="s">"]"</span>)
+    stats <span class="o">=</span> d.<span class="f">query</span>(<span class="s">"SELECT count(*) AS n, sum(price) AS total FROM items"</span>, [])[<span class="n">0</span>]
+    <span class="f">print</span>(stats[<span class="s">"n"</span>].<span class="f">to_int</span>(<span class="n">0</span>), stats[<span class="s">"total"</span>])
+    <span class="f">print</span>(<span class="f">len</span>(d.<span class="f">query</span>(<span class="s">"SELECT * FROM items WHERE name = ?"</span>, [<span class="s">"coffee"</span>])))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[{"name": "cake", "price": "4.0", "note": "fresh"}, {"name": "tea", "price": "3.5", "note": ""}]
+cake 8.0 [fresh]
+tea 7.0 []
+2 7.5
+0</code></pre></div>
+<p><code>query</code> is the quick way to look at data. For real code, <code>query_into</code> is faster (no maps, no string conversion) and gives you typed values.</p>
+<h2 id="query_into"><a class="anchor" href="#query_into" aria-hidden="true">#</a>query_into</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">query_into</span>(d: <span class="t">Db</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>], out: <span class="k">mut</span> <span class="t">T</span>) <span class="t">int</span></code></pre></div>
+<p>Runs a query and reads the rows straight into structs. <code>out</code> is a struct, or an array of structs, whose fields are all <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, or an enum without payloads, or an <code>Option</code> of one; pass it with <code>&amp;</code>. An enum field reads a text column by variant name, loosely (<code>in_progress</code> fills <code>InProgress</code>); text naming no variant is a runtime error. Columns are matched to fields <strong>by name</strong> (use <code>AS</code> to rename), columns with no matching field are ignored, and a field with no matching column is left alone. <code>NULL</code> reads as <code>0</code>, <code>0.0</code>, <code>false</code>, or <code>""</code>, and as <code>None</code> in an <code>Option</code> field. Returns the number of rows the query produced.</p>
+<ul><li><strong>Into an array</strong> (<code>&amp;todos</code>): the array is replaced by one element per row. Fields with no matching column are zero (<code>0</code>, <code>""</code>, ...).</li><li><strong>Into a single struct</strong> (<code>&amp;todo</code>): the first row fills the matching fields and the other fields keep their values. With no rows, the struct is unchanged, so <code>d.query_into(sql, params, &amp;one) &gt; 0</code> means "found".</li></ul>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">struct</span> <span class="t">Book</span>:
+    id: <span class="t">int</span>
+    title: <span class="t">str</span>
+    price: <span class="t">float</span>
+    in_stock: <span class="t">bool</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE books (id INTEGER PRIMARY KEY, title TEXT, price REAL, stock INTEGER)"</span>, [])
+    d.<span class="f">exec</span>(<span class="s">"INSERT INTO books (title, price, stock) VALUES (?, ?, ?)"</span>, [<span class="s">"Dune"</span>, <span class="s">"9.99"</span>, <span class="s">"3"</span>])
+    d.<span class="f">exec</span>(<span class="s">"INSERT INTO books (title, price, stock) VALUES (?, ?, ?)"</span>, [<span class="s">"Emma"</span>, <span class="s">"4.5"</span>, <span class="s">"0"</span>])
+    books: [<span class="t">Book</span>] <span class="o">=</span> []
+    n <span class="o">=</span> d.<span class="f">query_into</span>(<span class="s">"SELECT id, title, price, stock &gt; 0 AS in_stock FROM books"</span>, [], <span class="o">&amp;</span>books)
+    <span class="f">print</span>(n, books[<span class="n">0</span>])
+    b <span class="o">=</span> <span class="t">Book</span>(<span class="n">0</span>, <span class="s">"(none)"</span>, <span class="n">0.0</span>, <span class="k">false</span>)
+    <span class="k">if</span> d.<span class="f">query_into</span>(<span class="s">"SELECT id, title FROM books WHERE title = ?"</span>, [<span class="s">"Emma"</span>], <span class="o">&amp;</span>b) <span class="o">&gt;</span> <span class="n">0</span>:
+        <span class="f">print</span>(<span class="s">"found"</span>, b)
+    missing <span class="o">=</span> <span class="t">Book</span>(<span class="n">0</span>, <span class="s">"(none)"</span>, <span class="n">0.0</span>, <span class="k">false</span>)
+    <span class="f">print</span>(d.<span class="f">query_into</span>(<span class="s">"SELECT * FROM books WHERE id = ?"</span>, [<span class="s">"99"</span>], <span class="o">&amp;</span>missing), missing.title)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2 Book{id: 1, title: "Dune", price: 9.99, in_stock: true}
+found Book{id: 2, title: "Emma", price: 0.0, in_stock: false}
+0 (none)</code></pre></div>
+<p>Fields of other types (arrays, maps, nested structs, enums) are a compile error; store such data in its own table, or as JSON text in a <code>str</code> column (see <a href="../std/json.html">json</a>):</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">struct</span> <span class="t">Post</span>:
+    id: <span class="t">int</span>
+    tags: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    posts: [<span class="t">Post</span>] <span class="o">=</span> []
+    d.<span class="f">query_into</span>(<span class="s">"SELECT id FROM posts"</span>, [], <span class="o">&amp;</span>posts)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>10: error: query_into fills a struct (or array of structs) whose fields are int, float, bool, str, or an enum without payloads (or an Option of one); not [Post]</code></pre></div>
+<h2 id="parameters"><a class="anchor" href="#parameters" aria-hidden="true">#</a>Parameters</h2>
+<p>Every function takes the statement's parameters as a <code>[str]</code>, one string per <code>?</code> in the SQL, in order. Parameters are always bound by SQLite, never pasted into the SQL text, so user input can't change the statement (no SQL injection). Build the SQL from constant text only, and pass every value as a parameter.</p>
+<ul><li>Convert other values with <code>str(...)</code>: <code>[str(id), str(price)]</code>, and <code>"1"</code> / <code>"0"</code> for booleans.</li><li>A string that is a plain whole number (<code>"42"</code>, <code>"-7"</code>; not <code>"007"</code> or <code>"4.0"</code>) is bound as an integer, other strings as text. SQLite then converts by the column's type: <code>"9.99"</code> stored in a <code>REAL</code> column is a number, and <code>"42"</code> stored in a <code>TEXT</code> column is text. Because of this, <code>"007"</code> in a <code>TEXT</code> column keeps its leading zeros.</li><li><code>sqlite.NULL</code> passes <code>NULL</code>: <code>d.exec("INSERT INTO t VALUES (?, ?)", ["x", sqlite.NULL])</code>. (It is the one-byte string <code>"\x00"</code>, so that exact string can't be passed as text.)</li><li>Missing parameters are <code>NULL</code>; extra ones are ignored.</li></ul>
+<h2 id="errors"><a class="anchor" href="#errors" aria-hidden="true">#</a>Errors</h2>
+<p>A statement that SQLite rejects (a syntax error, a missing table, a violated <code>UNIQUE</code> or <code>NOT NULL</code> constraint, a locked database) is a runtime error: the program prints <code>runtime error: sqlite: &lt;SQLite's message&gt;</code> to standard error and exits with status 2.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>runtime error: sqlite: UNIQUE constraint failed: users.email</code></pre></div>
+<p>Inside a web request, the same error ends only that request, which gets a <code>500 internal server error</code> response while the server keeps running (see <a href="../std/http.html#errors-in-handlers">http</a>). So in a server, a constraint failure can't take the site down, but it can't be caught and answered with a nicer message either. When you expect a conflict, check first (<code>SELECT ... WHERE email = ?</code>), or use SQL that can't fail, such as <code>INSERT OR IGNORE</code>, <code>INSERT ... ON CONFLICT DO UPDATE</code>, or <code>CREATE TABLE IF NOT EXISTS</code>.</p>
+<p><code>run_script</code> is the exception: it returns SQLite's error instead of stopping the program.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">run_script</span>(d: <span class="t">Db</span>, sql: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]</code></pre></div>
+<p>It runs every statement in <code>sql</code> in order (a schema file, a migration), takes no <code>?</code> parameters, and returns the number of rows inserted, updated, or deleted. The first error stops the rest. The statements before it stay done unless the script began a transaction, which you then end with <code>ROLLBACK</code>. For versioned schema changes, see <a href="migrate.html">migrate</a>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    <span class="f">print</span>(d.<span class="f">run_script</span>(<span class="s">"CREATE TABLE t (x INTEGER UNIQUE); INSERT INTO t VALUES (1), (2);"</span>))
+    <span class="f">print</span>(d.<span class="f">run_script</span>(<span class="s">"BEGIN; INSERT INTO t VALUES (3); INSERT INTO t VALUES (1);"</span>))
+    d.<span class="f">run_script</span>(<span class="s">"ROLLBACK"</span>)
+    <span class="f">print</span>(d.<span class="f">query</span>(<span class="s">"SELECT count(*) AS n FROM t"</span>, []))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Ok(2)
+Err("sqlite: script failed: UNIQUE constraint failed: t.x")
+[{"n": "2"}]</code></pre></div>
+<h2 id="describe"><a class="anchor" href="#describe" aria-hidden="true">#</a>describe</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">describe</span>(d: <span class="t">Db</span>, sql: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Statement</span>, <span class="t">str</span>]</code></pre></div>
+<p>What SQLite knows about a statement without running it: its parameters (<code>params</code>: their names as written, <code>"@id"</code>, <code>":name"</code>, <code>"?1"</code>, or <code>""</code> for a plain <code>?</code>) and its result columns (<code>columns</code>: <code>name</code>, <code>decl_type</code>, <code>table</code>, <code>column</code>, <code>not_null</code>). <code>decl_type</code> is the type the table declares, <code>""</code> for an expression; <code>not_null</code> is true for a column declared <code>NOT NULL</code> (and an <code>INTEGER PRIMARY KEY</code>). It is what <a href="sqlgen.html">sqlgen</a> reads to generate typed functions.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">struct</span> <span class="t">User</span>:
+    id: <span class="t">int</span>
+    email: <span class="t">Option</span>[<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    d.<span class="f">run_script</span>(<span class="s">"CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT); INSERT INTO users (name) VALUES ('ada');"</span>).<span class="f">unwrap</span>()
+    s <span class="o">=</span> d.<span class="f">describe</span>(<span class="s">"SELECT id, name, email, count(*) AS n FROM users WHERE name = @name"</span>).<span class="f">unwrap</span>()
+    <span class="f">print</span>(s.params)
+    <span class="k">for</span> c <span class="k">in</span> s.columns:
+        <span class="f">print</span>(c.name, c.decl_type, c.table, c.not_null)
+    users: [<span class="t">User</span>] <span class="o">=</span> []
+    d.<span class="f">query_into</span>(<span class="s">"SELECT id, email FROM users"</span>, [], <span class="o">&amp;</span>users)
+    <span class="f">print</span>(users)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["@name"]
+id INTEGER users true
+name TEXT users true
+email TEXT users false
+n   false
+[User{id: 1, email: None}]</code></pre></div>
+<h2 id="threads-and-connections"><a class="anchor" href="#threads-and-connections" aria-hidden="true">#</a>Threads and connections</h2>
+<p>A <code>Db</code> can be used from any thread: each thread lazily opens its own connection to the database file and keeps its own cache of prepared statements (up to 64), so <code>parallel</code> tasks and server threads run queries at the same time without locks in Tern. SQLite itself lets many readers work at once, and one writer at a time.</p>
+<p>Two consequences:</p>
+<ul><li>Transactions (<code>BEGIN</code> ... <code>COMMIT</code>) belong to one thread's connection. Start and finish a transaction in the same function, not across a <code>parallel</code> block.</li><li><code>":memory:"</code> databases are per connection, so each thread sees its own empty database.</li></ul>
+<p>Inside a web request, reads share one read transaction that ends when the response is sent, so all the reads in a request see the same data (and cost one lock instead of one per query). A statement that writes ends that snapshot first, so writes behave exactly as without it. Set the environment variable <code>TERN_DB_SNAPSHOT=0</code> to turn this off.</p>
+<h3 id="many-writers-at-once"><a class="anchor" href="#many-writers-at-once" aria-hidden="true">#</a>Many writers at once</h3>
+<p>SQLite commits one write transaction at a time, and each commit costs far more than the statement itself. So a single <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> run from a task (every web request is one), outside an explicit transaction, joins its thread's <em>write batch</em>: the first such write opens a transaction, the thread's other tasks that are ready to run add their writes to it, and it commits once for all of them. Threads' batches take turns in memory, not by polling SQLite's lock. Each statement still returns only after its batch has committed, so it behaves exactly like its own transaction: its rows are saved when it returns, a constraint error fails only that statement, and if the commit itself fails, every statement in the batch fails with that error.</p>
+<p>For a server doing a write per request this is several times the throughput of a commit per statement, with much shorter tails (see <code>bench/agent_app/results.md</code>). Explicit transactions, statements run with <code>sqlite.run_script</code> or several at once in <code>exec</code>, <code>PRAGMA</code> and schema statements, and code outside tasks work as before. Set <code>TERN_DB_GROUP=0</code> to turn batching off.</p>
+<h3 id="writes-that-may-wait-exec_later-and-flush"><a class="anchor" href="#writes-that-may-wait-exec_later-and-flush" aria-hidden="true">#</a>Writes that may wait: <code>exec_later</code> and <code>flush</code></h3>
+<p>Some writes don't need to be saved before the response: a click count, a view counter, a "last seen" time. <code>d.exec_later(sql, params)</code> queues such a write and returns at once; a background thread commits everything queued, in order and in one transaction, every 50 milliseconds (<code>TERN_DB_LATER_MS</code> changes that), and once more when the program exits. The request doesn't wait for SQLite at all, which makes it the fastest way to write on a hot path. The price: if the process crashes (or is killed with <code>SIGKILL</code>), the writes of the last few milliseconds are lost. A queued write that fails (a constraint, say) is reported on stderr, since there's no caller left to return the error to, and the others still commit.</p>
+<p><code>d.flush()</code> commits what's queued right away, so a read that must see those writes can:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+<span class="k">import</span> sqlite
+
+<span class="k">fn</span> <span class="f">main</span>():
+    fs.<span class="f">remove</span>(<span class="s">"/tmp/clicks_doc.db"</span>)
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">"/tmp/clicks_doc.db"</span>)
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE links (slug TEXT PRIMARY KEY, clicks INTEGER)"</span>, [])
+    d.<span class="f">exec</span>(<span class="s">"INSERT INTO links VALUES ('home', 0)"</span>, [])
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">1000</span>:                                     <span class="c"># the hot path: returns at once</span>
+        d.<span class="f">exec_later</span>(<span class="s">"UPDATE links SET clicks = clicks + 1 WHERE slug = ?"</span>, [<span class="s">"home"</span>])
+    d.<span class="f">flush</span>()                                             <span class="c"># before reading the exact count</span>
+    <span class="f">print</span>(d.<span class="f">query</span>(<span class="s">"SELECT clicks FROM links"</span>, [])[<span class="n">0</span>][<span class="s">"clicks"</span>])
+    fs.<span class="f">remove</span>(<span class="s">"/tmp/clicks_doc.db"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1000</code></pre></div>
+<p>Use <code>exec</code> for anything that must be saved before you answer (a signup, an order, a payment), and <code>exec_later</code> for the rest.</p>
+<p>Connection settings run with <code>exec</code> (<code>d.exec("PRAGMA foreign_keys = ON", [])</code>) apply to every connection opened afterwards, on any thread. In SQL, <code>changes()</code> and <code>last_insert_rowid()</code> report the calling task's own last write, whichever connection it ran on.</p>
+<h2 id="a-complete-example"><a class="anchor" href="#a-complete-example" aria-hidden="true">#</a>A complete example</h2>
+<p>A JSON API for bookmarks, backed by a database file (build it with <code>tern build bookmarks.tn -o bookmarks</code>):</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+<span class="k">import</span> sqlite
+<span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Bookmark</span>:
+    id: <span class="t">int</span>
+    url: <span class="t">str</span>
+    title: <span class="t">str</span>
+    visits: <span class="t">int</span>
+
+<span class="k">struct</span> <span class="t">NewBookmark</span>:
+    url: <span class="t">str</span>
+    title: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">list_all</span>(d: sqlite.<span class="t">Db</span>) http.<span class="t">Response</span>:
+    marks: [<span class="t">Bookmark</span>] <span class="o">=</span> []
+    d.<span class="f">query_into</span>(<span class="s">"SELECT id, url, title, visits FROM bookmarks ORDER BY visits DESC, id"</span>, [], <span class="o">&amp;</span>marks)
+    <span class="k">return</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(marks))
+
+<span class="k">fn</span> <span class="f">create</span>(d: sqlite.<span class="t">Db</span>, body: <span class="t">str</span>) http.<span class="t">Response</span>:
+    nb <span class="o">=</span> <span class="t">NewBookmark</span>(<span class="s">""</span>, <span class="s">""</span>)
+    <span class="k">if</span> <span class="k">not</span> json.<span class="f">decode</span>(body, <span class="o">&amp;</span>nb) <span class="k">or</span> <span class="k">not</span> nb.url.<span class="f">starts_with</span>(<span class="s">"http"</span>):
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">400</span>, <span class="s">`send {"url": "https://...", "title": "..."}`</span>)
+    d.<span class="f">exec</span>(<span class="s">"INSERT INTO bookmarks (url, title) VALUES (?, ?) ON CONFLICT(url) DO NOTHING"</span>, [nb.url, nb.title])
+    b <span class="o">=</span> <span class="t">Bookmark</span>(<span class="n">0</span>, <span class="s">""</span>, <span class="s">""</span>, <span class="n">0</span>)
+    d.<span class="f">query_into</span>(<span class="s">"SELECT id, url, title, visits FROM bookmarks WHERE url = ?"</span>, [nb.url], <span class="o">&amp;</span>b)
+    res <span class="o">=</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(b))
+    res.status <span class="o">=</span> <span class="n">201</span>
+    res.<span class="f">set_header</span>(<span class="s">"Location"</span>, <span class="s">f"/bookmarks/{b.id}"</span>)
+    <span class="k">return</span> res
+
+<span class="k">fn</span> <span class="f">visit</span>(d: sqlite.<span class="t">Db</span>, id: <span class="t">str</span>) http.<span class="t">Response</span>:
+    b <span class="o">=</span> <span class="t">Bookmark</span>(<span class="n">0</span>, <span class="s">""</span>, <span class="s">""</span>, <span class="n">0</span>)
+    <span class="k">if</span> d.<span class="f">query_into</span>(<span class="s">"SELECT id, url FROM bookmarks WHERE id = ?"</span>, [id], <span class="o">&amp;</span>b) <span class="o">==</span> <span class="n">0</span>:
+        <span class="k">return</span> http.<span class="f">not_found</span>()
+    d.<span class="f">exec</span>(<span class="s">"UPDATE bookmarks SET visits = visits + 1 WHERE id = ?"</span>, [id])
+    <span class="k">return</span> http.<span class="f">redirect</span>(b.url)
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>, d: sqlite.<span class="t">Db</span>) http.<span class="t">Response</span>:
+    params: {<span class="t">str</span>: <span class="t">str</span>} <span class="o">=</span> {}
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/bookmarks"</span>:
+        <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"GET"</span>:
+            <span class="k">return</span> <span class="f">list_all</span>(d)
+        <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"POST"</span>:
+            <span class="k">return</span> <span class="f">create</span>(d, req.body)
+    <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"GET"</span> <span class="k">and</span> http.<span class="k">match</span>(req.path, <span class="s">"/bookmarks/{id}"</span>, <span class="o">&amp;</span>params):
+        <span class="k">return</span> <span class="f">visit</span>(d, params[<span class="s">"id"</span>])
+    <span class="k">return</span> http.<span class="f">not_found</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">"bookmarks.db"</span>)
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY, url TEXT UNIQUE NOT NULL, title TEXT, visits INTEGER DEFAULT 0)"</span>, [])
+    http.<span class="f">serve</span>(<span class="n">8080</span>, handle, d)</code></pre></div>
+<p>Try it with <code>curl</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">curl</span> -X POST -d '{"url": "https://example.com", "title": "Example"}' localhost:8080/bookmarks
+<span class="k">curl</span> -i localhost:8080/bookmarks/1<span class="c">        # 302 to https://example.com, and counts a visit</span>
+<span class="k">curl</span> localhost:8080/bookmarks<span class="c">             # [{"id":1,"url":"https://example.com","title":"Example","visits":1}]</span></code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../packages/roost.html"><span>Previous</span>roost</a><a class="next" href="../packages/pg.html"><span>Next</span>pg</a></div>
+<footer>Source: <code>docs/packages/sqlite.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#the-db-type">The Db type</a></li><li class="l2"><a href="#open">open</a></li><li class="l2"><a href="#exec">exec</a></li><li class="l2"><a href="#query">query</a></li><li class="l2"><a href="#query_into">query_into</a></li><li class="l2"><a href="#parameters">Parameters</a></li><li class="l2"><a href="#errors">Errors</a></li><li class="l2"><a href="#describe">describe</a></li><li class="l2"><a href="#threads-and-connections">Threads and connections</a></li><li class="l3"><a href="#many-writers-at-once">Many writers at once</a></li><li class="l3"><a href="#writes-that-may-wait-exec_later-and-flush">Writes that may wait: exec_later and flush</a></li><li class="l2"><a href="#a-complete-example">A complete example</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

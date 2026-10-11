@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Standard library · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/index.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html" class="cur" aria-current="page">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="standard-library"><a class="anchor" href="#standard-library" aria-hidden="true">#</a>Standard library</h1>
+<p>Tern ships a standard library for the programs people write most: formatting, math, time, files and processes, JSON, logging, cryptography, SQLite, and web services with TLS, PostgreSQL and Redis. This page explains how to import modules, lists what each one is for, shows which functions need no import at all, and says which modules work on which platforms.</p>
+<h2 id="importing-a-module"><a class="anchor" href="#importing-a-module" aria-hidden="true">#</a>Importing a module</h2>
+<p><code>import name</code> makes a module's functions and types available as <code>name.thing</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+<span class="k">import</span> math
+
+<span class="k">fn</span> <span class="f">main</span>():
+    area <span class="o">=</span> math.<span class="f">pi</span>() <span class="o">*</span> <span class="n">2.0</span> <span class="o">*</span> <span class="n">2.0</span>
+    <span class="f">print</span>(<span class="s">"area:"</span>, fmt.<span class="f">fixed</span>(area, <span class="n">2</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>area: 12.57</code></pre></div>
+<p><code>from name import a, b</code> brings chosen names in so you can use them without the prefix. You can mix both forms:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+<span class="k">from</span> fmt <span class="k">import</span> thousands, pad_left
+<span class="k">from</span> http <span class="k">import</span> <span class="t">Request</span>, new_request
+
+<span class="k">fn</span> <span class="f">page_of</span>(req: <span class="t">Request</span>) <span class="t">int</span>:
+    <span class="k">return</span> req.<span class="f">query</span>(<span class="s">"page"</span>).<span class="f">to_int</span>(<span class="n">1</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    page <span class="o">=</span> <span class="f">page_of</span>(<span class="f">new_request</span>(<span class="s">"GET"</span>, <span class="s">"/search?q=tern&amp;page=2"</span>, <span class="s">""</span>))
+    <span class="f">print</span>(<span class="f">pad_left</span>(<span class="f">thousands</span>(page <span class="o">*</span> <span class="n">1500</span>), <span class="n">8</span>, <span class="s">" "</span>), json.<span class="f">encode</span>([page]))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>   3,000 [2]</code></pre></div>
+<p>Imports go at the top level of a file, usually first. A module that is never imported costs nothing: SQLite, for example, is linked only into programs that <code>import sqlite</code>.</p>
+<p>The standard library is ordinary Tern modules in the <code>std/</code> directory of the compiler, so <code>import models</code> looks in <code>std/</code> before it looks next to your program. Don't name your own modules after the standard ones. See <a href="../tour/12-modules.html">Modules and packages</a> for how your own modules work.</p>
+<h2 id="the-modules"><a class="anchor" href="#the-modules" aria-hidden="true">#</a>The modules</h2>
+<div class="table"><table><thead><tr><th>Module</th><th>What it's for</th></tr></thead><tbody><tr><td><a href="fmt.html">fmt</a></td><td>Fixed decimals, padding, digit grouping, money (f-strings have no format specs)</td></tr><tr><td><a href="math.html">math</a></td><td>Square roots, rounding, logarithms, powers, trigonometry, pi</td></tr><tr><td><a href="random.html">random</a></td><td>Fast pseudo-random ints and floats (not for cryptography)</td></tr><tr><td><a href="time.html">time</a></td><td>Clocks, sleeping, RFC 3339 and strftime formatting and parsing, dates, durations</td></tr><tr><td><a href="os.html">os</a></td><td>Arguments, environment, exit codes, stdin / stderr, subprocesses, signals</td></tr><tr><td><a href="fs.html">fs</a></td><td>Files and directories: whole-file and line-by-line reading, stat, rename, errors</td></tr><tr><td><a href="json.html">json</a></td><td>Encoding any value to JSON, and decoding JSON into typed values</td></tr><tr><td><a href="re.html">re</a></td><td>Regular expressions in linear time: search, groups, validate, replace, split</td></tr><tr><td><a href="log.html">log</a></td><td>Leveled, structured logs (logfmt, JSON or text) on stderr</td></tr><tr><td><a href="crypto.html">crypto</a></td><td>SHA-2, HMAC, Argon2id password hashing, PBKDF2, secure random, base64, hex, UUIDs</td></tr><tr><td><a href="term.html">term</a></td><td>The terminal: is it one, its size, colors that switch off when piped, tables, progress, password prompts</td></tr><tr><td><a href="flag.html">flag</a></td><td>Command-line flags into a struct: types from the fields, defaults from its values, <code>--help</code> written for you</td></tr><tr><td><a href="heap.html">heap</a></td><td>A heap of ints, floats or strings: smallest (or largest) first</td></tr><tr><td><a href="pqueue.html">pqueue</a></td><td>A priority queue of any values: Dijkstra, schedulers, event loops</td></tr><tr><td><a href="deque.html">deque</a></td><td>A double-ended queue: O(1) at both ends (BFS, sliding windows)</td></tr><tr><td><a href="bitset.html">bitset</a></td><td>A set of small ints, one bit each: sieves, visited sets, flags</td></tr><tr><td><a href="url.html">url</a></td><td>URLs: parse, build, resolve links, query pairs, escaping (Go's net/url rules)</td></tr><tr><td><a href="toml.html">toml</a></td><td>TOML 1.0 config files into a struct or a json.Value, and structs back to TOML</td></tr><tr><td><a href="binary.html">binary</a></td><td>Binary formats: big- and little-endian integers and floats, varints (protobuf / LEB128), a Writer and a checked Reader</td></tr><tr><td><a href="path.html">path</a></td><td>File paths as text: join, clean, dir / base / ext, relative paths, shell patterns and <code>**</code> globs</td></tr><tr><td><a href="csv.html">csv</a></td><td>Reading and writing CSV (RFC 4180, like Go's encoding/csv): rows, records by column, one record at a time</td></tr><tr><td><a href="compress.html">compress</a></td><td>zstd, gzip, zlib and deflate of any bytes, with size limits for untrusted input</td></tr><tr><td><a href="html.html">html</a></td><td>HTML escaping and templates that escape by default</td></tr><tr><td><a href="http.html">http</a></td><td>HTTP servers (a one-line <code>serve</code>, and the engine with routes, WebSockets, SSE and HTTPS), a client, request and response helpers</td></tr><tr><td><a href="tls.html">tls</a></td><td>TLS connections, <code>https://</code> in the HTTP client, HTTPS servers</td></tr></tbody></table></div>
+<p>First-party packages (roost, sqlite, pg, redis, auth, ...) are imported the same way but aren't part of the standard library: see <a href="../packages/index.html">Packages</a>.</p>
+<p>Each page lists every function with its signature, what it does at the edges (empty input, missing files, bad JSON), and a tested example.</p>
+<h2 id="builtins-no-import-needed"><a class="anchor" href="#builtins-no-import-needed" aria-hidden="true">#</a>Builtins: no import needed</h2>
+<p>Some functions are part of the language, not a module. They need no import. Your own functions may share their names; see <a href="../reference.html#20-builtin-names">builtin names</a>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>print len push pop copy abs min max sqrt float int str chr
+find contains starts_with ends_with replace trim upper lower split join
+to_int to_float byte repeat
+get remove keys values
+map filter sort_by
+json_quote url_decode is_null</code></pre></div>
+<p>They are documented on the <a href="../builtins.html">builtin functions</a> page. Like any function, they can be called with method syntax: <code>s.upper()</code> is <code>upper(s)</code>, and <code>xs.push(v)</code> is <code>push(&amp;xs, v)</code>.</p>
+<p>The same rule works for module functions whose first parameter has a module type: <code>d.exec(sql, params)</code> calls <code>sqlite.exec(d, sql, params)</code>, because <code>d</code> is a <code>sqlite.Db</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>)
+    d.<span class="f">exec</span>(<span class="s">"CREATE TABLE notes (body TEXT)"</span>, [])
+    sqlite.<span class="f">exec</span>(d, <span class="s">"INSERT INTO notes (body) VALUES (?)"</span>, [<span class="s">"same call"</span>])
+    <span class="f">print</span>(d.<span class="f">query</span>(<span class="s">"SELECT body FROM notes"</span>, []))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[{"body": "same call"}]</code></pre></div>
+<h2 id="platform-availability"><a class="anchor" href="#platform-availability" aria-hidden="true">#</a>Platform availability</h2>
+<p>Most modules work everywhere Tern runs. The exceptions depend on the operating system (sockets, SQLite, OpenSSL):</p>
+<div class="table"><table><thead><tr><th>Module</th><th>macOS / Linux</th><th>iOS</th><th>Android</th><th>WebAssembly</th></tr></thead><tbody><tr><td>fmt, math, random, time, json, re, log, crypto, compress, html, csv, path, flag, url, toml, binary, heap, pqueue, deque, bitset, term</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr><tr><td>os, fs</td><td>yes</td><td>yes</td><td>yes</td><td>yes, inside the directories the host grants</td></tr><tr><td>sqlite</td><td>yes</td><td>yes (SQLite from the SDK)</td><td>no (the NDK has no SQLite)</td><td>no</td></tr><tr><td>migrate</td><td>yes</td><td>yes</td><td>no (uses sqlite)</td><td>no</td></tr><tr><td>sqlgen</td><td>yes</td><td>yes</td><td>no (uses sqlite)</td><td>no</td></tr><tr><td>http</td><td>yes</td><td>yes</td><td>yes</td><td><code>http.serve</code> no; the helpers yes</td></tr><tr><td>web, pg, redis, auth, sentry</td><td>yes</td><td>yes</td><td>yes</td><td>no (no sockets)</td></tr><tr><td>tls</td><td>yes (aws-lc, built in)</td><td>yes (aws-lc, built in)</td><td>yes (aws-lc, built in)</td><td>no</td></tr></tbody></table></div>
+<p>Using <code>sqlite</code> or <code>http.serve</code> on a target that lacks it is a compile error, not a runtime surprise:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$ tern build --target wasm app.tn
+app.tn:1: error: `import sqlite` is not available on wasm
+1 error(s); not compiled.</code></pre></div>
+<p>On wasm, the <code>http</code> module's plain functions (<code>http.text</code>, <code>http.match</code>, <code>req.query</code>, ...) still work, so request-handling code can be shared and tested; only the server itself is missing. A wasm program can only reach the directories its host grants: <code>tern run --target wasm</code> grants the current directory and <code>/tmp</code>; with <code>wasmtime</code>, pass <code>--dir</code>. See the <a href="../guides/wasm.html">WebAssembly guide</a> and <a href="../guides/mobile.html">iOS and Android</a> for details.</p>
+<h2 id="what-is-not-in-the-standard-library"><a class="anchor" href="#what-is-not-in-the-standard-library" aria-hidden="true">#</a>What is not in the standard library</h2>
+<p>There is no MySQL client yet. For those, call a C library directly (see <a href="../guides/c-interop.html">Calling C</a>).</p>
+</article>
+<div class="pn"><a class="prev" href="../guides/cookbook.html"><span>Previous</span>Cookbook</a><a class="next" href="../std/fmt.html"><span>Next</span>fmt</a></div>
+<footer>Source: <code>docs/std/index.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#importing-a-module">Importing a module</a></li><li class="l2"><a href="#the-modules">The modules</a></li><li class="l2"><a href="#builtins-no-import-needed">Builtins: no import needed</a></li><li class="l2"><a href="#platform-availability">Platform availability</a></li><li class="l2"><a href="#what-is-not-in-the-standard-library">What is not in the standard library</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

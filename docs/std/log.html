@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>log · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/log.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html" class="cur" aria-current="page">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="log"><a class="anchor" href="#log" aria-hidden="true">#</a>log</h1>
+<p>The <code>log</code> module writes leveled, structured log lines to stderr: one line per call, in logfmt (the default), JSON, or a plain text format for people. Fields are a <code>{str: str}</code> map, so a line carries the values a log search needs, not just a sentence.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> log
+
+<span class="k">fn</span> <span class="f">main</span>():
+    log.<span class="f">info</span>(<span class="s">"server started"</span>)
+    log.<span class="f">info_with</span>(<span class="s">"user logged in"</span>, {<span class="s">"user"</span>: <span class="s">"ada"</span>, <span class="s">"id"</span>: <span class="s">"7"</span>})
+    log.<span class="f">debug</span>(<span class="s">"not shown: the default level is info"</span>)
+    <span class="f">print</span>(<span class="s">"log lines go to stderr; stdout stays for output"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>log lines go to stderr; stdout stays for output</code></pre></div>
+<p>On stderr that prints:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>time=2026-09-28T06:45:12.345Z level=info msg="server started"
+time=2026-09-28T06:45:12.345Z level=info msg="user logged in" user=ada id=7</code></pre></div>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">debug</span>(msg: <span class="t">str</span>)          <span class="k">fn</span> <span class="f">debug_with</span>(msg: <span class="t">str</span>, fields: {<span class="t">str</span>: <span class="t">str</span>})
+<span class="k">fn</span> <span class="f">info</span>(msg: <span class="t">str</span>)           <span class="k">fn</span> <span class="f">info_with</span>(msg: <span class="t">str</span>, fields: {<span class="t">str</span>: <span class="t">str</span>})
+<span class="k">fn</span> <span class="f">warn</span>(msg: <span class="t">str</span>)           <span class="k">fn</span> <span class="f">warn_with</span>(msg: <span class="t">str</span>, fields: {<span class="t">str</span>: <span class="t">str</span>})
+<span class="k">fn</span> <span class="f">error</span>(msg: <span class="t">str</span>)          <span class="k">fn</span> <span class="f">error_with</span>(msg: <span class="t">str</span>, fields: {<span class="t">str</span>: <span class="t">str</span>})
+<span class="k">fn</span> <span class="f">set_level</span>(name: <span class="t">str</span>) <span class="t">bool</span>      <span class="s">"debug"</span>, <span class="s">"info"</span> (the default), <span class="s">"warn"</span>, <span class="s">"error"</span>, <span class="s">"off"</span>
+<span class="k">fn</span> <span class="f">set_format</span>(name: <span class="t">str</span>) <span class="t">bool</span>     <span class="s">"logfmt"</span> (the default), <span class="s">"json"</span>, <span class="s">"text"</span></code></pre></div>
+<p><code>set_level</code> and <code>set_format</code> return false for a name they don't know (and change nothing). The environment variables <code>TERN_LOG_LEVEL</code> and <code>TERN_LOG_FORMAT</code> set the same things without changing the program, which is how you'd turn on debug logs in production for a while. A call below the level returns right away without formatting its fields.</p>
+<h2 id="formats"><a class="anchor" href="#formats" aria-hidden="true">#</a>Formats</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>logfmt  time=2026-09-28T06:45:12.345Z level=warn msg="slow query" ms=250 sql="SELECT 1"
+json    {"time":"2026-09-28T06:45:12.345Z","level":"warn","msg":"slow query","ms":"250","sql":"SELECT 1"}
+text    2026-09-28 06:45:12.345 WARN  slow query ms=250 sql="SELECT 1"</code></pre></div>
+<p>Times are UTC with milliseconds. In logfmt, values with spaces, quotes or <code>=</code> are quoted and escaped. Field values are strings (<code>str(n)</code> for numbers), so JSON output has them as JSON strings. Each line is a single <code>write</code>, so lines from different threads and tasks never interleave.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> log
+
+<span class="k">fn</span> <span class="f">main</span>():
+    log.<span class="f">set_format</span>(<span class="s">"json"</span>)
+    <span class="f">print</span>(log.<span class="f">set_level</span>(<span class="s">"debug"</span>), log.<span class="f">set_level</span>(<span class="s">"verbose"</span>))
+    log.<span class="f">debug_with</span>(<span class="s">"cache miss"</span>, {<span class="s">"key"</span>: <span class="s">"user:7"</span>})
+    log.<span class="f">set_level</span>(<span class="s">"off"</span>)
+    log.<span class="f">error</span>(<span class="s">"silenced"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true false</code></pre></div>
+<p>For per-request lines in a web server, <code>roost.logger()</code> middleware does the access log; use <code>log</code> inside handlers for everything else.</p>
+<h2 id="recent-records"><a class="anchor" href="#recent-records" aria-hidden="true">#</a>Recent records</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">recent</span>(n: <span class="t">int</span>) [<span class="t">Record</span>]          the newest n kept records, oldest first
+<span class="k">fn</span> <span class="f">keep</span>(name: <span class="t">str</span>) <span class="t">bool</span>             keep records <span class="k">from</span> this level up (default <span class="s">"warn"</span>)</code></pre></div>
+<p>Whatever the output level, the last 100 records at <code>warn</code> and above stay in memory, so an error reporter can attach what led up to a failure (the Sentry package sends them as breadcrumbs). <code>Record</code> has <code>time</code> (seconds since 1970), <code>level</code>, <code>msg</code> and <code>fields</code>.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/tls.html"><span>Previous</span>tls</a><a class="next" href="../std/html.html"><span>Next</span>html</a></div>
+<footer>Source: <code>docs/std/log.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#functions">Functions</a></li><li class="l2"><a href="#formats">Formats</a></li><li class="l2"><a href="#recent-records">Recent records</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10. Functions as values · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/10-closures.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html" class="cur" aria-current="page">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="10-functions-as-values"><a class="anchor" href="#10-functions-as-values" aria-hidden="true">#</a>10. Functions as values</h1>
+<p>Functions in Tern are values: you can store them in variables, pass them to other functions, return them, and keep them in struct fields and arrays. This chapter covers lambdas (<code>fn(x) x * 2</code>), nested functions, function types, and how closures capture variables, then puts <code>map</code>, <code>filter</code>, and <code>sort_by</code> to real use.</p>
+<h2 id="lambdas"><a class="anchor" href="#lambdas" aria-hidden="true">#</a>Lambdas</h2>
+<p>A lambda is a small unnamed function: <code>fn(parameters) expression</code>. It has no <code>:</code> and no <code>return</code>; its body is one expression, and that expression's value is the result:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    double <span class="o">=</span> <span class="k">fn</span>(x: <span class="t">int</span>) x <span class="o">*</span> <span class="n">2</span>
+    shout <span class="o">=</span> <span class="k">fn</span>(s: <span class="t">str</span>) s.<span class="f">upper</span>() <span class="o">+</span> <span class="s">"!"</span>
+    is_even <span class="o">=</span> <span class="k">fn</span>(n: <span class="t">int</span>) n <span class="o">%</span> <span class="n">2</span> <span class="o">==</span> <span class="n">0</span>
+    <span class="f">print</span>(<span class="f">double</span>(<span class="n">21</span>), <span class="f">shout</span>(<span class="s">"hey"</span>), <span class="f">is_even</span>(<span class="n">7</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>42 HEY! false</code></pre></div>
+<p>When the lambda is passed somewhere that already says the parameter types, you can leave them out. That is the common case with <code>map</code>, <code>filter</code>, and <code>sort_by</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    prices <span class="o">=</span> [<span class="n">12</span>, <span class="n">5</span>, <span class="n">30</span>, <span class="n">8</span>]
+    <span class="f">print</span>(prices.<span class="f">map</span>(<span class="k">fn</span>(p) p <span class="o">*</span> <span class="n">2</span>))
+    <span class="f">print</span>(prices.<span class="f">filter</span>(<span class="k">fn</span>(p) p <span class="o">&lt;</span> <span class="n">10</span>))
+    <span class="f">print</span>(prices.<span class="f">sort_by</span>(<span class="k">fn</span>(p) p))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[24, 10, 60, 16]
+[5, 8]
+[5, 8, 12, 30]</code></pre></div>
+<p>When nothing says the type, the compiler asks you to write it:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    double <span class="o">=</span> <span class="k">fn</span>(x) x <span class="o">*</span> <span class="n">2</span>
+    <span class="f">print</span>(<span class="f">double</span>(<span class="n">3</span>))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: can't tell the type of parameter `x`; write `fn(x: int) ...`, or give the variable a type, e.g. `f: fn(int) int = ...`</code></pre></div>
+<h2 id="function-types"><a class="anchor" href="#function-types" aria-hidden="true">#</a>Function types</h2>
+<p>The type of a function is written like its signature without names: <code>fn(int) int</code> takes an <code>int</code> and returns an <code>int</code>; <code>fn(str, int) bool</code> takes two values and returns a <code>bool</code>; <code>fn(str)</code> returns nothing. Use these types for parameters, return values, struct fields, and array elements:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">apply_twice</span>(f: <span class="k">fn</span>(<span class="t">int</span>) <span class="t">int</span>, x: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">return</span> <span class="f">f</span>(<span class="f">f</span>(x))
+
+<span class="k">fn</span> <span class="f">make_multiplier</span>(k: <span class="t">int</span>) <span class="k">fn</span>(<span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">return</span> <span class="k">fn</span>(x) x <span class="o">*</span> k
+
+<span class="k">fn</span> <span class="f">main</span>():
+    triple <span class="o">=</span> <span class="f">make_multiplier</span>(<span class="n">3</span>)
+    <span class="f">print</span>(<span class="f">triple</span>(<span class="n">5</span>), <span class="f">apply_twice</span>(triple, <span class="n">2</span>))
+    steps: [<span class="k">fn</span>(<span class="t">int</span>) <span class="t">int</span>] <span class="o">=</span> [<span class="k">fn</span>(x) x <span class="o">+</span> <span class="n">1</span>, <span class="k">fn</span>(x) x <span class="o">*</span> <span class="n">10</span>, <span class="f">make_multiplier</span>(<span class="o">-</span><span class="n">1</span>)]
+    n <span class="o">=</span> <span class="n">4</span>
+    <span class="k">for</span> step <span class="k">in</span> steps:
+        n <span class="o">=</span> <span class="f">step</span>(n)
+    <span class="f">print</span>(n)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>15 18
+-50</code></pre></div>
+<p><code>make_multiplier</code> returns a new function each time it is called, and each one remembers its own <code>k</code>. A function that remembers values from where it was created is called a closure.</p>
+<h2 id="nested-functions"><a class="anchor" href="#nested-functions" aria-hidden="true">#</a>Nested functions</h2>
+<p>A lambda is limited to one expression. For anything longer, define a named function inside another function. It can use the enclosing function's variables, can call itself, and can be passed by name like any other function:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    min_len <span class="o">=</span> <span class="n">4</span>
+    <span class="k">fn</span> <span class="f">label</span>(word: <span class="t">str</span>) <span class="t">str</span>:
+        <span class="k">if</span> <span class="f">len</span>(word) <span class="o">&lt;</span> min_len:
+            <span class="k">return</span> word <span class="o">+</span> <span class="s">" (short)"</span>
+        <span class="k">return</span> word <span class="o">+</span> <span class="s">" ("</span> <span class="o">+</span> <span class="t">str</span>(<span class="f">len</span>(word)) <span class="o">+</span> <span class="s">" letters)"</span>
+    words <span class="o">=</span> [<span class="s">"fig"</span>, <span class="s">"banana"</span>, <span class="s">"kiwi"</span>]
+    <span class="k">for</span> w <span class="k">in</span> words.<span class="f">map</span>(label):
+        <span class="f">print</span>(w)
+    <span class="k">fn</span> <span class="f">fib</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+        <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">2</span>:
+            <span class="k">return</span> n
+        <span class="k">return</span> <span class="f">fib</span>(n <span class="o">-</span> <span class="n">1</span>) <span class="o">+</span> <span class="f">fib</span>(n <span class="o">-</span> <span class="n">2</span>)
+    <span class="f">print</span>(<span class="f">fib</span>(<span class="n">20</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>fig (short)
+banana (6 letters)
+kiwi (4 letters)
+6765</code></pre></div>
+<h2 id="closures-capture-by-copy"><a class="anchor" href="#closures-capture-by-copy" aria-hidden="true">#</a>Closures capture by copy</h2>
+<p>A closure copies the variables it uses at the moment it is created. Changing the variable afterwards does not affect the closure, and the closure can't change the variable:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    rate <span class="o">=</span> <span class="n">10</span>
+    add_tax <span class="o">=</span> <span class="k">fn</span>(price: <span class="t">int</span>) price <span class="o">+</span> price <span class="o">*</span> rate <span class="o">/</span> <span class="n">100</span>
+    rate <span class="o">=</span> <span class="n">50</span>                                <span class="c"># too late: add_tax has its own copy</span>
+    <span class="f">print</span>(<span class="f">add_tax</span>(<span class="n">200</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>220</code></pre></div>
+<p>This is the same rule as everywhere else in Tern: values are copies. It means a closure can never change your variables behind your back, and a closure that is stored and called later (for example as a button's click handler) behaves the same no matter what happened in the meantime. Trying to change a captured variable is an error:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">fn</span> <span class="f">add</span>(n: <span class="t">int</span>):
+        total <span class="o">+</span><span class="o">=</span> n
+    <span class="f">add</span>(<span class="n">3</span>)
+    <span class="f">print</span>(total)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: can't modify `total` here: this function has its own copy of it, made when the function was created (return a new value, or take it as a `mut` parameter)</code></pre></div>
+<p>The error names both fixes. Either return the new value and let the caller store it, or pass the variable in as a <code>mut</code> parameter:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">fn</span> <span class="f">add</span>(t: <span class="k">mut</span> <span class="t">int</span>, n: <span class="t">int</span>):
+        t <span class="o">+</span><span class="o">=</span> n
+    <span class="f">add</span>(<span class="o">&amp;</span>total, <span class="n">3</span>)
+    <span class="f">add</span>(<span class="o">&amp;</span>total, <span class="n">4</span>)
+    <span class="f">print</span>(total)
+    plus <span class="o">=</span> <span class="k">fn</span>(t: <span class="t">int</span>, n: <span class="t">int</span>) t <span class="o">+</span> n
+    total <span class="o">=</span> <span class="f">plus</span>(total, <span class="n">10</span>)
+    <span class="f">print</span>(total)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>7
+17</code></pre></div>
+<p>In practice, most accumulation is simpler as a plain loop.</p>
+<h2 id="functions-in-structs"><a class="anchor" href="#functions-in-structs" aria-hidden="true">#</a>Functions in structs</h2>
+<p>A struct field can hold a function. Calling <code>b.on_click(3)</code> calls the function stored in the field. This is how you write callbacks and simple plug-in behavior without classes or interfaces:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Rule</span>:
+    name: <span class="t">str</span>
+    check: <span class="k">fn</span>(<span class="t">str</span>) <span class="t">bool</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    rules <span class="o">=</span> [
+        <span class="t">Rule</span>(<span class="s">"not empty"</span>, <span class="k">fn</span>(s) <span class="f">len</span>(s) <span class="o">&gt;</span> <span class="n">0</span>),
+        <span class="t">Rule</span>(<span class="s">"max 8 chars"</span>, <span class="k">fn</span>(s) <span class="f">len</span>(s) <span class="o">&lt;=</span> <span class="n">8</span>),
+        <span class="t">Rule</span>(<span class="s">"no spaces"</span>, <span class="k">fn</span>(s) <span class="k">not</span> (<span class="s">" "</span> <span class="k">in</span> s)),
+    ]
+    <span class="k">for</span> name <span class="k">in</span> [<span class="s">"ada"</span>, <span class="s">"grace hopper"</span>, <span class="s">""</span>]:
+        failed: [<span class="t">str</span>] <span class="o">=</span> []
+        <span class="k">for</span> r <span class="k">in</span> rules:
+            <span class="k">if</span> <span class="k">not</span> r.<span class="f">check</span>(name):
+                failed.<span class="f">push</span>(r.name)
+        <span class="f">print</span>(<span class="s">f"[{name}]"</span>, failed)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[ada] []
+[grace hopper] ["max 8 chars", "no spaces"]
+[] ["not empty"]</code></pre></div>
+<h2 id="map-filter-and-sort_by-in-practice"><a class="anchor" href="#map-filter-and-sort_by-in-practice" aria-hidden="true">#</a>map, filter, and sort_by in practice</h2>
+<p>With lambdas, most collection processing becomes a short chain. Each call returns a new array, so the original is never changed:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Film</span>:
+    title: <span class="t">str</span>
+    year: <span class="t">int</span>
+    rating: <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    films <span class="o">=</span> [
+        <span class="t">Film</span>(<span class="s">"Alien"</span>, <span class="n">1979</span>, <span class="n">8.5</span>),
+        <span class="t">Film</span>(<span class="s">"Heat"</span>, <span class="n">1995</span>, <span class="n">8.3</span>),
+        <span class="t">Film</span>(<span class="s">"Up"</span>, <span class="n">2009</span>, <span class="n">8.3</span>),
+        <span class="t">Film</span>(<span class="s">"Jaws"</span>, <span class="n">1975</span>, <span class="n">8.1</span>),
+    ]
+    recent <span class="o">=</span> films.<span class="f">filter</span>(<span class="k">fn</span>(f) f.year <span class="o">&gt;=</span> <span class="n">1990</span>).<span class="f">map</span>(<span class="k">fn</span>(f) f.title)
+    <span class="f">print</span>(recent)
+    <span class="k">for</span> f <span class="k">in</span> films.<span class="f">sort_by</span>(<span class="k">fn</span>(f) <span class="o">-</span>f.rating):
+        <span class="f">print</span>(f.rating, f.title)
+    by_title <span class="o">=</span> films.<span class="f">sort_by</span>(<span class="k">fn</span>(f) f.title)
+    <span class="f">print</span>(by_title.<span class="f">map</span>(<span class="k">fn</span>(f) <span class="s">f"{f.title} ({f.year})"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["Heat", "Up"]
+8.5 Alien
+8.3 Heat
+8.3 Up
+8.1 Jaws
+["Alien (1979)", "Heat (1995)", "Jaws (1975)", "Up (2009)"]</code></pre></div>
+<ul><li><code>sort_by(key)</code> sorts by the key the function returns: an <code>int</code>, <code>float</code>, or <code>str</code>. To sort numbers in descending order, negate the key.</li><li>The sort is stable: elements with equal keys keep their original order (Heat stays before Up). To sort by two keys, sort by the second key first, then by the first.</li><li>There is no <code>reduce</code>. A sum or a maximum is a three-line loop, which is also the fastest way to write it.</li></ul>
+<h2 id="mistakes-from-other-languages"><a class="anchor" href="#mistakes-from-other-languages" aria-hidden="true">#</a>Mistakes from other languages</h2>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    ys <span class="o">=</span> xs.<span class="f">map</span>(lambda x: x <span class="o">+</span> <span class="n">1</span>)
+    <span class="f">print</span>(ys)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: expected `,`, found 'x'
+3: hint: lambdas are written `fn(x) x + 1` (one expression)</code></pre></div>
+<p>Arrow functions (<code>x =&gt; x + 1</code>) and Rust closures (<code>|x| x + 1</code>) get similar hints.</p>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Write <code>fn compose(f: fn(int) int, g: fn(int) int) fn(int) int</code> that returns a function applying <code>f</code> and then <code>g</code>. Use it to build <code>inc_then_square</code> from two lambdas, and apply it to <code>[1, 2, 3]</code> with <code>map</code>. Then sort the words <code>["kiwi", "fig", "banana", "date"]</code> by length, keeping alphabetical order for words of the same length (hint: two <code>sort_by</code> calls).</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">compose</span>(f: <span class="k">fn</span>(<span class="t">int</span>) <span class="t">int</span>, g: <span class="k">fn</span>(<span class="t">int</span>) <span class="t">int</span>) <span class="k">fn</span>(<span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">return</span> <span class="k">fn</span>(x) <span class="f">g</span>(<span class="f">f</span>(x))
+
+<span class="k">fn</span> <span class="f">main</span>():
+    inc_then_square <span class="o">=</span> <span class="f">compose</span>(<span class="k">fn</span>(x) x <span class="o">+</span> <span class="n">1</span>, <span class="k">fn</span>(x) x <span class="o">*</span> x)
+    <span class="f">print</span>([<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>].<span class="f">map</span>(inc_then_square))
+    words <span class="o">=</span> [<span class="s">"kiwi"</span>, <span class="s">"fig"</span>, <span class="s">"banana"</span>, <span class="s">"date"</span>]
+    <span class="f">print</span>(words.<span class="f">sort_by</span>(<span class="k">fn</span>(w) w).<span class="f">sort_by</span>(<span class="k">fn</span>(w) <span class="f">len</span>(w)))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[4, 9, 16]
+["fig", "date", "kiwi", "banana"]</code></pre></div>
+<p>Next: <a href="11-parallelism.html">11. Parallelism</a>. Reference: <a href="../reference.html#13-functions-as-values-closures">§13 Functions as values</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/09-values-and-mut.html"><span>Previous</span>9. Values, mut, and &amp;</a><a class="next" href="../tour/11-parallelism.html"><span>Next</span>11. Parallelism</a></div>
+<footer>Source: <code>docs/tour/10-closures.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#lambdas">Lambdas</a></li><li class="l2"><a href="#function-types">Function types</a></li><li class="l2"><a href="#nested-functions">Nested functions</a></li><li class="l2"><a href="#closures-capture-by-copy">Closures capture by copy</a></li><li class="l2"><a href="#functions-in-structs">Functions in structs</a></li><li class="l2"><a href="#map-filter-and-sort_by-in-practice">map, filter, and sort_by in practice</a></li><li class="l2"><a href="#mistakes-from-other-languages">Mistakes from other languages</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

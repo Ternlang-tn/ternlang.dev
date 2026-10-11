@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Performance tips · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/performance.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html" class="cur" aria-current="page">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="performance-tips"><a class="anchor" href="#performance-tips" aria-hidden="true">#</a>Performance tips</h1>
+<p>Most Tern code is fast without any tuning: it compiles to C, clang optimizes it with <code>-O3</code>, and there is no garbage collector. When a program is slower than it should be, the cause is usually one of a few things: a hidden copy of a big array, a slow sort key, a string built from the wrong end, or parallel tasks that are too small. This page shows how to find each one with <code>TERN_STATS</code> and <code>emit</code>, how to fix it, and how Tern compares with Go and Rust on the repository's benchmarks, including where Rust is faster.</p>
+<p>Timings on this page were measured on an Apple M4 Pro (14 cores) with programs built by <code>tern build</code>. The copy counts come from <code>TERN_STATS=1</code>, explained in <a href="memory.html#reading-tern_stats">How memory works</a>.</p>
+<h2 id="measure-first"><a class="anchor" href="#measure-first" aria-hidden="true">#</a>Measure first</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>TERN_STATS=1 tern run prog.tn                 # prints allocations, frees, leaks, and copies
+tern build prog.tn -o prog                    # a native binary to time
+time ./prog
+TERN_THREADS=1 ./prog                         # run parallel code on one core, for comparison
+tern emit prog.tn &gt; prog.c                    # read the C that the compiler generates</code></pre></div>
+<p><code>TERN_STATS</code> must be set when the program is compiled; its counters aren't in normal builds. The number to watch is <strong>copy-on-write copies</strong>: each one is a whole array, string, or map copied because it was written while shared. A count that grows with your input, like one copy per loop pass, is almost always a bug worth fixing.</p>
+<p>Time a built binary, not <code>tern run</code>, which includes compile time.</p>
+<h2 id="avoid-hidden-copies"><a class="anchor" href="#avoid-hidden-copies" aria-hidden="true">#</a>Avoid hidden copies</h2>
+<p>Assignment never copies right away, but writing to a value that is shared does. The classic case is <code>ys = xs</code> followed by <code>ys[0] = 1</code>: that copies all of <code>xs</code>. It most often hides in a function that takes a read-only parameter, changes a local copy, and returns it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">record</span>(counts: [<span class="t">int</span>], bucket: <span class="t">int</span>) [<span class="t">int</span>]:
+    out <span class="o">=</span> counts          <span class="c"># copies all of `counts` at the next line</span>
+    out[bucket] <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">main</span>():
+    counts <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">1000</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">100</span>:
+        counts <span class="o">=</span> <span class="f">record</span>(counts, i <span class="o">%</span> <span class="n">7</span>)
+    <span class="f">print</span>(counts[<span class="n">0</span>], counts[<span class="n">6</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>15 14</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 101 allocations, 101 freed, 0 leaked, 100 copy-on-write copies; no GC</code></pre></div>
+<p>One copy of the whole array per call. With a <code>mut</code> parameter, the function changes the caller's array in place:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">record</span>(counts: <span class="k">mut</span> [<span class="t">int</span>], bucket: <span class="t">int</span>):
+    counts[bucket] <span class="o">+</span><span class="o">=</span> <span class="n">1</span>   <span class="c"># writes the caller's array in place</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    counts <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">1000</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">100</span>:
+        <span class="f">record</span>(<span class="o">&amp;</span>counts, i <span class="o">%</span> <span class="n">7</span>)
+    <span class="f">print</span>(counts[<span class="n">0</span>], counts[<span class="n">6</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>15 14</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 1 allocations, 1 freed, 0 leaked, 0 copy-on-write copies; no GC</code></pre></div>
+<p>Scaled up to a 100,000-element array and 10,000 calls, the first version takes 0.46s (10,000 copies of 800KB) and the second under 10ms.</p>
+<p>The same thing happens with array elements. <code>p = team[i]</code> copies the struct, and its array fields are then shared with the element, so writing to <code>p.scores</code> copies them:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Player</span>:
+    name: <span class="t">str</span>
+    scores: [<span class="t">int</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    team <span class="o">=</span> [<span class="t">Player</span>(<span class="s">"ada"</span>, [<span class="n">1</span>, <span class="n">2</span>]), <span class="t">Player</span>(<span class="s">"bob"</span>, [<span class="n">3</span>])]
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(team):
+        team[i].scores.<span class="f">push</span>(<span class="n">0</span>)     <span class="c"># not: p = team[i]; p.scores.push(0); team[i] = p</span>
+    <span class="f">print</span>(team)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[Player{name: "ada", scores: [1, 2, 0]}, Player{name: "bob", scores: [3, 0]}]</code></pre></div>
+<p>Written directly, this makes no copies; the commented-out version makes one per player. To change an element through a function, pass <code>&amp;team[i]</code> to a <code>mut</code> parameter.</p>
+<h2 id="hand-values-off-with-take"><a class="anchor" href="#hand-values-off-with-take" aria-hidden="true">#</a>Hand values off with <code>take</code></h2>
+<p>When a function consumes a value and returns a changed version of it (a builder, a pipeline stage), declare the parameter <code>take</code>. The caller's variable moves into the function, so there's no copy:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">with_total</span>(rows: <span class="k">take</span> [<span class="t">str</span>], total: <span class="t">int</span>) [<span class="t">str</span>]:
+    rows.<span class="f">push</span>(<span class="s">f"total: {total}"</span>)   <span class="c"># rows is ours now: changed in place, never copied</span>
+    <span class="k">return</span> rows
+
+<span class="k">fn</span> <span class="f">main</span>():
+    rows <span class="o">=</span> [<span class="s">"pears: 3"</span>, <span class="s">"figs: 12"</span>]
+    report <span class="o">=</span> <span class="f">with_total</span>(rows, <span class="n">15</span>)
+    <span class="f">print</span>(<span class="s">"\n"</span>.<span class="f">join</span>(report))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>pears: 3
+figs: 12
+total: 15</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 5 allocations, 5 freed, 0 leaked, 0 copy-on-write copies; no GC</code></pre></div>
+<p>On the 100,000-element example above, <code>fn record(counts: take [int], bucket: int) [int]</code> called as <code>counts = record(counts, i % 7)</code> also makes zero copies. <code>xs.push(v)</code> moves <code>v</code> when it isn't used afterwards, so pushing a freshly built string or array into a list never copies it. Use <code>mut</code> when the function changes a value in place, and <code>take</code> when it keeps or returns it.</p>
+<h2 id="use-flat-arrays-of-numbers"><a class="anchor" href="#use-flat-arrays-of-numbers" aria-hidden="true">#</a>Use flat arrays of numbers</h2>
+<p>An <code>[int]</code>, <code>[float]</code>, or <code>[bool]</code> is one block of plain values: no reference counts per element. An array of arrays is one block per row, and each row is a separate value. Watch out for <code>[[0] * n] * n</code>: it makes <code>n</code> references to <em>one</em> row, so the first write to each row copies it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">100</span>
+    grid <span class="o">=</span> [[<span class="n">0</span>] <span class="o">*</span> n] <span class="o">*</span> n          <span class="c"># n references to one shared row</span>
+    <span class="k">for</span> r <span class="k">in</span> <span class="n">0</span><span class="o">..</span>n:
+        <span class="k">for</span> c <span class="k">in</span> <span class="n">0</span><span class="o">..</span>n:
+            grid[r][c] <span class="o">=</span> r <span class="o">*</span> c    <span class="c"># the first write to each row copies it</span>
+    <span class="f">print</span>(grid[n <span class="o">-</span> <span class="n">1</span>][n <span class="o">-</span> <span class="n">1</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>9801</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 101 allocations, 101 freed, 0 leaked, 99 copy-on-write copies; no GC</code></pre></div>
+<p>The results are correct, since each row really is its own value. But for a grid you fill yourself, one flat array indexed by <code>r * n + c</code> makes no copies and one allocation:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">100</span>
+    grid <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> (n <span class="o">*</span> n)          <span class="c"># one block; cell (r, c) is at r * n + c</span>
+    <span class="k">for</span> r <span class="k">in</span> <span class="n">0</span><span class="o">..</span>n:
+        <span class="k">for</span> c <span class="k">in</span> <span class="n">0</span><span class="o">..</span>n:
+            grid[r <span class="o">*</span> n <span class="o">+</span> c] <span class="o">=</span> r <span class="o">*</span> c
+    <span class="f">print</span>(grid[n <span class="o">*</span> n <span class="o">-</span> <span class="n">1</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>9801</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 1 allocations, 1 freed, 0 leaked, 0 copy-on-write copies; no GC</code></pre></div>
+<p>At 3000 × 3000, filling the flat grid took 5ms and the nested one 10ms.</p>
+<p>More about arrays:</p>
+<ul><li><strong><code>[bool]</code> is bit-packed</strong>: 8 flags per byte. The 200-million-entry sieve benchmark uses 25MB in Tern and about 195MB in Go and Rust, which store one byte per <code>bool</code>.</li><li><strong>Create hot arrays with <code>[v] * n</code></strong> when you know the size. A local array made that way, never pushed to and never shared, gets its length kept in a register, which lets LLVM drop bounds checks and unroll loops.</li><li><strong>Slices copy.</strong> <code>xs[a..b]</code> makes a new array. <code>queue = queue[1..]</code> in a loop is quadratic; keep an index into the array instead.</li></ul>
+<h2 id="build-strings-from-the-front"><a class="anchor" href="#build-strings-from-the-front" aria-hidden="true">#</a>Build strings from the front</h2>
+<p><code>s += piece</code> (or <code>s = s + piece</code>) appends in place when <code>s</code> isn't shared: the string grows into spare capacity, so a loop of appends is linear. Adding to the <em>front</em> copies the whole string every time:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    csv <span class="o">=</span> <span class="s">""</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">5</span>:
+        csv <span class="o">+</span><span class="o">=</span> <span class="s">f"{i},"</span>             <span class="c"># appends in place</span>
+    parts: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">5</span>:
+        parts.<span class="f">push</span>(<span class="s">f"{i * i}"</span>)
+    <span class="f">print</span>(csv, <span class="s">","</span>.<span class="f">join</span>(parts))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>0,1,2,3,4, 0,1,4,9,16</code></pre></div>
+<p>With 100,000 pieces, <code>s += f"{i},"</code> took 2ms, collecting the pieces in an array and calling <code>"".join(parts)</code> also took 2ms, and <code>s = f"{i}," + s</code> took 1.8s. To build text in reverse order, push the pieces and join them in a reversed loop.</p>
+<h2 id="sort-by-numbers-when-you-can"><a class="anchor" href="#sort-by-numbers-when-you-can" aria-hidden="true">#</a>Sort by numbers when you can</h2>
+<p><code>xs.sort_by(key)</code> computes each key once and sorts stably. Number keys (<code>int</code> or <code>float</code>) use a radix sort. String keys are radix-sorted on their first 8 bytes, and only keys that share those are compared as whole strings. On 1,000,000 structs, sorting by an <code>int</code> field took about 22ms, and sorting by a <code>str</code> field holding the same numbers took about 37ms.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Order</span>:
+    id: <span class="t">int</span>
+    total: <span class="t">float</span>
+    customer: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    orders <span class="o">=</span> [<span class="t">Order</span>(<span class="n">3</span>, <span class="n">9.5</span>, <span class="s">"cy"</span>), <span class="t">Order</span>(<span class="n">1</span>, <span class="n">20.0</span>, <span class="s">"ada"</span>), <span class="t">Order</span>(<span class="n">2</span>, <span class="n">9.5</span>, <span class="s">"bob"</span>)]
+    by_id <span class="o">=</span> orders.<span class="f">sort_by</span>(<span class="k">fn</span>(o) o.id)                <span class="c"># radix sort</span>
+    biggest <span class="o">=</span> orders.<span class="f">sort_by</span>(<span class="k">fn</span>(o) <span class="o">-</span>o.total)          <span class="c"># descending: negate a number key</span>
+    by_name <span class="o">=</span> orders.<span class="f">sort_by</span>(<span class="k">fn</span>(o) o.customer)        <span class="c"># radix on the first 8 bytes, then compares</span>
+    <span class="f">print</span>(by_id[<span class="n">0</span>].id, biggest[<span class="n">0</span>].id, biggest[<span class="n">1</span>].id, by_name[<span class="n">2</span>].customer)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1 1 3 cy</code></pre></div>
+<p>If records have both a numeric id and a string form of it, sort by the number. Pass the lambda directly to <code>sort_by</code>, <code>map</code>, and <code>filter</code>: a closure the compiler can see is called directly, so it inlines like a hand-written loop.</p>
+<h2 id="give-parallel-tasks-enough-work"><a class="anchor" href="#give-parallel-tasks-enough-work" aria-hidden="true">#</a>Give parallel tasks enough work</h2>
+<p><code>parallel for</code> splits its range into contiguous chunks, up to 8 per core (at most 256), so even tiny loop bodies parallelize well: the 2-million-task Collatz benchmark runs as fast as Rust's rayon. Each iteration should write only its own <code>out[i]</code>.</p>
+<p><code>parallel:</code> blocks are different: each line is a task, and starting and joining a block costs much more than a function call. In recursive code, stop splitting once the work gets small and fall back to the sequential version:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">fib</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">2</span>:
+        <span class="k">return</span> n
+    <span class="k">return</span> <span class="f">fib</span>(n <span class="o">-</span> <span class="n">1</span>) <span class="o">+</span> <span class="f">fib</span>(n <span class="o">-</span> <span class="n">2</span>)
+
+<span class="k">fn</span> <span class="f">pfib</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">20</span>:
+        <span class="k">return</span> <span class="f">fib</span>(n)              <span class="c"># small: not worth a task</span>
+    <span class="k">parallel</span>:
+        a <span class="o">=</span> <span class="f">pfib</span>(n <span class="o">-</span> <span class="n">1</span>)
+        b <span class="o">=</span> <span class="f">pfib</span>(n <span class="o">-</span> <span class="n">2</span>)
+    <span class="k">return</span> a <span class="o">+</span> b
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">pfib</span>(<span class="n">30</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>832040</code></pre></div>
+<p>For <code>fib(40)</code>, the sequential version took 0.17s and this version 0.02s on 14 cores. Without the cutoff (splitting all the way down to <code>n &lt; 2</code>), it took 17s, 100 times slower than not using <code>parallel</code> at all. Compare with <code>TERN_THREADS=1</code> to see what parallelism is really buying you. The <a href="parallelism.html">parallel programming guide</a> covers the rules.</p>
+<h2 id="read-the-generated-c"><a class="anchor" href="#read-the-generated-c" aria-hidden="true">#</a>Read the generated C</h2>
+<p><code>tern emit prog.tn</code> prints the C that clang compiles. Search it for <code>_unique(</code>: that's a copy-on-write check, and where it sits tells you what the loop costs. For this function:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">scale</span>(xs: <span class="k">mut</span> [<span class="t">float</span>], k: <span class="t">float</span>):
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(xs):
+        xs[i] <span class="o">=</span> xs[i] <span class="o">*</span> k
+
+<span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1.0</span>] <span class="o">*</span> <span class="n">1000</span>
+    <span class="f">scale</span>(<span class="o">&amp;</span>xs, <span class="n">2.0</span>)
+    <span class="f">print</span>(xs[<span class="n">999</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2.0</code></pre></div>
+<p>The compiler emits two versions:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>static void tn_scale(Af_t** xs_p, double k_p) {
+    Af_unique(&amp;(*xs_p));                       // one check, hoisted out of the loop
+    {
+        int64_t i_1_lo = INT64_C(0), _hi2 = (((*xs_p))-&gt;len);
+        for (int64_t i_1 = i_1_lo; i_1 &lt; _hi2; i_1++) {
+            (*Af_at((*xs_p), i_1, 3)) = (((*Af_at((*xs_p), i_1, 3))) * (k_p));
+        }
+    }
+}
+static void tn_scale_u(Af_t** xs_p, double k_p, const int64_t xs_len) {
+    {
+        int64_t i_5_lo = INT64_C(0), _hi6 = xs_len;
+        for (int64_t i_5 = i_5_lo; i_5 &lt; _hi6; i_5++) {
+            (*Af_atn((*xs_p), i_5, xs_len, 3)) = (((*Af_atn((*xs_p), i_5, xs_len, 3))) * (k_p));
+        }
+    }
+}</code></pre></div>
+<p>The first checks once that <code>xs</code> isn't shared, then writes freely. The second (<code>_u</code>) is called when the caller's array is already known to be unshared with a fixed length: no check at all, and the length arrives as a parameter, so after inlining LLVM can see it. A <code>_unique(</code> call <em>inside</em> a loop means the compiler couldn't prove the array stays unshared there, usually because it is also copied, reassigned, or passed whole in the loop.</p>
+<h2 id="benchmarks-against-go-and-rust"><a class="anchor" href="#benchmarks-against-go-and-rust" aria-hidden="true">#</a>Benchmarks against Go and Rust</h2>
+<p>These are the repository's own benchmarks, on an Apple M4 Pro (14 cores), 2026-09-28, with runs interleaved across languages and every implementation printing the same answer. Run them with <code>tern run bench/run.tn</code>, <code>bench/async/run.tn</code>, <code>bench/web2/run.tn</code>, and <code>bench/platforms.tn</code>. The full tables, with the method and the load during each run, are in <code>bench/results.md</code>, <code>bench/async/results.md</code>, <code>bench/web2/results.md</code>, <code>bench/platforms_results.md</code>, and <code>bench/linux_results.md</code> (Linux, in a VM).</p>
+<p><strong>Compute</strong> (median of 7; <code>bench/results.md</code>):</p>
+<div class="table"><table><thead><tr><th>Benchmark</th><th>Tern</th><th>Go</th><th>Rust</th></tr></thead><tbody><tr><td>2M tiny tasks (<code>parallel for</code>)</td><td class=r>25ms, 18MB</td><td class=r>444ms per-goroutine, 35ms batched</td><td class=r>24ms rayon, 18MB</td></tr><tr><td>Fork-join fib(44)</td><td class=r>118ms</td><td class=r>196ms</td><td class=r>116ms rayon</td></tr><tr><td>N-body, one thread</td><td class=r><strong>1003ms</strong></td><td class=r>2956ms</td><td class=r>1094ms</td></tr><tr><td>Sieve to 200M</td><td class=r><strong>666ms, 25MB</strong></td><td class=r>767ms, 196MB</td><td class=r>685ms, 192MB (<code>Vec&lt;bool&gt;</code>); 745ms, 25MB (bit vector)</td></tr><tr><td>Binary trees, parallel</td><td class=r><strong>297ms, 67MB</strong></td><td class=r>1735ms, 178MB</td><td class=r>392ms, 96MB (mimalloc); 853ms, 75MB (system malloc)</td></tr></tbody></table></div>
+<p><strong>Tasks and servers</strong> (<code>bench/async/results.md</code>, <code>bench/web2/results.md</code>; servers on 1 thread):</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Go</th><th>Rust</th></tr></thead><tbody><tr><td>ping-pong, 1M messages</td><td class=r><strong>75ms</strong></td><td class=r>206ms</td><td class=r>106ms (tokio)</td></tr><tr><td>8 producers into 1 channel, 8M messages</td><td class=r><strong>207ms</strong></td><td class=r>400ms</td><td class=r>884ms</td></tr><tr><td>100k tasks sleeping 10ms</td><td class=r><strong>21ms, 26MB</strong></td><td class=r>116ms, 120MB</td><td class=r>56ms, 29MB</td></tr><tr><td>roost: JSON requests/s</td><td class=r><strong>168k</strong></td><td class=r>129k</td><td class=r>152k (axum)</td></tr><tr><td>roost: logging + CORS + request-id middleware</td><td class=r><strong>162k</strong></td><td class=r>101k</td><td class=r>108k</td></tr><tr><td>roost: p99 at 99k requests/s offered (open loop)</td><td class=r><strong>160µs</strong></td><td class=r>11.0ms</td><td class=r>1.67ms</td></tr></tbody></table></div>
+<p><strong>WebAssembly and the C boundary</strong> (<code>bench/platforms_results.md</code>):</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Rust</th></tr></thead><tbody><tr><td>wasm binary trees</td><td class=r>3.75s</td><td class=r><strong>2.84s</strong> (mimalloc); 5.99s (default allocator)</td></tr><tr><td>wasm sieve</td><td class=r><strong>735ms, 33MB</strong></td><td class=r>773ms, 199MB</td></tr><tr><td>wasm fib / tasks / n-body</td><td class=r>1.81s / 377ms / <strong>1.18s</strong></td><td class=r>1.82s / 382ms / 1.42s</td></tr><tr><td>threaded wasm binary trees (14 threads)</td><td class=r><strong>0.48s</strong></td><td class=r>0.63s (mimalloc)</td></tr><tr><td>calling C: 200M calls + 5M string arguments</td><td class=r><strong>217ms</strong></td><td class=r>261ms</td></tr><tr><td>closures: map/filter/sort_by on 2M structs + 50M calls</td><td class=r><strong>195ms, 94MB</strong></td><td class=r>215ms, 103MB</td></tr></tbody></table></div>
+<p><strong>Copy-on-write snapshots</strong> (keeping snapshots of a big value while changing it, median of 7; <code>bench/cow/README.md</code>):</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Go</th><th>Rust <code>.clone()</code></th><th>Rust <code>Rc::make_mut</code></th></tr></thead><tbody><tr><td>200k-int array, a snapshot per step</td><td class=r>46ms</td><td class=r>78ms</td><td class=r><strong>45ms</strong></td><td class=r>46ms</td></tr><tr><td>1000x1000 grid, one write + a snapshot per step</td><td class=r>14ms</td><td class=r>1532ms</td><td class=r>752ms</td><td class=r><strong>11ms</strong></td></tr><tr><td>100k-entry map, a snapshot per step</td><td class=r>21ms</td><td class=r>47ms</td><td class=r><strong>14ms</strong> (<code>HashMap</code>); 51ms (<code>IndexMap</code>, ordered like Tern's)</td><td class=r><strong>14ms</strong></td></tr></tbody></table></div>
+<p>Reading these honestly:</p>
+<ul><li><strong>Tern wins n-body</strong>, by 9% natively (8.9G instructions against Rust's 10.5G) and 17% on wasm: it fuses multiply-adds after vectorizing (<code>-ffp-contract=fast</code>, <code>bench/float/</code>), and uses wasm SIMD. Fork-join is a tie. Rust is ahead on single-threaded wasm binary trees with mimalloc (its nodes are half the size on wasm32).</li><li><strong>Parallel tasks, fork-join and the sieve are ties or close.</strong> When both compilers generate essentially the same machine code, a tie is the best either can do.</li><li><strong>Tern's wins come from its design</strong>, not from out-optimizing LLVM: its per-thread allocator (binary trees, 1.3x ahead of mimalloc), bit-packed <code>[bool]</code> (sieve memory), copied task stacks (a waiting task costs about 210 bytes), radix-sorted number keys, strings passed to C without a copy, and one read transaction per web request.</li><li><strong>Copy-on-write costs what an explicit copy costs</strong>, and for nested values it copies only the row written, so the obvious Tern beats the obvious Rust 55x on the grid. Rust written with <code>Rc::make_mut</code> is 1.2x faster there (plain counts, where Tern's are atomic). Rust's unordered <code>HashMap</code> copies 1.5x faster than Tern's insertion-ordered map, which is 2.4x faster than Rust's ordered <code>IndexMap</code>.</li><li><strong>Go wins one:</strong> 8 producers into one channel with many threads on Linux (198ms vs 227ms), because Go moves a woken goroutine onto the waking thread. Everywhere else Go is slower, from 1.2x (sieve) to 18x (one goroutine per tiny task), and uses more memory.</li><li><strong>Near saturation on one server thread, axum's tail latency is lower than Tern's.</strong> At equal load Tern's is the lowest on macOS, and with 4 server threads the two are within noise.</li></ul>
+</article>
+<div class="pn"><a class="prev" href="../guides/memory.html"><span>Previous</span>How memory works</a><a class="next" href="../guides/c-interop.html"><span>Next</span>Calling C, and Tern as a library</a></div>
+<footer>Source: <code>docs/guides/performance.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#measure-first">Measure first</a></li><li class="l2"><a href="#avoid-hidden-copies">Avoid hidden copies</a></li><li class="l2"><a href="#hand-values-off-with-take">Hand values off with take</a></li><li class="l2"><a href="#use-flat-arrays-of-numbers">Use flat arrays of numbers</a></li><li class="l2"><a href="#build-strings-from-the-front">Build strings from the front</a></li><li class="l2"><a href="#sort-by-numbers-when-you-can">Sort by numbers when you can</a></li><li class="l2"><a href="#give-parallel-tasks-enough-work">Give parallel tasks enough work</a></li><li class="l2"><a href="#read-the-generated-c">Read the generated C</a></li><li class="l2"><a href="#benchmarks-against-go-and-rust">Benchmarks against Go and Rust</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

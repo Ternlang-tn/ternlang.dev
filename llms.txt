@@ -1,0 +1,49 @@
+# Tern
+
+> Tern is a compiled, statically typed language with Python-like syntax and no references:
+> every value is a copy (copy-on-write), mutation goes through `mut` parameters passed with
+> `&`, and data races are compile errors. `tern` compiles `.tn` files to C and
+> then to native code, WebAssembly, iOS, or Android.
+
+To write Tern code, read docs/reference.md first (or all of llms-full.txt). The biggest
+differences from Python: functions are `fn f(x: int) int:`; `true`/`false`/`and`/`or`/`not`;
+no `None`, classes, exceptions, tuples, globals, or `range()` (use `for i in 0..n:`); arrays use
+`push`/`pop`/`len`; ints and floats never mix implicitly; and parameters are read-only unless
+declared `mut`.
+
+Start a project with `tern new NAME --template cli|web|lib`: a working, tested layout with an
+AGENTS.md for coding agents. Workflow: write `prog.tn`, run `tern check --json prog.tn`, fix each error
+(most come with a `hint` saying what to write instead), then `tern run prog.tn`.
+`tern guide <topic>` prints the matching sections of the reference. If `tern` isn't installed,
+`./install.sh` builds it; it only needs clang.
+
+## Docs
+
+- [Language reference](docs/reference.md): the whole language, every builtin and standard-library function, with tested examples
+- [Grammar](docs/grammar.md): the exact syntax in EBNF
+- [Everything in one file](llms-full.txt): the reference, grammar, standard library source, and example programs
+- [Builtin functions](docs/builtins.md): every function available without an import, with signatures and edge cases
+- [Standard library](docs/std/index.md): one page per module (binary, bitset, compress, crypto, csv, deque, flag, fmt, fs, heap, html, http, json, log, math, net, os, path, pqueue, random, re, simd, task, term, testing, time, tls, toml, url)
+- [Compiler errors](docs/errors.md): every error message, why it happens, and the fix (search it for the text you got)
+- [Coming from Python, Go, Rust, or JavaScript](docs/guides/coming-from.md): side-by-side translations and first mistakes
+- [Cookbook](docs/guides/cookbook.md): short tested recipes (files, CSV, JSON, sorting, grouping, graphs, formatting)
+- [Tour of Tern](docs/tour/01-getting-started.md): the tutorial, 13 chapters
+- [Packages](docs/packages/index.md): first-party packages, imported by name like std (migrate, pg, redis, sqlgen, sqlite)
+- [Clients for other APIs](docs/guides/openapi-clients.md): a typed Tern package from any OpenAPI 3 spec (Stripe, GitHub, ...): `tern openapi-client`
+- [Command line](docs/cli.md): every command, flag, exit code, and environment variable
+- [AGENTS.md](AGENTS.md): how to build, test, and change the compiler itself
+
+## Examples
+
+- [Values, structs, arrays, maps](examples/01_values.tn)
+- [Parallel blocks and loops](examples/02_parallel.tn)
+- [A JSON API server](examples/web/api.tn)
+- [Create/update/delete with shared state](examples/web/todo.tn)
+- [Enums and match](tests/run/enums.tn)
+- [Closures, map, filter, sort_by](tests/run/closures.tn)
+
+## Optional
+
+- [README](README.md): design, performance numbers against Go and Rust, C/wasm/mobile interop
+- [Standard library](library/std/): one `.tn` file per module (or a directory of them, like `flag/`), documented at the top of `NAME.tn`
+- [Programs the compiler must reject, with the exact errors](tests/reject/)

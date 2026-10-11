@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calling C, and Tern as a library · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/c-interop.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html" class="cur" aria-current="page">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="calling-c-and-tern-as-a-library"><a class="anchor" href="#calling-c-and-tern-as-a-library" aria-hidden="true">#</a>Calling C, and Tern as a library</h1>
+<p>Tern compiles to C, so it can call C functions directly and C can call Tern. This guide covers both directions: declaring C functions with <code>extern</code> (headers, bundled <code>.c</code> files, libraries, renaming), how each Tern type crosses the boundary, arrays, out-parameters, callbacks, and opaque <code>ptr</code> handles; then <code>export fn</code>, building a static or shared library with a generated header, handling runtime errors from C, and calling in from several threads.</p>
+<h2 id="your-first-c-call"><a class="anchor" href="#your-first-c-call" aria-hidden="true">#</a>Your first C call</h2>
+<p>An <code>extern</code> block names a C header and lists the functions you want, with Tern types:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"math.h"</span>:
+    <span class="k">fn</span> <span class="f">hypot</span>(a: <span class="t">float</span>, b: <span class="t">float</span>) <span class="t">float</span>
+    <span class="k">fn</span> <span class="f">pow</span>(x: <span class="t">float</span>, y: <span class="t">float</span>) <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">hypot</span>(<span class="n">3.0</span>, <span class="n">4.0</span>), <span class="f">pow</span>(<span class="n">2.0</span>, <span class="n">10.0</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>5.0 1024.0</code></pre></div>
+<p>The header is <code>#include</code>d into the generated C, and each call goes through a small wrapper that converts Tern values to their C form. There is no runtime marshalling layer: a call to <code>hypot</code> compiles to a call to <code>hypot</code>.</p>
+<p>The signatures are checked against the header by the C compiler, which also converts between compatible types. That is why <code>int</code> (64-bit in Tern) works for a C function that takes or returns a C <code>int</code> or <code>size_t</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"string.h"</span>:
+    <span class="k">fn</span> <span class="f">strerror</span>(code: <span class="t">int</span>) <span class="t">str</span>
+    <span class="k">fn</span> <span class="f">strlen</span>(s: <span class="t">str</span>) <span class="t">int</span>
+
+<span class="k">extern</span> <span class="s">"stdlib.h"</span>:
+    <span class="k">fn</span> <span class="f">getenv</span>(name: <span class="t">str</span>) <span class="t">str</span>
+    <span class="k">fn</span> <span class="f">atoi</span>(s: <span class="t">str</span>) <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">strerror</span>(<span class="n">2</span>))
+    <span class="f">print</span>(<span class="f">strlen</span>(<span class="s">"héllo"</span>), <span class="f">atoi</span>(<span class="s">"42 apples"</span>))
+    home <span class="o">=</span> <span class="f">getenv</span>(<span class="s">"TERN_DOCS_SURELY_UNSET"</span>)
+    <span class="f">print</span>(home <span class="o">==</span> <span class="s">""</span>, <span class="f">len</span>(home))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>No such file or directory
+6 42
+true 0</code></pre></div>
+<p><code>strlen("héllo")</code> is 6 because Tern strings are UTF-8 bytes. <code>getenv</code> returns <code>NULL</code> for a missing variable, and a <code>NULL</code> string from C becomes <code>""</code>.</p>
+<h2 id="the-extern-block"><a class="anchor" href="#the-extern-block" aria-hidden="true">#</a>The <code>extern</code> block</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"header.h"</span> source <span class="s">"impl.c"</span> link <span class="s">"z"</span>:
+    <span class="k">fn</span> <span class="f">name</span>(params) ret
+    <span class="k">fn</span> <span class="f">tern_name</span>(params) ret <span class="o">=</span> <span class="s">"c_name"</span></code></pre></div>
+<p>Every part after <code>extern</code> is optional:</p>
+<div class="table"><table><thead><tr><th>Part</th><th>What it does</th></tr></thead><tbody><tr><td><code>"header.h"</code></td><td><code>#include "header.h"</code>; the header's prototypes are used. Headers next to your <code>.tn</code> file are found too.</td></tr><tr><td><code>source "impl.c"</code></td><td>compile this C file along with the program (path relative to the <code>.tn</code> file; repeatable)</td></tr><tr><td><code>link "z"</code></td><td>link with <code>-lz</code>. A value starting with <code>-</code> is passed as linker flags as-is (repeatable)</td></tr><tr><td><code>= "c_name"</code></td><td>call the C function <code>c_name</code> under a different Tern name</td></tr></tbody></table></div>
+<p>On the command line, <code>-l lib</code>, <code>-L dir</code>, and <code>-I dir</code> do the same for libraries and headers you don't want to name in the source.</p>
+<p>Linking a system library (zlib ships with macOS and most Linux systems):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"zlib.h"</span> link <span class="s">"z"</span>:
+    <span class="k">fn</span> <span class="f">crc32</span>(crc: <span class="t">int</span>, data: <span class="t">str</span>, n: <span class="t">int</span>) <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    text <span class="o">=</span> <span class="s">"hello"</span>
+    <span class="f">print</span>(<span class="f">crc32</span>(<span class="n">0</span>, text, <span class="f">len</span>(text)))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>907060870</code></pre></div>
+<h3 id="renaming-with--c_name"><a class="anchor" href="#renaming-with--c_name" aria-hidden="true">#</a>Renaming with <code>= "c_name"</code></h3>
+<p>Use a rename when the C name clashes with a Tern builtin or reads badly in Tern code. An extern function can't take a builtin's name (<code>abs</code>, <code>min</code>, <code>max</code>, <code>find</code>, <code>copy</code>, ...), so <code>fn abs(n: int) int</code> in an <code>extern</code> block is an error; give it another name instead:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"math.h"</span>:
+    <span class="k">fn</span> <span class="f">c_floor</span>(x: <span class="t">float</span>) <span class="t">float</span> <span class="o">=</span> <span class="s">"floor"</span>
+
+<span class="k">extern</span> <span class="s">"stdlib.h"</span>:
+    <span class="k">fn</span> <span class="f">c_abs</span>(n: <span class="t">int</span>) <span class="t">int</span> <span class="o">=</span> <span class="s">"labs"</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">c_floor</span>(<span class="o">-</span><span class="n">2.5</span>), <span class="f">c_abs</span>(<span class="o">-</span><span class="n">7</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>-3.0 7</code></pre></div>
+<h3 id="without-a-header"><a class="anchor" href="#without-a-header" aria-hidden="true">#</a>Without a header</h3>
+<p><code>extern:</code> with no header makes the compiler declare each function itself, using the exact C types from the table below. That's convenient for a function in a C file you compile with <code>source</code>, but the C function must really have those types. <code>llabs</code> takes and returns <code>long long</code>, which is 64-bit, so this is correct:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span>:
+    <span class="k">fn</span> <span class="f">llabs</span>(n: <span class="t">int</span>) <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">llabs</span>(<span class="o">-</span><span class="n">42</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>42</code></pre></div>
+<p>Declaring C's <code>abs</code> (which takes a 32-bit <code>int</code>) this way would be wrong, and nothing would catch it. When a header exists, name it.</p>
+<h2 id="how-types-cross-the-boundary"><a class="anchor" href="#how-types-cross-the-boundary" aria-hidden="true">#</a>How types cross the boundary</h2>
+<div class="table"><table><thead><tr><th>Tern parameter</th><th>C type</th><th>Notes</th></tr></thead><tbody><tr><td><code>int</code></td><td><code>int64_t</code></td><td>with a header, C converts to narrower types</td></tr><tr><td><code>float</code></td><td><code>double</code></td><td></td></tr><tr><td><code>bool</code></td><td><code>bool</code></td><td></td></tr><tr><td><code>ptr</code></td><td><code>void*</code></td><td>an opaque C pointer (below)</td></tr><tr><td><code>str</code></td><td><code>const char*</code></td><td>valid only during the call; see "Strings"</td></tr><tr><td><code>[int]</code> / <code>[float]</code> / <code>[byte]</code></td><td><code>const int64_t*</code> / <code>const double*</code> / <code>const uint8_t*</code></td><td>a pointer to the elements; pass the length separately</td></tr><tr><td><code>mut int</code> / <code>mut float</code> / <code>mut bool</code> / <code>mut ptr</code></td><td><code>int64_t*</code> / <code>double*</code> / <code>bool*</code> / <code>void**</code></td><td>an out-parameter; the caller writes <code>&amp;x</code></td></tr><tr><td><code>mut [int]</code> / <code>mut [float]</code> / <code>mut [byte]</code></td><td><code>int64_t*</code> / <code>double*</code> / <code>uint8_t*</code></td><td>C may write the elements</td></tr><tr><td><code>fn(int) int</code> and similar</td><td><code>int64_t (*)(void*, int64_t)</code> plus <code>void*</code></td><td>a callback: two C arguments (below)</td></tr><tr><td>an <code>extern</code> struct</td><td>the C struct (by value), or <code>T*</code> / <code>const T*</code> with <code>mut</code></td><td>converted field by field (below)</td></tr></tbody></table></div>
+<p>Return types can be <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code> (or <code>take str</code>, below), <code>ptr</code>, an <code>extern</code> struct, or nothing.</p>
+<p>Ordinary Tern structs, enums, maps, <code>[str]</code>, arrays of structs, and <code>mut str</code> are compile errors, as is <code>take</code> (moving a value into C means nothing to C):</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">float</span>
+
+<span class="k">extern</span> <span class="s">"geom.h"</span> source <span class="s">"geom.c"</span>:
+    <span class="k">fn</span> <span class="f">centroid</span>(pts: [<span class="t">Point</span>], n: <span class="t">int</span>) <span class="t">float</span>
+    <span class="k">fn</span> <span class="f">rename</span>(name: <span class="k">mut</span> <span class="t">str</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">pass</span></code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>5: error: `[Point]` can't cross the C boundary (use int, float, bool, str, ptr, [int], [float], [byte], or a function of int/float/bool/ptr values)
+6: error: `str` can't cross the C boundary (a `mut` parameter can be int, float, bool, ptr, [int], [float], or [byte])</code></pre></div>
+<p>To pass a list of points, pass two <code>[float]</code> arrays (or one array of <code>x, y</code> pairs).</p>
+<h3 id="strings"><a class="anchor" href="#strings" aria-hidden="true">#</a>Strings</h3>
+<p>A <code>str</code> argument arrives in C as a NUL-terminated <code>const char*</code>. When the string has spare capacity for the terminating NUL (string literals always do, and most built strings do), Tern writes the NUL there and passes its own bytes: no copy. Otherwise it passes a temporary copy. Either way the pointer is valid only until the C function returns, and C must not write through it. A string containing a NUL byte looks shorter to C.</p>
+<p>A <code>str</code> result is copied into a new Tern string, and <code>NULL</code> becomes <code>""</code>. With a plain <code>str</code> result Tern never frees the pointer C returned, which suits static strings (<code>strerror</code>, <code>getenv</code>) and strings the C library owns. When C hands over memory the caller must free (<code>strdup</code>, most "returns a newly allocated string" functions), declare the result <code>take str</code>: Tern copies it and then calls <code>free()</code> on it.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"string.h"</span>:
+    <span class="k">fn</span> <span class="f">strdup</span>(s: <span class="t">str</span>) <span class="k">take</span> <span class="t">str</span>          <span class="c"># malloc'd by C, freed by Tern after copying</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">3</span>:
+        <span class="f">print</span>(<span class="f">strdup</span>(<span class="s">f"copy {i}"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>copy 0
+copy 1
+copy 2</code></pre></div>
+<p>A <code>str</code> result stops at the first NUL byte, so binary data (compressed bytes, images, protobuf) comes back as a <code>ptr</code> and a length instead: <code>string_at(p, n)</code> copies the <code>n</code> bytes at <code>p</code> into a Tern string, NUL bytes included (like Python's <code>ctypes.string_at</code>). C still owns the memory; free it with the library's own function afterwards.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"stdlib.h"</span>:
+    <span class="k">fn</span> <span class="f">calloc</span>(n: <span class="t">int</span>, size: <span class="t">int</span>) <span class="t">ptr</span>
+    <span class="k">fn</span> <span class="f">free</span>(p: <span class="t">ptr</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    p <span class="o">=</span> <span class="f">calloc</span>(<span class="n">4</span>, <span class="n">1</span>)                      <span class="c"># four zero bytes</span>
+    s <span class="o">=</span> <span class="f">string_at</span>(p, <span class="n">4</span>)                   <span class="c"># a copy, NULs included</span>
+    <span class="f">free</span>(p)
+    <span class="f">print</span>(<span class="f">len</span>(s), s.<span class="f">byte</span>(<span class="n">0</span>), s.<span class="f">byte</span>(<span class="n">3</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>4 0 0</code></pre></div>
+<p>A negative <code>n</code>, or a null <code>p</code> with <code>n &gt; 0</code>, is a runtime error; <code>string_at(p, 0)</code> is <code>""</code>.</p>
+<h3 id="out-parameters-with-mut"><a class="anchor" href="#out-parameters-with-mut" aria-hidden="true">#</a>Out-parameters with <code>mut</code></h3>
+<p>A <code>mut</code> scalar parameter becomes a pointer to the caller's variable. <code>modf</code> splits a float into its whole and fractional parts and returns the whole part through a <code>double*</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"math.h"</span>:
+    <span class="k">fn</span> <span class="f">modf</span>(x: <span class="t">float</span>, whole: <span class="k">mut</span> <span class="t">float</span>) <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    whole <span class="o">=</span> <span class="n">0.0</span>
+    frac <span class="o">=</span> <span class="f">modf</span>(<span class="n">3.25</span>, <span class="o">&amp;</span>whole)
+    <span class="f">print</span>(whole, frac)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3.0 0.25</code></pre></div>
+<p>The same rules as any <code>mut</code> call apply: <code>&amp;x</code> marks the argument, and one call can't pass the same variable twice.</p>
+<h2 id="arrays"><a class="anchor" href="#arrays" aria-hidden="true">#</a>Arrays</h2>
+<p><code>[int]</code>, <code>[float]</code>, and <code>[byte]</code> pass as a pointer to their first element. C doesn't get the length, so pass <code>len(xs)</code> as its own argument. Read-only arrays are passed as <code>const</code>, with no copy.</p>
+<p>With <code>mut</code>, C may write the elements. Arrays are copy-on-write values in Tern, so if the array's storage is shared with another variable, Tern makes it unique first: C's writes change only the array you passed. C can't change the length.</p>
+<p>Here is a C file compiled along with the program, and the Tern side. (This page's tests only type-check this program, since they don't have the <code>.c</code> file; the same code runs in <code>tests/run/ffi_source/</code>.)</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>// stats.h
+#include &lt;stdint.h&gt;
+void scale(double* xs, int64_t n, double k);
+double total(const double* xs, int64_t n);
+void minmax(const int64_t* xs, int64_t n, int64_t* lo, int64_t* hi);</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>// stats.c
+#include "stats.h"
+void scale(double* xs, int64_t n, double k) { for (int64_t i = 0; i &lt; n; i++) xs[i] *= k; }
+double total(const double* xs, int64_t n) {
+    double s = 0;
+    for (int64_t i = 0; i &lt; n; i++) s += xs[i];
+    return s;
+}
+void minmax(const int64_t* xs, int64_t n, int64_t* lo, int64_t* hi) {
+    for (int64_t i = 0; i &lt; n; i++) {
+        if (xs[i] &lt; *lo) *lo = xs[i];
+        if (xs[i] &gt; *hi) *hi = xs[i];
+    }
+}</code></pre></div>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"stats.h"</span> source <span class="s">"stats.c"</span>:
+    <span class="k">fn</span> <span class="f">scale</span>(xs: <span class="k">mut</span> [<span class="t">float</span>], n: <span class="t">int</span>, k: <span class="t">float</span>)
+    <span class="k">fn</span> <span class="f">total</span>(xs: [<span class="t">float</span>], n: <span class="t">int</span>) <span class="t">float</span>
+    <span class="k">fn</span> <span class="f">minmax</span>(xs: [<span class="t">int</span>], n: <span class="t">int</span>, lo: <span class="k">mut</span> <span class="t">int</span>, hi: <span class="k">mut</span> <span class="t">int</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    prices <span class="o">=</span> [<span class="n">1.5</span>, <span class="n">2.0</span>, <span class="n">4.25</span>]
+    before <span class="o">=</span> prices                     <span class="c"># a copy (shares storage until written)</span>
+    <span class="f">scale</span>(<span class="o">&amp;</span>prices, <span class="f">len</span>(prices), <span class="n">2.0</span>)    <span class="c"># prices is made unique, then C writes it</span>
+    <span class="f">print</span>(prices, before, <span class="f">total</span>(prices, <span class="f">len</span>(prices)))
+    xs <span class="o">=</span> [<span class="n">4</span>, <span class="o">-</span><span class="n">2</span>, <span class="n">9</span>, <span class="n">7</span>]
+    lo <span class="o">=</span> <span class="n">1000</span>
+    hi <span class="o">=</span> <span class="o">-</span><span class="n">1000</span>
+    <span class="f">minmax</span>(xs, <span class="f">len</span>(xs), <span class="o">&amp;</span>lo, <span class="o">&amp;</span>hi)
+    <span class="f">print</span>(lo, hi)</code></pre></div>
+<p>It prints <code>[3.0, 4.0, 8.5] [1.5, 2.0, 4.25] 15.5</code> and <code>-2 9</code>: <code>before</code> is unchanged. A field or element works too: <code>scale(&amp;shape.sizes, len(shape.sizes), 2.0)</code>.</p>
+<p>A <code>[byte]</code> is a C byte buffer (<code>uint8_t*</code>, one byte per element), the usual currency of compression, image, and crypto libraries:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"string.h"</span>:
+    <span class="k">fn</span> <span class="f">memset</span>(buf: <span class="k">mut</span> [byte], c: <span class="t">int</span>, n: <span class="t">int</span>) <span class="t">ptr</span>
+    <span class="k">fn</span> <span class="f">memcmp</span>(a: [byte], b: [byte], n: <span class="t">int</span>) <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    buf <span class="o">=</span> [<span class="f">byte</span>(<span class="n">0</span>)] <span class="o">*</span> <span class="n">6</span>
+    <span class="f">memset</span>(<span class="o">&amp;</span>buf, <span class="n">42</span>, <span class="n">4</span>)
+    same <span class="o">=</span> <span class="f">memcmp</span>(buf, [<span class="n">42</span>, <span class="n">42</span>, <span class="n">42</span>, <span class="n">42</span>, <span class="n">0</span>, <span class="n">0</span>], <span class="n">6</span>) <span class="o">==</span> <span class="n">0</span>
+    <span class="f">print</span>(buf, same, buf.<span class="f">to_str</span>()[<span class="o">..</span><span class="n">4</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[42, 42, 42, 42, 0, 0] true ****</code></pre></div>
+<h2 id="c-structs"><a class="anchor" href="#c-structs" aria-hidden="true">#</a>C structs</h2>
+<p>Declare a C struct inside the <code>extern</code> block, with the fields you need, as Tern types. <code>= "..."</code> names the C type when it differs (<code>"SDL_Rect"</code>, <code>"struct tm"</code>). The struct is an ordinary Tern struct on the Tern side, and crosses to C field by field, so C's own field types are used: an <code>int</code> field holds a Tern <code>int</code>, a <code>float</code> or <code>unsigned char</code> field a Tern <code>float</code> or <code>int</code>, and fields you don't declare are left zero.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"time.h"</span>:
+    <span class="k">struct</span> <span class="t">Tm</span> <span class="o">=</span> <span class="s">"struct tm"</span>:              <span class="c"># the C library's own struct: only these fields are used</span>
+        tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday: <span class="t">int</span>
+    <span class="k">fn</span> <span class="f">timegm</span>(t: <span class="k">mut</span> <span class="t">Tm</span>) <span class="t">int</span>              <span class="c"># takes `struct tm*`; fills in tm_wday and tm_yday</span>
+    <span class="k">fn</span> <span class="f">gmtime_r</span>(t: <span class="k">mut</span> <span class="t">int</span>, out: <span class="k">mut</span> <span class="t">Tm</span>) <span class="t">ptr</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    leap_day <span class="o">=</span> <span class="t">Tm</span>(<span class="n">124</span>, <span class="n">1</span>, <span class="n">29</span>, <span class="n">12</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>)     <span class="c"># 2024-02-29 12:00 UTC (years since 1900, months from 0)</span>
+    <span class="f">print</span>(<span class="f">timegm</span>(<span class="o">&amp;</span>leap_day), leap_day.tm_wday, leap_day.tm_yday)
+    t <span class="o">=</span> <span class="n">1_000_000_000</span>
+    out <span class="o">=</span> <span class="t">Tm</span>(<span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>)
+    <span class="f">gmtime_r</span>(<span class="o">&amp;</span>t, <span class="o">&amp;</span>out)
+    <span class="f">print</span>(out.tm_year <span class="o">+</span> <span class="n">1900</span>, out.tm_mon <span class="o">+</span> <span class="n">1</span>, out.tm_mday, out.tm_hour, out.tm_min)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1709208000 4 59
+2001 9 9 1 46</code></pre></div>
+<ul><li><strong>By value</strong> (<code>r: Rect</code>) passes the C struct itself; a struct result comes back as a Tern value.</li><li><strong><code>mut</code></strong> (<code>r: mut Rect</code>) passes a pointer, which is what most C APIs take, <code>const</code> or not. C's changes are copied back into your variable (or field, or array element) after the call.</li><li>Fields can be <code>int</code>, <code>float</code>, <code>bool</code>, <code>ptr</code>, or another <code>extern</code> struct (nested structs, like a sprite holding a rectangle and a color); <code>tests/run/ffi_structs/</code> has a full example.</li><li>Without a header (<code>extern:</code>), Tern lays the struct out itself from the Tern field types (<code>int64_t</code>, <code>double</code>, ...), so the C side must declare it the same way.</li></ul>
+<h2 id="callbacks-passing-tern-functions-to-c"><a class="anchor" href="#callbacks-passing-tern-functions-to-c" aria-hidden="true">#</a>Callbacks: passing Tern functions to C</h2>
+<p>A parameter with a function type, like <code>f: fn(int) int</code>, becomes two C arguments: a function pointer whose first parameter is a <code>void*</code>, and that <code>void*</code> (the "user data"). C calls the function pointer with the user data first:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>// each.h
+#include &lt;stdint.h&gt;
+int64_t each_sum(int64_t n, int64_t (*f)(void*, int64_t), void* ud);
+double integrate(double a, double b, int64_t steps, double (*f)(void*, double), void* ud);</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>// each.c
+#include "each.h"
+int64_t each_sum(int64_t n, int64_t (*f)(void*, int64_t), void* ud) {
+    int64_t s = 0;
+    for (int64_t i = 0; i &lt; n; i++) s += f(ud, i);
+    return s;
+}
+double integrate(double a, double b, int64_t steps, double (*f)(void*, double), void* ud) {
+    double h = (b - a) / (double)steps, s = 0;
+    for (int64_t i = 0; i &lt; steps; i++) s += f(ud, a + h * ((double)i + 0.5));
+    return s * h;
+}</code></pre></div>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"each.h"</span> source <span class="s">"each.c"</span>:
+    <span class="k">fn</span> <span class="f">each_sum</span>(n: <span class="t">int</span>, f: <span class="k">fn</span>(<span class="t">int</span>) <span class="t">int</span>) <span class="t">int</span>
+    <span class="k">fn</span> <span class="f">integrate</span>(a: <span class="t">float</span>, b: <span class="t">float</span>, steps: <span class="t">int</span>, f: <span class="k">fn</span>(<span class="t">float</span>) <span class="t">float</span>) <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    k <span class="o">=</span> <span class="n">3</span>
+    <span class="f">print</span>(<span class="f">each_sum</span>(<span class="n">5</span>, <span class="k">fn</span>(i) i <span class="o">*</span> k))            <span class="c"># a closure: it captured k</span>
+    <span class="f">print</span>(<span class="f">integrate</span>(<span class="n">0.0</span>, <span class="n">1.0</span>, <span class="n">1000</span>, <span class="k">fn</span>(x) x <span class="o">*</span> x))</code></pre></div>
+<p>Any Tern function value works: a lambda, a closure that captured variables, a nested <code>fn</code>, or a top-level function. The user data is the closure itself, so C libraries that follow the common "function pointer plus <code>void*</code> context" convention can call back into Tern directly.</p>
+<p>Rules for callbacks:</p>
+<ul><li>Their parameters and result must be <code>int</code>, <code>float</code>, <code>bool</code>, or <code>ptr</code> (or no result). <code>fn(str) int</code> can't be a callback.</li><li><strong>Lifetime:</strong> C may call the function only while the call it was passed to is running. Don't store the function pointer or user data for later: the closure may be freed as soon as the call returns.</li><li><strong>Threads:</strong> in a normal build, C must call it on the same thread that made the call. If the C code calls back from threads of its own (a C library that parallelizes a loop, say), build with <code>--portable</code>, where any thread can run Tern code. Libraries (<code>--lib</code>, <code>--shared</code>) always use the portable runtime. Without <code>--portable</code>, a callback that allocates on another thread crashes.</li></ul>
+<h2 id="opaque-handles-ptr"><a class="anchor" href="#opaque-handles-ptr" aria-hidden="true">#</a>Opaque handles: <code>ptr</code></h2>
+<p><code>ptr</code> is a C pointer that Tern only stores and passes along: a <code>FILE*</code>, a database connection, an object from a C library. <code>null</code> is the null pointer, <code>p.is_null()</code> tests for it, and <code>==</code> compares two pointers. With a header, C converts between <code>void*</code> and the real pointer type for you:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">extern</span> <span class="s">"stdio.h"</span>:
+    <span class="k">fn</span> <span class="f">fopen</span>(path: <span class="t">str</span>, mode: <span class="t">str</span>) <span class="t">ptr</span>
+    <span class="k">fn</span> <span class="f">fputs</span>(text: <span class="t">str</span>, f: <span class="t">ptr</span>) <span class="t">int</span>
+    <span class="k">fn</span> <span class="f">fclose</span>(f: <span class="t">ptr</span>) <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">write_lines</span>(path: <span class="t">str</span>, lines: [<span class="t">str</span>]) <span class="t">bool</span>:
+    f <span class="o">=</span> <span class="f">fopen</span>(path, <span class="s">"w"</span>)
+    <span class="k">if</span> f.<span class="f">is_null</span>():
+        <span class="k">return</span> <span class="k">false</span>
+    <span class="k">for</span> line <span class="k">in</span> lines:
+        <span class="f">fputs</span>(line <span class="o">+</span> <span class="s">"\n"</span>, f)
+    <span class="f">fclose</span>(f)
+    <span class="k">return</span> <span class="k">true</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    path <span class="o">=</span> <span class="s">"/tmp/tern_c_interop.txt"</span>
+    <span class="f">print</span>(<span class="f">write_lines</span>(path, [<span class="s">"alpha"</span>, <span class="s">"beta"</span>]))
+    <span class="f">print</span>(fs.<span class="f">read</span>(path).<span class="f">trim</span>())
+    <span class="f">print</span>(<span class="f">write_lines</span>(<span class="s">"/no/such/dir/x.txt"</span>, [<span class="s">"lost"</span>]))
+    fs.<span class="f">remove</span>(path)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true
+alpha
+beta
+false</code></pre></div>
+<p>Pass <code>null</code> where C accepts a null pointer:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">extern</span> <span class="s">"time.h"</span>:
+    <span class="k">fn</span> <span class="f">time</span>(out: <span class="t">ptr</span>) <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    now <span class="o">=</span> <span class="f">time</span>(<span class="k">null</span>)
+    <span class="f">print</span>(now <span class="o">&gt;</span> <span class="n">1700000000</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true</code></pre></div>
+<p>A <code>ptr</code> is a plain value: copying it copies the address, and a struct may hold one. Tern never frees what it points to, so call the library's close or free function yourself (<code>fclose</code> above). <code>null</code> has type <code>ptr</code> only; other types have no null.</p>
+<h2 id="tern-as-a-library-export-fn"><a class="anchor" href="#tern-as-a-library-export-fn" aria-hidden="true">#</a>Tern as a library: <code>export fn</code></h2>
+<p>The other direction: mark functions <code>export fn</code>, and C (or anything that can call C: Swift, Kotlin through JNI, Python's <code>ctypes</code>) can call them.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">export</span> <span class="k">fn</span> <span class="f">word_count</span>(text: <span class="t">str</span>) <span class="t">int</span>:
+    n <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> w <span class="k">in</span> text.<span class="f">split</span>(<span class="s">" "</span>):
+        <span class="k">if</span> <span class="f">len</span>(w) <span class="o">&gt;</span> <span class="n">0</span>:
+            n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> n
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">shout</span>(text: <span class="t">str</span>) <span class="t">str</span>:
+    <span class="k">return</span> text.<span class="f">upper</span>() <span class="o">+</span> <span class="s">"!"</span>
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">nth_word</span>(text: <span class="t">str</span>, i: <span class="t">int</span>) <span class="t">str</span>:
+    <span class="k">return</span> text.<span class="f">split</span>(<span class="s">" "</span>)[i]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">word_count</span>(<span class="s">"the quick  brown fox"</span>), <span class="f">shout</span>(<span class="s">"hi"</span>), <span class="f">nth_word</span>(<span class="s">"a b c"</span>, <span class="n">1</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>4 HI! b</code></pre></div>
+<p>A library doesn't need <code>fn main()</code>; if it has one (handy for trying the functions with <code>tern run</code>), library builds leave it out. Exported functions take <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, or <code>ptr</code> parameters (read-only; no <code>mut</code> or <code>take</code>) and return one of those or nothing. Only the main file can export. Everything else in the program (structs, arrays, <code>parallel</code>, other modules) works as usual behind the exported functions.</p>
+<p>Build it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern build --lib words.tn -o libwords.a<span class="c">                      # static library + words.h</span>
+tern build --shared words.tn -o libwords.dylib<span class="c">               # shared (.so on Linux) + words.h</span></code></pre></div>
+<p>The header is named after the library (<code>libwords.a</code> gives <code>words.h</code>) and written next to it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>// words.h: generated by ternc. Functions exported from a Tern library.
+// link with: -lm -lpthread
+...
+int64_t word_count(const char* text);
+char* shout(const char* text);   // returns a malloc'd string: free it with tern_free()
+char* nth_word(const char* text, int64_t i);   // can fail: check tern_last_error(); returns a malloc'd string: free it with tern_free()
+
+// After a call to a function marked "can fail": the message of its runtime error, or NULL.
+// (A runtime error returns 0 / NULL / false from the call instead of ending the process.)
+const char* tern_last_error(void);
+void tern_free(void* p);
+void* tern_alloc(int64_t n);
+void tern_stats(void);      // print memory statistics (builds made with TERN_STATS=1)</code></pre></div>
+<p>A C program using it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>#include &lt;stdio.h&gt;
+#include "words.h"
+
+int main(void) {
+    printf("%lld\n", (long long)word_count("tern compiles to c"));
+
+    char *s = shout("hello");
+    printf("%s\n", s);
+    tern_free(s);
+
+    char *w = nth_word("red green blue", 7);
+    if (w == NULL)
+        printf("error: %s\n", tern_last_error());
+    return 0;
+}</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">cc</span> host.c -I. libwords.a -lm -lpthread -o host &amp;&amp; ./host</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>4
+HELLO!
+error: runtime error (line 12): index 7 out of bounds (length 3)</code></pre></div>
+<h3 id="strings-across-an-export"><a class="anchor" href="#strings-across-an-export" aria-hidden="true">#</a>Strings across an export</h3>
+<ul><li>A <code>const char*</code> argument is copied into a Tern string; <code>NULL</code> is treated as <code>""</code>. The caller keeps ownership of its string.</li><li>A <code>str</code> result is a new <code>malloc</code>'d, NUL-terminated <code>char*</code> that the caller owns. Free it with <code>tern_free()</code> (which calls <code>free</code>, but using it keeps working if that ever changes).</li></ul>
+<h3 id="runtime-errors"><a class="anchor" href="#runtime-errors" aria-hidden="true">#</a>Runtime errors</h3>
+<p>A runtime error that would end a normal program (an index out of bounds, a missing map key, division by zero, <code>pop()</code> on an empty array) doesn't end the host process. The call returns <code>0</code>, <code>0.0</code>, <code>false</code>, or <code>NULL</code>, and <code>tern_last_error()</code> returns the message, just like the message a program would print. The library keeps working for later calls.</p>
+<ul><li>The compiler works out which exported functions can fail, and marks them in the header with <code>can fail: check tern_last_error()</code>. Functions that can't fail (<code>word_count</code> and <code>shout</code> above) skip the error-catching setup entirely, so they cost no more than a plain C call.</li><li>A function that can fail clears the error at the start of each call, so check <code>tern_last_error()</code> right after that call. Functions that can't fail don't touch it.</li><li>The error is per thread: a failure on one thread doesn't show up on another.</li><li>Values the failing call had built are abandoned, not freed, so each error leaks a little memory. Treat errors as exceptional, not as control flow; for expected failures, return a status (<code>-1</code>, <code>""</code>, or a <code>bool</code>) from Tern code instead.</li></ul>
+<h3 id="threads-and-startup"><a class="anchor" href="#threads-and-startup" aria-hidden="true">#</a>Threads and startup</h3>
+<p>There is no init function to call. The Tern runtime starts on the first call into the library, on whichever thread makes it, and several host threads may call exported functions at the same time. <code>parallel</code> blocks inside an exported function run on Tern's own worker threads, as in a normal program. <code>examples/embed/</code> shows a C program calling a Tern library from two threads:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>examples/embed/run.sh</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>describe: 8 numbers, total 31, largest 9
+squares_total(1000) = 332833500
+thread: sum_csv("1,2,3") x 2000 = 12000
+thread: sum_csv("10,20,30") x 2000 = 120000
+nth(1) = 6, error: none
+nth(10) = 0, error: runtime error (line 40): index 10 out of bounds (length 3)
+still running: sum_csv = 42</code></pre></div>
+<p>Libraries use the portable runtime, which finds each thread's heap through thread-local storage instead of from the stack. That's what lets Tern code run on threads it didn't create. It costs about 20% on allocation-heavy code and nothing measurable otherwise.</p>
+<h3 id="other-hosts"><a class="anchor" href="#other-hosts" aria-hidden="true">#</a>Other hosts</h3>
+<p>The library is plain C, so anything with a C FFI can load it. <code>tests/embed/py_host.sh</code> loads a <code>--shared</code> build from Python with <code>ctypes</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> ctypes
+lib <span class="o">=</span> ctypes.<span class="t">CDLL</span>(<span class="s">"./libstats.so"</span>)
+lib.describe.restype, lib.describe.argtypes <span class="o">=</span> ctypes.c_void_p, [ctypes.c_char_p]
+lib.tern_last_error.restype <span class="o">=</span> ctypes.c_char_p
+p <span class="o">=</span> lib.<span class="f">describe</span>(b<span class="s">"7,8"</span>)
+<span class="f">print</span>(ctypes.<span class="f">string_at</span>(p).<span class="f">decode</span>())
+lib.<span class="f">tern_free</span>(ctypes.<span class="f">c_void_p</span>(p))</code></pre></div>
+<p>Declare string results as <code>c_void_p</code>, not <code>c_char_p</code>, so you keep the pointer to free. For Swift and Kotlin, see <a href="mobile.html">iOS and Android</a>; for JavaScript, see <a href="wasm.html">WebAssembly and JavaScript</a>.</p>
+<h2 id="performance"><a class="anchor" href="#performance" aria-hidden="true">#</a>Performance</h2>
+<p>Crossing the boundary is cheap in both directions. From <code>bench/platforms_results.md</code> (Apple M4 Pro, median of 5 runs, against the same programs in Rust):</p>
+<div class="table"><table><thead><tr><th>benchmark</th><th>Tern</th><th>Rust</th></tr></thead><tbody><tr><td>calling C: 200M calls + 5M string arguments</td><td class=r>200ms</td><td class=r>245ms</td></tr><tr><td>called from C: 200M calls + 2M string calls</td><td class=r>392ms</td><td class=r>428ms</td></tr></tbody></table></div>
+<p>Strings go to C without a copy when they have room for the NUL, and exported functions that can't fail skip error handling. Both are small effects; the point is that a C call is a C call.</p>
+<h2 id="limits"><a class="anchor" href="#limits" aria-hidden="true">#</a>Limits</h2>
+<ul><li>Only <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, <code>ptr</code>, <code>[int]</code>, <code>[float]</code>, <code>[byte]</code>, <code>extern</code> structs of those, and callbacks of scalar values cross the boundary. C unions, fixed-size arrays inside C structs, and arrays of structs don't: use a <code>ptr</code> to C-side data with accessor functions.</li><li>Exported functions take and return only <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, and <code>ptr</code>.</li><li>A callback must be called during the call it was passed to, and, without <code>--portable</code>, on the same thread.</li><li><code>extern:</code> without a header trusts your signatures; a mismatch with the real C function is undefined behavior that nothing reports.</li><li>C code runs outside Tern's safety checks. A C function that writes past an array's end or keeps a string pointer after returning can corrupt memory like in any C program.</li></ul>
+</article>
+<div class="pn"><a class="prev" href="../guides/performance.html"><span>Previous</span>Performance tips</a><a class="next" href="../guides/wasm.html"><span>Next</span>WebAssembly and JavaScript</a></div>
+<footer>Source: <code>docs/guides/c-interop.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#your-first-c-call">Your first C call</a></li><li class="l2"><a href="#the-extern-block">The extern block</a></li><li class="l3"><a href="#renaming-with--c_name">Renaming with = "c_name"</a></li><li class="l3"><a href="#without-a-header">Without a header</a></li><li class="l2"><a href="#how-types-cross-the-boundary">How types cross the boundary</a></li><li class="l3"><a href="#strings">Strings</a></li><li class="l3"><a href="#out-parameters-with-mut">Out-parameters with mut</a></li><li class="l2"><a href="#arrays">Arrays</a></li><li class="l2"><a href="#c-structs">C structs</a></li><li class="l2"><a href="#callbacks-passing-tern-functions-to-c">Callbacks: passing Tern functions to C</a></li><li class="l2"><a href="#opaque-handles-ptr">Opaque handles: ptr</a></li><li class="l2"><a href="#tern-as-a-library-export-fn">Tern as a library: export fn</a></li><li class="l3"><a href="#strings-across-an-export">Strings across an export</a></li><li class="l3"><a href="#runtime-errors">Runtime errors</a></li><li class="l3"><a href="#threads-and-startup">Threads and startup</a></li><li class="l3"><a href="#other-hosts">Other hosts</a></li><li class="l2"><a href="#performance">Performance</a></li><li class="l2"><a href="#limits">Limits</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

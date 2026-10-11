@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fs · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/fs.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html" class="cur" aria-current="page">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="fs"><a class="anchor" href="#fs" aria-hidden="true">#</a>fs</h1>
+<p>The <code>fs</code> module reads and writes files and works with directories. There are seven functions, and none of them stops the program on failure: each one reports it with an empty result or <code>false</code>. This page covers every function, what "failure" looks like for each, and the patterns for reading line-based and JSON files.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    path <span class="o">=</span> <span class="s">"/tmp/tern_fs_intro.txt"</span>
+    fs.<span class="f">write</span>(path, <span class="s">"hello\n"</span>)
+    fs.<span class="f">append</span>(path, <span class="s">"world\n"</span>)
+    <span class="f">print</span>(fs.<span class="f">read</span>(path).<span class="f">split</span>(<span class="s">"\n"</span>))
+    fs.<span class="f">remove</span>(path)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["hello", "world", ""]</code></pre></div>
+<p>Paths are plain strings, passed to the operating system as they are. A relative path is relative to the directory the program was started in (not the program's own location). Files are read and written as bytes, with no newline translation or encoding checks.</p>
+<h2 id="read"><a class="anchor" href="#read" aria-hidden="true">#</a>read</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">read</span>(path: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p>The whole file as a string. If the file can't be read (it doesn't exist, it's a directory, or permission is denied), <code>read</code> returns <code>""</code>. An empty file also gives <code>""</code>, so when the difference matters, check <code>fs.exists(path)</code> first.</p>
+<p>The file is read in one go into memory. Strings are limited to 4GB.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(fs.<span class="f">read</span>(<span class="s">"/tmp/no_such_file_here.txt"</span>) <span class="o">==</span> <span class="s">""</span>)
+    fs.<span class="f">write</span>(<span class="s">"/tmp/tern_fs_scores.txt"</span>, <span class="s">"ada,36\nbob,25\n"</span>)
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> line <span class="k">in</span> fs.<span class="f">read</span>(<span class="s">"/tmp/tern_fs_scores.txt"</span>).<span class="f">split</span>(<span class="s">"\n"</span>):
+        <span class="k">if</span> line <span class="o">==</span> <span class="s">""</span>:
+            <span class="k">continue</span>                              <span class="c"># the text ends with "\n": skip the empty last piece</span>
+        cols <span class="o">=</span> line.<span class="f">split</span>(<span class="s">","</span>)
+        total <span class="o">+</span><span class="o">=</span> cols[<span class="n">1</span>].<span class="f">to_int</span>(<span class="n">0</span>)
+    <span class="f">print</span>(total)
+    fs.<span class="f">remove</span>(<span class="s">"/tmp/tern_fs_scores.txt"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true
+61</code></pre></div>
+<p><code>text.split("\n")</code> on text that ends with a newline gives an empty last element. Skip empty lines as above, or split <code>text.trim()</code> (which also removes leading whitespace). Files written on Windows have <code>\r\n</code> line ends: <code>line.trim()</code> removes the <code>\r</code>.</p>
+<h2 id="write"><a class="anchor" href="#write" aria-hidden="true">#</a>write</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">write</span>(path: <span class="t">str</span>, text: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p>Creates the file, or empties it if it exists, and writes <code>text</code>. Returns <code>true</code> if every byte was written and the file was closed cleanly. Returns <code>false</code> if the file can't be created, for example because its directory doesn't exist (<code>write</code> doesn't create directories; use <code>mkdir</code>) or permission is denied.</p>
+<p>The write is not atomic: a crash halfway through can leave a partial file. To replace an important file safely, write a temporary file next to it and check the result before removing the old one.</p>
+<h2 id="append"><a class="anchor" href="#append" aria-hidden="true">#</a>append</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">append</span>(path: <span class="t">str</span>, text: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p>Adds <code>text</code> to the end of the file, creating it if it doesn't exist. Returns <code>false</code> in the same cases as <code>write</code>. Each call opens and closes the file, so it's fine for logs but slow for writing a large file piece by piece: build the text in a string and <code>write</code> it once.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    log <span class="o">=</span> <span class="s">"/tmp/tern_fs_app.log"</span>
+    fs.<span class="f">remove</span>(log)
+    <span class="k">for</span> event <span class="k">in</span> [<span class="s">"start"</span>, <span class="s">"load config"</span>, <span class="s">"ready"</span>]:
+        fs.<span class="f">append</span>(log, event <span class="o">+</span> <span class="s">"\n"</span>)
+    <span class="f">print</span>(fs.<span class="f">read</span>(log))
+    <span class="f">print</span>(fs.<span class="f">write</span>(<span class="s">"/tmp/no/such/dir/x.txt"</span>, <span class="s">"data"</span>))
+    fs.<span class="f">remove</span>(log)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>start
+load config
+ready
+
+false</code></pre></div>
+<h2 id="exists"><a class="anchor" href="#exists" aria-hidden="true">#</a>exists</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">exists</span>(path: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p><code>true</code> if something exists at <code>path</code>: a file or a directory.</p>
+<h2 id="remove"><a class="anchor" href="#remove" aria-hidden="true">#</a>remove</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">remove</span>(path: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p>Deletes a file, or an <strong>empty</strong> directory. Returns <code>false</code> if nothing was removed: the path doesn't exist, the directory isn't empty, or permission is denied. There is no recursive delete; list the directory and remove its entries first.</p>
+<h2 id="mkdir"><a class="anchor" href="#mkdir" aria-hidden="true">#</a>mkdir</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">mkdir</span>(path: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p>Creates one directory (permissions <code>755</code>, before the umask). Returns <code>true</code> if the directory was created <strong>or already exists</strong>, so it is safe to call every time the program starts. The parent must exist: <code>mkdir("a/b/c")</code> fails if <code>a/b</code> doesn't. Note that <code>mkdir</code> also returns <code>true</code> if a <em>file</em> already has that name.</p>
+<h2 id="list"><a class="anchor" href="#list" aria-hidden="true">#</a>list</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">list</span>(dir: <span class="t">str</span>) [<span class="t">str</span>]</code></pre></div>
+<p>The names of the entries in a directory: files and subdirectories, without <code>.</code> and <code>..</code>, and without the directory's path in front. The order is whatever the operating system returns, which is not sorted; sort with <code>sort_by</code>. A missing or unreadable directory gives <code>[]</code>. Entries aren't marked as files or directories (<code>list_marked</code> marks them), and <code>list</code> doesn't look inside subdirectories.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    dir <span class="o">=</span> <span class="s">"/tmp/tern_fs_demo"</span>
+    <span class="f">print</span>(fs.<span class="f">mkdir</span>(dir), fs.<span class="f">mkdir</span>(dir))
+    fs.<span class="f">write</span>(dir <span class="o">+</span> <span class="s">"/b.txt"</span>, <span class="s">"2"</span>)
+    fs.<span class="f">write</span>(dir <span class="o">+</span> <span class="s">"/a.txt"</span>, <span class="s">"1"</span>)
+    <span class="f">print</span>(fs.<span class="f">list</span>(dir).<span class="f">sort_by</span>(<span class="k">fn</span>(n) n), fs.<span class="f">exists</span>(dir <span class="o">+</span> <span class="s">"/a.txt"</span>))
+    <span class="f">print</span>(fs.<span class="f">remove</span>(dir))                 <span class="c"># not empty yet</span>
+    <span class="k">for</span> name <span class="k">in</span> fs.<span class="f">list</span>(dir):
+        fs.<span class="f">remove</span>(dir <span class="o">+</span> <span class="s">"/"</span> <span class="o">+</span> name)
+    <span class="f">print</span>(fs.<span class="f">remove</span>(dir), fs.<span class="f">exists</span>(dir), fs.<span class="f">list</span>(dir))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true true
+["a.txt", "b.txt"] true
+false
+true false []</code></pre></div>
+<h2 id="list_marked"><a class="anchor" href="#list_marked" aria-hidden="true">#</a>list_marked</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">list_marked</span>(dir: <span class="t">str</span>) [<span class="t">str</span>]</code></pre></div>
+<p><code>list</code>, with a <code>/</code> after the name of each directory (a symlink to one counts). The operating system says which entries are directories while listing them, so this is one system call per batch of names, where <code>list</code> followed by <code>stat</code> of every name is one more per name: walking a tree of 20,000 files takes about a third of the time.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    dir <span class="o">=</span> <span class="s">"/tmp/tern_fs_marked"</span>
+    fs.<span class="f">remove_all</span>(dir)
+    fs.<span class="f">mkdir</span>(dir)
+    fs.<span class="f">mkdir</span>(dir <span class="o">+</span> <span class="s">"/sub"</span>)
+    fs.<span class="f">write</span>(dir <span class="o">+</span> <span class="s">"/a.txt"</span>, <span class="s">"1"</span>)
+    <span class="f">print</span>(fs.<span class="f">list_marked</span>(dir).<span class="f">sort_by</span>(<span class="k">fn</span>(n) n))
+    fs.<span class="f">remove_all</span>(dir)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["a.txt", "sub/"]</code></pre></div>
+<h2 id="error"><a class="anchor" href="#error" aria-hidden="true">#</a>error</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">error</span>() <span class="t">str</span></code></pre></div>
+<p>Why the last <code>fs</code> call on this thread failed, with the operating system's reason: <code>"can't read notes.txt: No such file or directory"</code>, <code>"can't write /etc/x: Permission denied"</code>. It is <code>""</code> after a call that succeeded, so check it right after the call you care about.</p>
+<h2 id="stat-and-rename"><a class="anchor" href="#stat-and-rename" aria-hidden="true">#</a>stat and rename</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">stat</span>(path: <span class="t">str</span>) <span class="t">Info</span>
+<span class="k">fn</span> <span class="f">rename</span>(<span class="k">from</span>: <span class="t">str</span>, to: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p><code>Info</code> has the fields <code>exists</code>, <code>is_dir</code>, <code>size</code> (bytes) and <code>modified</code> (seconds since 1970, like <code>time.now()</code>). For a path that can't be read, <code>exists</code> is false and <code>fs.error()</code> says why. <code>rename</code> moves a file or directory (replacing a file at <code>to</code>); within one file system it is atomic, which makes "write to a temporary name, then rename" the safe way to replace a file.</p>
+<h2 id="walk-copy-chmod-remove_all-temp_dir"><a class="anchor" href="#walk-copy-chmod-remove_all-temp_dir" aria-hidden="true">#</a>walk, copy, chmod, remove_all, temp_dir</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">walk</span>(dir: <span class="t">str</span>) [<span class="t">str</span>]
+<span class="k">fn</span> <span class="f">copy</span>(<span class="k">from</span>: <span class="t">str</span>, to: <span class="t">str</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">chmod</span>(path: <span class="t">str</span>, mode: <span class="t">int</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">remove_all</span>(path: <span class="t">str</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">temp_dir</span>(prefix: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p><code>chmod</code> sets a file's permission bits: <code>fs.chmod(path, 0o600)</code> lets only its owner read and write it, which is what a file holding a key or a secret wants (on WebAssembly, which has no permissions, it only checks that the file exists).</p>
+<p><code>walk</code> lists every file below <code>dir</code> (not the directories themselves), as <code>dir/sub/name</code> paths, sorted. <code>copy</code> copies a file's bytes and its permissions (a copied program stays runnable). <code>remove_all</code> removes a file, or a directory and everything in it; it returns true if the path is gone, including when it never existed. <code>temp_dir</code> makes a new empty directory in <code>$TMPDIR</code> (or <code>/tmp</code>) whose name starts with <code>prefix</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> fs.<span class="f">temp_dir</span>(<span class="s">"demo"</span>)
+    fs.<span class="f">mkdir</span>(d <span class="o">+</span> <span class="s">"/src"</span>)
+    fs.<span class="f">write</span>(d <span class="o">+</span> <span class="s">"/src/a.tn"</span>, <span class="s">"a"</span>)
+    fs.<span class="f">write</span>(d <span class="o">+</span> <span class="s">"/notes.txt"</span>, <span class="s">"n"</span>)
+    fs.<span class="f">copy</span>(d <span class="o">+</span> <span class="s">"/notes.txt"</span>, d <span class="o">+</span> <span class="s">"/src/b.txt"</span>)
+    <span class="k">for</span> f <span class="k">in</span> fs.<span class="f">walk</span>(d):
+        <span class="f">print</span>(f[<span class="f">len</span>(d)<span class="o">..</span>])
+    <span class="f">print</span>(fs.<span class="f">remove_all</span>(d), fs.<span class="f">exists</span>(d))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>/notes.txt
+/src/a.tn
+/src/b.txt
+true false</code></pre></div>
+<h2 id="reading-and-writing-a-piece-at-a-time"><a class="anchor" href="#reading-and-writing-a-piece-at-a-time" aria-hidden="true">#</a>Reading and writing a piece at a time</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">open</span>(path: <span class="t">str</span>) <span class="t">File</span>              <span class="k">for</span> reading
+<span class="k">fn</span> <span class="f">create</span>(path: <span class="t">str</span>) <span class="t">File</span>            <span class="k">for</span> writing (an existing file is emptied)
+<span class="k">fn</span> <span class="f">open_append</span>(path: <span class="t">str</span>) <span class="t">File</span>       <span class="k">for</span> writing at the end
+<span class="k">fn</span> <span class="f">ok</span>(f: <span class="t">File</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">read_line</span>(f: <span class="t">File</span>) <span class="t">str</span>            the next line with its <span class="s">"\n"</span> (<span class="s">""</span> at the end)
+<span class="k">fn</span> <span class="f">read_some</span>(f: <span class="t">File</span>, max: <span class="t">int</span>) <span class="t">str</span>  up to max bytes: on a pipe, what has arrived (<span class="s">""</span> at the end)
+<span class="k">fn</span> <span class="f">read_at</span>(f: <span class="t">File</span>, off: <span class="t">int</span>, n: <span class="t">int</span>) <span class="t">str</span>   n bytes at offset off, fewer at the end (<span class="s">""</span> past it);
+                                     read_line <span class="o">/</span> read_some's position doesn't move
+<span class="k">fn</span> <span class="f">put</span>(f: <span class="t">File</span>, text: <span class="t">str</span>) <span class="t">bool</span>      buffered: see flush
+<span class="k">fn</span> <span class="f">flush</span>(f: <span class="t">File</span>) <span class="t">bool</span>               write out what was put so far (readers see it now)
+<span class="k">fn</span> <span class="f">close</span>(f: <span class="t">File</span>) <span class="t">bool</span></code></pre></div>
+<p>For files too big to read at once, or logs written as you go. Check <code>f.ok()</code> after opening (<code>fs.error()</code> says why it failed). Lines keep their <code>"\n"</code>, so an empty line is <code>"\n"</code> and only the end of the file is <code>""</code>; the last line may lack the <code>"\n"</code>. Writes are buffered: <code>f.flush()</code> writes out what was put so far, and <code>f.close()</code> (or the program's end) writes out the rest. Reading at the end of a file that is still growing (a log) returns <code>""</code>, and the next read picks up what was added since.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    path <span class="o">=</span> <span class="s">"/tmp/tern_fs_doc.txt"</span>
+    out <span class="o">=</span> fs.<span class="f">create</span>(path)
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">3</span>:
+        out.<span class="f">put</span>(<span class="s">f"line {i}\n"</span>)
+    out.<span class="f">close</span>()
+    f <span class="o">=</span> fs.<span class="f">open</span>(path)
+    n <span class="o">=</span> <span class="n">0</span>
+    line <span class="o">=</span> f.<span class="f">read_line</span>()
+    <span class="k">while</span> line <span class="o">!=</span> <span class="s">""</span>:
+        n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        line <span class="o">=</span> f.<span class="f">read_line</span>()
+    f.<span class="f">close</span>()
+    info <span class="o">=</span> fs.<span class="f">stat</span>(path)
+    <span class="f">print</span>(n, info.size, info.is_dir)
+    <span class="f">print</span>(fs.<span class="f">rename</span>(path, path <span class="o">+</span> <span class="s">".old"</span>), fs.<span class="f">exists</span>(path))
+    fs.<span class="f">remove</span>(path <span class="o">+</span> <span class="s">".old"</span>)
+    <span class="f">print</span>(fs.<span class="f">open</span>(path).<span class="f">ok</span>(), fs.<span class="f">error</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 21 false
+true false
+false can't open /tmp/tern_fs_doc.txt: No such file or directory</code></pre></div>
+<p>In a task, file calls run on the task's thread; for very large files use <code>task.blocking</code> so the other tasks on that core keep running.</p>
+<h2 id="with-result"><a class="anchor" href="#with-result" aria-hidden="true">#</a>With Result</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">try_read</span>(path: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">try_write</span>(path: <span class="t">str</span>, text: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]      bytes written
+<span class="k">fn</span> <span class="f">try_append</span>(path: <span class="t">str</span>, text: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">try_list</span>(dir: <span class="t">str</span>) <span class="t">Result</span>[[<span class="t">str</span>], <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">try_stat</span>(path: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Info</span>, <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">try_open</span>(path: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">File</span>, <span class="t">str</span>]</code></pre></div>
+<p>The same operations as <code>Result</code> values, whose error says what failed and why, so <code>?</code> can pass a failure up:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">port_from</span>(path: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    text <span class="o">=</span> fs.<span class="f">try_read</span>(path)?
+    port <span class="o">=</span> text.<span class="f">trim</span>().<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+    <span class="k">if</span> port <span class="o">&lt;</span> <span class="n">0</span>:
+        <span class="k">return</span> <span class="t">Err</span>(<span class="s">"config: not a port number: "</span> <span class="o">+</span> text.<span class="f">trim</span>())
+    <span class="k">return</span> <span class="t">Ok</span>(port)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    fs.<span class="f">try_write</span>(<span class="s">"/tmp/tern_port.txt"</span>, <span class="s">"8080\n"</span>)
+    <span class="f">print</span>(<span class="f">port_from</span>(<span class="s">"/tmp/tern_port.txt"</span>).<span class="f">unwrap_or</span>(<span class="n">80</span>))
+    r <span class="o">=</span> <span class="f">port_from</span>(<span class="s">"/tmp/tern_no_such_file"</span>)
+    <span class="k">if</span> r is <span class="t">Err</span>(e):
+        <span class="f">print</span>(e)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>8080
+fs: can't read /tmp/tern_no_such_file: No such file or directory</code></pre></div>
+<h2 id="a-complete-example"><a class="anchor" href="#a-complete-example" aria-hidden="true">#</a>A complete example</h2>
+<p>A small note-taking store: settings in a JSON file with defaults, and one file per note in a directory:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+<span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Settings</span>:
+    author: <span class="t">str</span>
+    max_notes: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">load_settings</span>(path: <span class="t">str</span>) <span class="t">Settings</span>:
+    s <span class="o">=</span> <span class="t">Settings</span>(<span class="s">"anonymous"</span>, <span class="n">100</span>)        <span class="c"># defaults</span>
+    <span class="k">if</span> fs.<span class="f">exists</span>(path):
+        <span class="k">if</span> <span class="k">not</span> json.<span class="f">decode</span>(fs.<span class="f">read</span>(path), <span class="o">&amp;</span>s):
+            <span class="f">print</span>(<span class="s">"warning: bad settings file, using defaults"</span>)
+    <span class="k">return</span> s
+
+<span class="k">fn</span> <span class="f">save_note</span>(dir: <span class="t">str</span>, title: <span class="t">str</span>, body: <span class="t">str</span>) <span class="t">bool</span>:
+    <span class="k">if</span> <span class="k">not</span> fs.<span class="f">mkdir</span>(dir):
+        <span class="k">return</span> <span class="k">false</span>
+    name <span class="o">=</span> title.<span class="f">lower</span>().<span class="f">replace</span>(<span class="s">" "</span>, <span class="s">"-"</span>) <span class="o">+</span> <span class="s">".txt"</span>
+    <span class="k">return</span> fs.<span class="f">write</span>(dir <span class="o">+</span> <span class="s">"/"</span> <span class="o">+</span> name, body <span class="o">+</span> <span class="s">"\n"</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    root <span class="o">=</span> <span class="s">"/tmp/tern_notes"</span>
+    fs.<span class="f">write</span>(root <span class="o">+</span> <span class="s">".json"</span>, <span class="s">`{"author": "ada"}`</span>)
+    s <span class="o">=</span> <span class="f">load_settings</span>(root <span class="o">+</span> <span class="s">".json"</span>)
+    <span class="f">print</span>(s.author, s.max_notes)
+    <span class="f">save_note</span>(root, <span class="s">"Shopping List"</span>, <span class="s">"tea, milk"</span>)
+    <span class="f">save_note</span>(root, <span class="s">"Ideas"</span>, <span class="s">"a compiler with no references"</span>)
+    <span class="k">for</span> name <span class="k">in</span> fs.<span class="f">list</span>(root).<span class="f">sort_by</span>(<span class="k">fn</span>(n) n):
+        <span class="f">print</span>(name <span class="o">+</span> <span class="s">": "</span> <span class="o">+</span> fs.<span class="f">read</span>(root <span class="o">+</span> <span class="s">"/"</span> <span class="o">+</span> name).<span class="f">trim</span>())
+    <span class="k">for</span> name <span class="k">in</span> fs.<span class="f">list</span>(root):
+        fs.<span class="f">remove</span>(root <span class="o">+</span> <span class="s">"/"</span> <span class="o">+</span> name)
+    fs.<span class="f">remove</span>(root)
+    fs.<span class="f">remove</span>(root <span class="o">+</span> <span class="s">".json"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>ada 100
+ideas.txt: a compiler with no references
+shopping-list.txt: tea, milk</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../std/os.html"><span>Previous</span>os</a><a class="next" href="../std/path.html"><span>Next</span>path</a></div>
+<footer>Source: <code>docs/std/fs.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#read">read</a></li><li class="l2"><a href="#write">write</a></li><li class="l2"><a href="#append">append</a></li><li class="l2"><a href="#exists">exists</a></li><li class="l2"><a href="#remove">remove</a></li><li class="l2"><a href="#mkdir">mkdir</a></li><li class="l2"><a href="#list">list</a></li><li class="l2"><a href="#list_marked">list_marked</a></li><li class="l2"><a href="#error">error</a></li><li class="l2"><a href="#stat-and-rename">stat and rename</a></li><li class="l2"><a href="#walk-copy-chmod-remove_all-temp_dir">walk, copy, chmod, remove_all, temp_dir</a></li><li class="l2"><a href="#reading-and-writing-a-piece-at-a-time">Reading and writing a piece at a time</a></li><li class="l2"><a href="#with-result">With Result</a></li><li class="l2"><a href="#a-complete-example">A complete example</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

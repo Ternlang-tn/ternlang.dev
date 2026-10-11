@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>migrate · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/packages/migrate.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html" class="cur" aria-current="page">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="migrate"><a class="anchor" href="#migrate" aria-hidden="true">#</a>migrate</h1>
+<p>The <code>migrate</code> package keeps a PostgreSQL or SQLite database's schema in step with your code. You write the changes as numbered <code>.sql</code> files, and <code>migrate</code> applies the ones the database doesn't have yet, in order, each in a transaction. It records what it applied in a <code>tern_migrations</code> table. It is a first-party package: <code>import migrate</code>, nothing to install.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+<span class="k">import</span> fs
+<span class="k">import</span> migrate
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    dir <span class="o">=</span> fs.<span class="f">temp_dir</span>(<span class="s">"migrations"</span>)
+    fs.<span class="f">write</span>(dir <span class="o">+</span> <span class="s">"/0001_create_users.sql"</span>, <span class="s">"-- migrate:up\nCREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL);\n-- migrate:down\nDROP TABLE users;\n"</span>)
+    fs.<span class="f">write</span>(dir <span class="o">+</span> <span class="s">"/0002_add_email.sql"</span>, <span class="s">"ALTER TABLE users ADD COLUMN email TEXT;\n"</span>)
+
+    t <span class="o">=</span> migrate.<span class="f">sqlite</span>(sqlite.<span class="f">open</span>(dir <span class="o">+</span> <span class="s">"/app.db"</span>))       <span class="c"># or migrate.postgres(pg.pool(url, 8))</span>
+    <span class="k">for</span> m <span class="k">in</span> t.<span class="f">up</span>(dir)?:
+        <span class="f">print</span>(<span class="s">"applied"</span>, migrate.<span class="f">label</span>(m))
+    <span class="f">print</span>(<span class="f">len</span>(t.<span class="f">up</span>(dir)?), <span class="s">"the second time"</span>)
+    <span class="k">for</span> s <span class="k">in</span> t.<span class="f">status</span>(dir)?:
+        <span class="f">print</span>(s.state, migrate.<span class="f">label_of</span>(s))
+    fs.<span class="f">remove_all</span>(dir)
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="n">0</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>applied 0001_create_users
+applied 0002_add_email
+0 the second time
+applied 0001_create_users
+applied 0002_add_email</code></pre></div>
+<h2 id="migration-files"><a class="anchor" href="#migration-files" aria-hidden="true">#</a>Migration files</h2>
+<p>A migrations directory holds one file per change, named <code>VERSION_NAME.sql</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>migrations/
+  0001_create_users.sql
+  0002_add_email.sql
+  20260928120000_add_posts.sql      (a timestamp works too; the version is the number)</code></pre></div>
+<p>They run in version order. Other files (a README) are ignored; a <code>.sql</code> file without a version, or two files with the same version, is an error that names them.</p>
+<p>A file is the SQL that applies the change. Marker lines split it into parts:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- migrate:up
+CREATE TABLE users (id bigserial PRIMARY KEY, name text NOT NULL);
+CREATE INDEX users_name ON users (name);
+
+-- migrate:down
+DROP TABLE users;</code></pre></div>
+<div class="table"><table><thead><tr><th>Marker</th><th>Meaning</th></tr></thead><tbody><tr><td><code>-- migrate:up</code></td><td>(optional) the SQL that applies the migration starts here</td></tr><tr><td><code>-- migrate:down</code></td><td>the SQL that undoes it starts here; without one, <code>down</code> refuses to roll it back</td></tr><tr><td><code>-- migrate:no-transaction</code></td><td>run it outside a transaction (see below)</td></tr></tbody></table></div>
+<p>If you come from golang-migrate, the pair <code>0001_create_users.up.sql</code> and <code>0001_create_users.down.sql</code> works as well.</p>
+<p><code>migrate.create(dir, "add_posts")</code> (or <code>new add_posts</code> from <a href="#the-migrate-command">the command</a>) writes the next file, numbered after the newest one, with the two markers in it.</p>
+<h2 id="running-migrations"><a class="anchor" href="#running-migrations" aria-hidden="true">#</a>Running migrations</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">postgres</span>(p: pg.<span class="t">Pool</span>) <span class="t">Target</span>
+<span class="k">fn</span> <span class="f">sqlite</span>(d: sqlite.<span class="t">Db</span>) <span class="t">Target</span>
+<span class="k">fn</span> <span class="f">open</span>(url: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Target</span>, <span class="t">str</span>]         postgres:<span class="o">/</span><span class="o">/</span><span class="o">..</span>. <span class="k">or</span> postgresql:<span class="o">/</span><span class="o">/</span><span class="o">..</span>.; sqlite:<span class="t">PATH</span> <span class="k">or</span> a path
+
+<span class="k">fn</span> <span class="f">up</span>(t: <span class="t">Target</span>, dir: <span class="t">str</span>) <span class="t">Result</span>[[<span class="t">Migration</span>], <span class="t">str</span>]              every pending migration
+<span class="k">fn</span> <span class="f">down</span>(t: <span class="t">Target</span>, dir: <span class="t">str</span>, n: <span class="t">int</span>) <span class="t">Result</span>[[<span class="t">Migration</span>], <span class="t">str</span>]    undo the newest n applied ones
+<span class="k">fn</span> <span class="f">status</span>(t: <span class="t">Target</span>, dir: <span class="t">str</span>) <span class="t">Result</span>[[<span class="t">Status</span>], <span class="t">str</span>]</code></pre></div>
+<p>Each returns the migrations it ran, in the order it ran them. <code>up</code> is what an app calls as it starts; it does nothing when the database is current:</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> migrate
+<span class="k">import</span> os
+<span class="k">import</span> pg
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    p <span class="o">=</span> pg.<span class="f">pool</span>(os.<span class="f">env</span>(<span class="s">"DATABASE_URL"</span>, <span class="s">"postgres://app:secret@localhost/app"</span>), <span class="n">16</span>)
+    <span class="k">if</span> <span class="k">not</span> p.<span class="f">ok</span>():
+        <span class="k">return</span> <span class="t">Err</span>(<span class="s">"can't connect: "</span> <span class="o">+</span> pg.<span class="f">error</span>())
+    migrate.<span class="f">postgres</span>(p).<span class="f">up</span>(<span class="s">"migrations"</span>)?
+    <span class="c"># ... serve requests with p</span>
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="n">0</span>)</code></pre></div>
+<p>A <code>Status</code> has <code>version</code>, <code>name</code>, <code>applied_at</code> (<code>"2026-09-28T12:00:00Z"</code>, or <code>""</code> when pending), and <code>state</code>:</p>
+<div class="table"><table><thead><tr><th>State</th><th>Meaning</th></tr></thead><tbody><tr><td><code>applied</code></td><td>in the database, and the file is unchanged</td></tr><tr><td><code>pending</code></td><td>not applied yet; <code>up</code> will apply it</td></tr><tr><td><code>changed</code></td><td>applied, but the file's up SQL is different now; <code>up</code> refuses to run</td></tr><tr><td><code>missing</code></td><td>applied, but there is no file for it (older code, or a deleted file)</td></tr></tbody></table></div>
+<h2 id="what-it-guarantees"><a class="anchor" href="#what-it-guarantees" aria-hidden="true">#</a>What it guarantees</h2>
+<ul><li><strong>All or nothing.</strong> A migration and its row in <code>tern_migrations</code> commit together. If a statement fails, the transaction rolls back, the error names the migration and gives the database's message (<code>migrate: 0003_add_posts failed: ERROR 42P01: relation "user" does not exist</code>), and <code>up</code> stops there. PostgreSQL rolls back schema changes too. SQLite does as well, but some PRAGMAs (<code>foreign_keys</code>) do nothing inside a transaction.</li><li><strong>One run at a time.</strong> On PostgreSQL, a run holds an advisory lock on a connection of its own, so every instance of an app can call <code>up</code> as it starts: one applies the migrations and the others wait, then find nothing to do. On SQLite, each migration takes the database's write lock and checks again that it's still pending.</li><li><strong>Applied migrations don't change.</strong> <code>up</code> compares each applied migration's SHA-256 with its file and stops with an error on a difference (state <code>changed</code>). Undo the edit, and put the change in a new migration.</li><li><strong>Older code still starts.</strong> Migrations in the database without a file (state <code>missing</code>) are allowed, so rolling back a deploy doesn't stop the old version at <code>up</code>.</li><li><strong>Branches merge.</strong> A pending migration older than the newest applied one is applied like any other.</li></ul>
+<h2 id="outside-a-transaction"><a class="anchor" href="#outside-a-transaction" aria-hidden="true">#</a>Outside a transaction</h2>
+<p>A few statements refuse to run in a transaction: <code>CREATE INDEX CONCURRENTLY</code>, <code>DROP INDEX CONCURRENTLY</code>, <code>VACUUM</code>, <code>ALTER SYSTEM</code>. Mark their file:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- migrate:no-transaction
+CREATE INDEX CONCURRENTLY users_email ON users (email);
+
+-- migrate:down
+DROP INDEX CONCURRENTLY users_email;</code></pre></div>
+<p>Its statements run one at a time, and it is recorded after the last one succeeds. If one fails, the ones before it stay done, so keep one statement per file (<code>IF NOT EXISTS</code> helps a retry). A <code>CREATE INDEX CONCURRENTLY</code> that fails leaves an invalid index behind; drop it before running again.</p>
+<h2 id="the-migrate-command"><a class="anchor" href="#the-migrate-command" aria-hidden="true">#</a>The migrate command</h2>
+<p><code>tern migrate</code> works on <code>./migrations</code> (or <code>--dir DIR</code>) and the database given by <code>--db URL</code> or <code>$DATABASE_URL</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$ export DATABASE_URL=sqlite:app.db
+$ tern migrate new add_posts
+created migrations/0003_add_posts.sql
+$ tern migrate up
+applied 0003_add_posts
+$ tern migrate status
+applied  0001_create_users  2026-09-28T19:19:36Z
+applied  0002_add_email  2026-09-28T19:19:36Z
+applied  0003_add_posts  2026-09-28T19:20:02Z
+$ tern migrate down 2
+rolled back 0003_add_posts
+rolled back 0002_add_email</code></pre></div>
+<p>It is <code>migrate.command(dir, url, args)</code>, which a program of your own can call too (<code>migrate.cli(dir, url)</code> takes the program's arguments):</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> migrate
+<span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    <span class="k">return</span> migrate.<span class="f">cli</span>(<span class="s">"migrations"</span>, os.<span class="f">env</span>(<span class="s">"DATABASE_URL"</span>, <span class="s">"sqlite:app.db"</span>))</code></pre></div>
+<p><code>examples/sql/</code> in the Tern repository has two migrations, plus queries turned into typed functions by <a href="sqlgen.html">sqlgen</a>.</p>
+<h2 id="migrations-in-code"><a class="anchor" href="#migrations-in-code" aria-hidden="true">#</a>Migrations in code</h2>
+<p>The directory is read when the program runs, so ship it next to the binary. To build migrations some other way, make them with <code>parse</code> and run them with the functions that take a list:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">load</span>(dir: <span class="t">str</span>) <span class="t">Result</span>[[<span class="t">Migration</span>], <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">parse</span>(version: <span class="t">int</span>, name: <span class="t">str</span>, text: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Migration</span>, <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">apply</span>(t: <span class="t">Target</span>, ms: [<span class="t">Migration</span>]) <span class="t">Result</span>[[<span class="t">Migration</span>], <span class="t">str</span>]         like up
+<span class="k">fn</span> <span class="f">rollback</span>(t: <span class="t">Target</span>, ms: [<span class="t">Migration</span>], n: <span class="t">int</span>) <span class="t">Result</span>[[<span class="t">Migration</span>], <span class="t">str</span>]   like down
+<span class="k">fn</span> <span class="f">report</span>(t: <span class="t">Target</span>, ms: [<span class="t">Migration</span>]) <span class="t">Result</span>[[<span class="t">Status</span>], <span class="t">str</span>]          like status
+<span class="k">fn</span> <span class="f">label</span>(m: <span class="t">Migration</span>) <span class="t">str</span>                                          <span class="s">"0001_create_users"</span>
+<span class="k">fn</span> <span class="f">label_of</span>(s: <span class="t">Status</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">split_statements</span>(sql: <span class="t">str</span>) [<span class="t">str</span>]</code></pre></div>
+<p>A <code>Migration</code> has <code>version</code>, <code>name</code>, <code>up</code>, <code>down</code> (<code>""</code> if none), <code>transaction</code>, and <code>checksum</code> (the up SQL's SHA-256, in hex).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+<span class="k">import</span> migrate
+
+<span class="k">fn</span> <span class="f">main</span>():
+    ms <span class="o">=</span> [
+        migrate.<span class="f">parse</span>(<span class="n">1</span>, <span class="s">"notes"</span>, <span class="s">"CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT);"</span>).<span class="f">unwrap</span>(),
+        migrate.<span class="f">parse</span>(<span class="n">2</span>, <span class="s">"tags"</span>, <span class="s">"CREATE TABLE tags (note INTEGER, tag TEXT);\n-- migrate:down\nDROP TABLE tags;"</span>).<span class="f">unwrap</span>(),
+    ]
+    t <span class="o">=</span> migrate.<span class="f">sqlite</span>(sqlite.<span class="f">open</span>(<span class="s">":memory:"</span>))
+    <span class="f">print</span>(t.<span class="f">apply</span>(ms).<span class="f">unwrap</span>().<span class="f">map</span>(<span class="k">fn</span>(m) migrate.<span class="f">label</span>(m)))
+    <span class="f">print</span>(t.<span class="f">rollback</span>(ms, <span class="n">1</span>).<span class="f">unwrap</span>().<span class="f">map</span>(<span class="k">fn</span>(m) migrate.<span class="f">label</span>(m)))
+    <span class="f">print</span>(migrate.<span class="f">split_statements</span>(<span class="s">"INSERT INTO t VALUES ('a;b'); SELECT 1"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["0001_notes", "0002_tags"]
+["0002_tags"]
+["INSERT INTO t VALUES ('a;b')", "SELECT 1"]</code></pre></div>
+<p><code>split_statements</code> splits a script at the semicolons that end statements, leaving alone the ones in quotes, <code>$$</code> function bodies, and comments.</p>
+<p>Not available on WebAssembly (like <code>sqlite</code> and <code>pg</code>), or on Android (no SQLite in the NDK).</p>
+<p>To call your queries as typed functions checked against the migrated schema, see <a href="sqlgen.html">sqlgen</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../packages/redis.html"><span>Previous</span>redis</a><a class="next" href="../packages/sqlgen.html"><span>Next</span>sqlgen</a></div>
+<footer>Source: <code>docs/packages/migrate.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#migration-files">Migration files</a></li><li class="l2"><a href="#running-migrations">Running migrations</a></li><li class="l2"><a href="#what-it-guarantees">What it guarantees</a></li><li class="l2"><a href="#outside-a-transaction">Outside a transaction</a></li><li class="l2"><a href="#the-migrate-command">The migrate command</a></li><li class="l2"><a href="#migrations-in-code">Migrations in code</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

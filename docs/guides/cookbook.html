@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cookbook · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/cookbook.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html" class="cur" aria-current="page">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="cookbook"><a class="anchor" href="#cookbook" aria-hidden="true">#</a>Cookbook</h1>
+<p>Short, complete programs for everyday tasks: files, text, collections, sorting, maps, formatting, JSON, and a few classic data structures. Each recipe is a whole program you can copy into a file and run with <code>tern run file.tn</code>; the output shown under it is what it prints. The recipes stick to the standard library that ships with Tern.</p>
+<h2 id="read-a-file-line-by-line"><a class="anchor" href="#read-a-file-line-by-line" aria-hidden="true">#</a>Read a file line by line</h2>
+<p><code>fs.read</code> returns the whole file as one string (or <code>""</code> if it can't be read), and <code>split("\n")</code> turns it into lines. A file that ends with a newline gives an empty last piece, so skip empty lines or <code>trim()</code> the text first.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    path <span class="o">=</span> <span class="s">"/tmp/tern_cookbook_lines.txt"</span>
+    fs.<span class="f">write</span>(path, <span class="s">"first line\nsecond line\n\nfourth line\n"</span>)
+    <span class="k">if</span> <span class="k">not</span> fs.<span class="f">exists</span>(path):
+        <span class="f">print</span>(<span class="s">"missing file"</span>)
+        <span class="k">return</span>
+    <span class="k">for</span> i, line <span class="k">in</span> fs.<span class="f">read</span>(path).<span class="f">split</span>(<span class="s">"\n"</span>):
+        <span class="k">if</span> line <span class="o">==</span> <span class="s">""</span>:
+            <span class="k">continue</span>
+        <span class="f">print</span>(<span class="s">f"{i + 1}: {line}"</span>)
+    fs.<span class="f">remove</span>(path)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1: first line
+2: second line
+4: fourth line</code></pre></div>
+<h2 id="write-and-append-to-a-file"><a class="anchor" href="#write-and-append-to-a-file" aria-hidden="true">#</a>Write and append to a file</h2>
+<p><code>fs.write</code> replaces the file; <code>fs.append</code> adds to the end. Both return <code>false</code> when the file can't be written, so check the result.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    path <span class="o">=</span> <span class="s">"/tmp/tern_cookbook_log.txt"</span>
+    <span class="k">if</span> <span class="k">not</span> fs.<span class="f">write</span>(path, <span class="s">"started\n"</span>):
+        <span class="f">print</span>(<span class="s">"can't write"</span>, path)
+        <span class="k">return</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">1</span><span class="o">..</span><span class="n">4</span>:
+        fs.<span class="f">append</span>(path, <span class="s">f"step {i} done\n"</span>)
+    <span class="f">print</span>(fs.<span class="f">read</span>(path).<span class="f">trim</span>())
+    fs.<span class="f">remove</span>(path)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>started
+step 1 done
+step 2 done
+step 3 done</code></pre></div>
+<h2 id="parse-csv"><a class="anchor" href="#parse-csv" aria-hidden="true">#</a>Parse CSV</h2>
+<p>Split the text into lines, then each line into columns. Store rows in a struct so the rest of the program works with named, typed fields. (This handles simple CSV without quoted commas.)</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Sale</span>:
+    region: <span class="t">str</span>
+    product: <span class="t">str</span>
+    units: <span class="t">int</span>
+    price: <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">parse_sales</span>(text: <span class="t">str</span>) [<span class="t">Sale</span>]:
+    out: [<span class="t">Sale</span>] <span class="o">=</span> []
+    <span class="k">for</span> i, line <span class="k">in</span> text.<span class="f">trim</span>().<span class="f">split</span>(<span class="s">"\n"</span>):
+        <span class="k">if</span> i <span class="o">==</span> <span class="n">0</span>:
+            <span class="k">continue</span>                        <span class="c"># the header row</span>
+        cols <span class="o">=</span> line.<span class="f">split</span>(<span class="s">","</span>)
+        <span class="k">if</span> <span class="f">len</span>(cols) <span class="o">!=</span> <span class="n">4</span>:
+            <span class="k">continue</span>                        <span class="c"># skip malformed rows</span>
+        out.<span class="f">push</span>(<span class="t">Sale</span>(cols[<span class="n">0</span>].<span class="f">trim</span>(), cols[<span class="n">1</span>].<span class="f">trim</span>(), cols[<span class="n">2</span>].<span class="f">to_int</span>(<span class="n">0</span>), cols[<span class="n">3</span>].<span class="f">to_float</span>(<span class="n">0.0</span>)))
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">main</span>():
+    text <span class="o">=</span> <span class="s">"region,product,units,price\nnorth,widget,10,2.5\nsouth,gadget,3,10.0\nbad row\nnorth,gadget,1,10.0\n"</span>
+    sales <span class="o">=</span> <span class="f">parse_sales</span>(text)
+    revenue <span class="o">=</span> <span class="n">0.0</span>
+    <span class="k">for</span> s <span class="k">in</span> sales:
+        revenue <span class="o">+</span><span class="o">=</span> <span class="t">float</span>(s.units) <span class="o">*</span> s.price
+    <span class="f">print</span>(<span class="f">len</span>(sales), <span class="s">"rows, revenue"</span>, revenue)
+    <span class="f">print</span>(sales[<span class="n">0</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 rows, revenue 65.0
+Sale{region: "north", product: "widget", units: 10, price: 2.5}</code></pre></div>
+<h2 id="command-line-arguments"><a class="anchor" href="#command-line-arguments" aria-hidden="true">#</a>Command-line arguments</h2>
+<p><code>os.args()</code> returns the program name followed by its arguments. Pass arguments after <code>--</code> when using <code>tern run</code>: <code>tern run greet.tn -- ada 3</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">main</span>():
+    args <span class="o">=</span> os.<span class="f">args</span>()
+    <span class="k">if</span> <span class="f">len</span>(args) <span class="o">&lt;</span> <span class="n">3</span>:
+        <span class="f">print</span>(<span class="s">"usage: greet NAME TIMES"</span>)
+        os.<span class="f">exit</span>(<span class="n">0</span>)
+    times <span class="o">=</span> args[<span class="n">2</span>].<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+    <span class="k">if</span> times <span class="o">&lt;</span> <span class="n">1</span>:
+        <span class="f">print</span>(<span class="s">"TIMES must be a positive number, not"</span>, args[<span class="n">2</span>])
+        os.<span class="f">exit</span>(<span class="n">1</span>)
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span>times:
+        <span class="f">print</span>(<span class="s">"hello,"</span>, args[<span class="n">1</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>usage: greet NAME TIMES</code></pre></div>
+<p>Run without arguments (as above) it prints the usage line. Use <code>os.exit(1)</code> for errors so scripts and shells can tell that the program failed.</p>
+<h2 id="count-words"><a class="anchor" href="#count-words" aria-hidden="true">#</a>Count words</h2>
+<p>A map from word to count, filled with <code>get(key, 0) + 1</code>. Maps keep insertion order, so sort the keys by count to find the most common words.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    text <span class="o">=</span> <span class="s">"the cat sat on the mat the end"</span>
+    counts: {<span class="t">str</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">for</span> w <span class="k">in</span> text.<span class="f">split</span>(<span class="s">" "</span>):
+        <span class="k">if</span> w <span class="o">!=</span> <span class="s">""</span>:
+            counts[w] <span class="o">=</span> counts.<span class="f">get</span>(w, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+    <span class="f">print</span>(counts)
+    top <span class="o">=</span> counts.<span class="f">keys</span>().<span class="f">sort_by</span>(<span class="k">fn</span>(w) <span class="o">-</span>counts[w])
+    <span class="k">for</span> w <span class="k">in</span> top[<span class="o">..</span><span class="n">2</span>]:
+        <span class="f">print</span>(w, counts[w])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"the": 3, "cat": 1, "sat": 1, "on": 1, "mat": 1, "end": 1}
+the 3
+cat 1</code></pre></div>
+<p><code>sort_by</code> is stable, so words with the same count stay in the order they first appeared.</p>
+<h2 id="remove-duplicates-from-an-array"><a class="anchor" href="#remove-duplicates-from-an-array" aria-hidden="true">#</a>Remove duplicates from an array</h2>
+<p>Keep a map of what you have seen. There is no set type; a <code>{str: bool}</code> map works as one.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">dedupe</span>(xs: [<span class="t">str</span>]) [<span class="t">str</span>]:
+    seen: {<span class="t">str</span>: <span class="t">bool</span>} <span class="o">=</span> {}
+    out: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        <span class="k">if</span> <span class="k">not</span> (x <span class="k">in</span> seen):
+            seen[x] <span class="o">=</span> <span class="k">true</span>
+            out.<span class="f">push</span>(x)
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">main</span>():
+    tags <span class="o">=</span> [<span class="s">"go"</span>, <span class="s">"rust"</span>, <span class="s">"go"</span>, <span class="s">"tern"</span>, <span class="s">"rust"</span>, <span class="s">"c"</span>]
+    <span class="f">print</span>(<span class="f">dedupe</span>(tags))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["go", "rust", "tern", "c"]</code></pre></div>
+<p>This keeps the first occurrence of each value and the original order.</p>
+<h2 id="reverse-an-array-or-a-string"><a class="anchor" href="#reverse-an-array-or-a-string" aria-hidden="true">#</a>Reverse an array or a string</h2>
+<p><code>xs.reversed()</code> returns a reversed copy of an array. For a string, build a new one; to walk an array backwards without copying it, use a <code>while</code> loop, since <code>for</code> ranges only count up.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">reversed_str</span>(s: <span class="t">str</span>) <span class="t">str</span>:
+    out <span class="o">=</span> <span class="s">""</span>
+    <span class="k">for</span> ch <span class="k">in</span> s:
+        out <span class="o">=</span> ch <span class="o">+</span> out
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>([<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>, <span class="n">4</span>].<span class="f">reversed</span>(), <span class="f">reversed_str</span>(<span class="s">"stressed"</span>))
+    xs <span class="o">=</span> [<span class="n">10</span>, <span class="n">20</span>, <span class="n">30</span>]
+    i <span class="o">=</span> <span class="f">len</span>(xs) <span class="o">-</span> <span class="n">1</span>
+    <span class="k">while</span> i <span class="o">&gt;=</span> <span class="n">0</span>:
+        <span class="f">print</span>(xs[i])
+        i <span class="o">-</span><span class="o">=</span> <span class="n">1</span></code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[4, 3, 2, 1] desserts
+30
+20
+10</code></pre></div>
+<p><code>reversed_str</code> works byte by byte, which is right for ASCII text. Reversing UTF-8 text character by character needs more care.</p>
+<h2 id="sort-structs-by-several-keys"><a class="anchor" href="#sort-structs-by-several-keys" aria-hidden="true">#</a>Sort structs by several keys</h2>
+<p><code>sort_by</code> sorts by one key and is stable. To sort by several keys, sort by the least important key first and the most important last. Negate a number to sort it descending.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Player</span>:
+    name: <span class="t">str</span>
+    team: <span class="t">str</span>
+    score: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    players <span class="o">=</span> [
+        <span class="t">Player</span>(<span class="s">"dee"</span>, <span class="s">"red"</span>, <span class="n">12</span>),
+        <span class="t">Player</span>(<span class="s">"ada"</span>, <span class="s">"blue"</span>, <span class="n">30</span>),
+        <span class="t">Player</span>(<span class="s">"cy"</span>, <span class="s">"red"</span>, <span class="n">30</span>),
+        <span class="t">Player</span>(<span class="s">"bob"</span>, <span class="s">"blue"</span>, <span class="n">12</span>),
+        <span class="t">Player</span>(<span class="s">"eve"</span>, <span class="s">"red"</span>, <span class="n">30</span>),
+    ]
+    <span class="c"># by team (A-Z), then score (high first), then name (A-Z)</span>
+    by_name <span class="o">=</span> players.<span class="f">sort_by</span>(<span class="k">fn</span>(p) p.name)
+    by_score <span class="o">=</span> by_name.<span class="f">sort_by</span>(<span class="k">fn</span>(p) <span class="o">-</span>p.score)
+    ranked <span class="o">=</span> by_score.<span class="f">sort_by</span>(<span class="k">fn</span>(p) p.team)
+    <span class="k">for</span> p <span class="k">in</span> ranked:
+        <span class="f">print</span>(p.team, p.score, p.name)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>blue 30 ada
+blue 12 bob
+red 30 cy
+red 30 eve
+red 12 dee</code></pre></div>
+<h2 id="group-items-into-a-map-of-arrays"><a class="anchor" href="#group-items-into-a-map-of-arrays" aria-hidden="true">#</a>Group items into a map of arrays</h2>
+<p>Create the array the first time a key appears, then push onto <code>groups[key]</code>. The push changes the array inside the map in place.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Order</span>:
+    customer: <span class="t">str</span>
+    item: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    orders <span class="o">=</span> [<span class="t">Order</span>(<span class="s">"ada"</span>, <span class="s">"tea"</span>), <span class="t">Order</span>(<span class="s">"bob"</span>, <span class="s">"cake"</span>), <span class="t">Order</span>(<span class="s">"ada"</span>, <span class="s">"scone"</span>), <span class="t">Order</span>(<span class="s">"cy"</span>, <span class="s">"tea"</span>)]
+    by_customer: {<span class="t">str</span>: [<span class="t">str</span>]} <span class="o">=</span> {}
+    <span class="k">for</span> o <span class="k">in</span> orders:
+        <span class="k">if</span> <span class="k">not</span> (o.customer <span class="k">in</span> by_customer):
+            by_customer[o.customer] <span class="o">=</span> []
+        by_customer[o.customer].<span class="f">push</span>(o.item)
+    <span class="k">for</span> name, items <span class="k">in</span> by_customer:
+        <span class="f">print</span>(name, items)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>ada ["tea", "scone"]
+bob ["cake"]
+cy ["tea"]</code></pre></div>
+<h2 id="count-with-a-map"><a class="anchor" href="#count-with-a-map" aria-hidden="true">#</a>Count with a map</h2>
+<p>Counting by a computed key works the same way as counting words. Here, requests are counted by status class and the counts summed afterwards.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    statuses <span class="o">=</span> [<span class="n">200</span>, <span class="n">404</span>, <span class="n">200</span>, <span class="n">500</span>, <span class="n">301</span>, <span class="n">200</span>, <span class="n">404</span>]
+    by_class: {<span class="t">str</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">for</span> s <span class="k">in</span> statuses:
+        key <span class="o">=</span> <span class="s">f"{s / 100}xx"</span>
+        by_class[key] <span class="o">=</span> by_class.<span class="f">get</span>(key, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> k, n <span class="k">in</span> by_class:
+        <span class="f">print</span>(k, n)
+        total <span class="o">+</span><span class="o">=</span> n
+    <span class="f">print</span>(<span class="s">"total"</span>, total)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2xx 3
+4xx 2
+5xx 1
+3xx 1
+total 7</code></pre></div>
+<h2 id="build-a-string-efficiently"><a class="anchor" href="#build-a-string-efficiently" aria-hidden="true">#</a>Build a string efficiently</h2>
+<p>Appending with <code>+=</code> is fast: a string that only this variable holds grows in place, like a string builder in other languages. For a list of pieces with separators, <code>join</code> is simplest.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    out <span class="o">=</span> <span class="s">""</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">5</span>:
+        out <span class="o">+</span><span class="o">=</span> <span class="t">str</span>(i <span class="o">*</span> i)
+        out <span class="o">+</span><span class="o">=</span> <span class="s">";"</span>
+    <span class="f">print</span>(out)
+    parts: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="k">for</span> word <span class="k">in</span> [<span class="s">"alpha"</span>, <span class="s">"beta"</span>, <span class="s">"gamma"</span>]:
+        parts.<span class="f">push</span>(word.<span class="f">upper</span>())
+    <span class="f">print</span>(<span class="s">", "</span>.<span class="f">join</span>(parts))
+    <span class="f">print</span>(<span class="s">"-"</span> <span class="o">*</span> <span class="n">20</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>0;1;4;9;16;
+ALPHA, BETA, GAMMA
+--------------------</code></pre></div>
+<h2 id="parse-integers-safely"><a class="anchor" href="#parse-integers-safely" aria-hidden="true">#</a>Parse integers safely</h2>
+<p><code>s.to_int(default)</code> returns <code>default</code> when <code>s</code> isn't a whole number. When every int is a valid answer, parse twice with two different defaults: only a bad string gets both.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">ParsedInt</span>:
+    ok: <span class="t">bool</span>
+    value: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">parse_int</span>(s: <span class="t">str</span>) <span class="t">ParsedInt</span>:
+    t <span class="o">=</span> s.<span class="f">trim</span>()
+    a <span class="o">=</span> t.<span class="f">to_int</span>(<span class="n">0</span>)
+    b <span class="o">=</span> t.<span class="f">to_int</span>(<span class="n">1</span>)
+    <span class="k">if</span> a <span class="o">!=</span> b:
+        <span class="k">return</span> <span class="t">ParsedInt</span>(<span class="k">false</span>, <span class="n">0</span>)          <span class="c"># neither parse worked: not a number</span>
+    <span class="k">return</span> <span class="t">ParsedInt</span>(<span class="k">true</span>, a)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> s <span class="k">in</span> [<span class="s">"42"</span>, <span class="s">" -7 "</span>, <span class="s">"0"</span>, <span class="s">"3.5"</span>, <span class="s">"abc"</span>, <span class="s">""</span>]:
+        p <span class="o">=</span> <span class="f">parse_int</span>(s)
+        <span class="k">if</span> p.ok:
+            <span class="f">print</span>(<span class="s">f"[{s}] -&gt; {p.value}"</span>)
+        <span class="k">else</span>:
+            <span class="f">print</span>(<span class="s">f"[{s}] is not a whole number"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[42] -&gt; 42
+[ -7 ] -&gt; -7
+[0] -&gt; 0
+[3.5] is not a whole number
+[abc] is not a whole number
+[] is not a whole number</code></pre></div>
+<p><code>to_int</code> doesn't skip spaces, so <code>trim()</code> input from users and files first.</p>
+<h2 id="format-money-decimals-and-padding"><a class="anchor" href="#format-money-decimals-and-padding" aria-hidden="true">#</a>Format money, decimals, and padding</h2>
+<p>F-strings have no format specs. The <code>fmt</code> module has the common ones. Keep money in whole cents (an <code>int</code>) so sums are exact, and format with <code>fmt.cents</code> at the end.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">struct</span> <span class="t">Line</span>:
+    item: <span class="t">str</span>
+    cents: <span class="t">int</span>
+    qty: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    lines <span class="o">=</span> [<span class="t">Line</span>(<span class="s">"coffee"</span>, <span class="n">350</span>, <span class="n">2</span>), <span class="t">Line</span>(<span class="s">"bagel"</span>, <span class="n">275</span>, <span class="n">1</span>), <span class="t">Line</span>(<span class="s">"juice"</span>, <span class="n">1_250</span>, <span class="n">12</span>)]
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> l <span class="k">in</span> lines:
+        amount <span class="o">=</span> l.cents <span class="o">*</span> l.qty
+        total <span class="o">+</span><span class="o">=</span> amount
+        <span class="f">print</span>(fmt.<span class="f">pad_right</span>(l.item, <span class="n">8</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(<span class="t">str</span>(l.qty), <span class="n">3</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(fmt.<span class="f">cents</span>(amount), <span class="n">9</span>, <span class="s">" "</span>))
+    <span class="f">print</span>(fmt.<span class="f">pad_right</span>(<span class="s">"total"</span>, <span class="n">11</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(fmt.<span class="f">cents</span>(total), <span class="n">9</span>, <span class="s">" "</span>))
+    <span class="f">print</span>(fmt.<span class="f">fixed</span>(<span class="n">2.0</span> <span class="o">/</span> <span class="n">3.0</span>, <span class="n">3</span>), fmt.<span class="f">thousands</span>(<span class="n">1_234_567</span>), <span class="s">"#"</span> <span class="o">+</span> fmt.<span class="f">zero_pad</span>(<span class="n">42</span>, <span class="n">5</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>coffee    2     7.00
+bagel     1     2.75
+juice    12   150.00
+total         159.75
+0.667 1,234,567 #00042</code></pre></div>
+<h2 id="read-and-write-json-config"><a class="anchor" href="#read-and-write-json-config" aria-hidden="true">#</a>Read and write JSON config</h2>
+<p><code>json.decode</code> fills an existing value. Keys missing from the JSON keep the value you started with, so start from the defaults. On bad JSON it returns <code>false</code> and changes nothing.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Config</span>:
+    name: <span class="t">str</span>
+    port: <span class="t">int</span>
+    debug: <span class="t">bool</span>
+    admins: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">default_config</span>() <span class="t">Config</span>:
+    <span class="k">return</span> <span class="t">Config</span>(<span class="s">"app"</span>, <span class="n">8080</span>, <span class="k">false</span>, [])
+
+<span class="k">fn</span> <span class="f">main</span>():
+    cfg <span class="o">=</span> <span class="f">default_config</span>()
+    <span class="k">if</span> <span class="k">not</span> json.<span class="f">decode</span>(<span class="s">`{"port": 9000, "admins": ["ada"]}`</span>, <span class="o">&amp;</span>cfg):
+        <span class="f">print</span>(<span class="s">"bad config"</span>)
+    <span class="f">print</span>(cfg)
+    <span class="f">print</span>(json.<span class="f">encode</span>(cfg))
+    broken <span class="o">=</span> <span class="f">default_config</span>()
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">`{"port": "not a number"}`</span>, <span class="o">&amp;</span>broken), broken.port)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Config{name: "app", port: 9000, debug: false, admins: ["ada"]}
+{"name":"app","port":9000,"debug":false,"admins":["ada"]}
+false 8080</code></pre></div>
+<p>In a real program the text comes from <code>fs.read("config.json")</code>, and <code>fs.write</code> saves <code>json.encode(cfg)</code> back.</p>
+<h2 id="binary-search"><a class="anchor" href="#binary-search" aria-hidden="true">#</a>Binary search</h2>
+<p>On a sorted array, halve the range until the value is found. Return <code>-1</code> when it isn't there.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">search</span>(xs: [<span class="t">int</span>], want: <span class="t">int</span>) <span class="t">int</span>:
+    lo <span class="o">=</span> <span class="n">0</span>
+    hi <span class="o">=</span> <span class="f">len</span>(xs)                            <span class="c"># search xs[lo..hi]</span>
+    <span class="k">while</span> lo <span class="o">&lt;</span> hi:
+        mid <span class="o">=</span> (lo <span class="o">+</span> hi) <span class="o">/</span> <span class="n">2</span>
+        <span class="k">if</span> xs[mid] <span class="o">==</span> want:
+            <span class="k">return</span> mid
+        <span class="k">if</span> xs[mid] <span class="o">&lt;</span> want:
+            lo <span class="o">=</span> mid <span class="o">+</span> <span class="n">1</span>
+        <span class="k">else</span>:
+            hi <span class="o">=</span> mid
+    <span class="k">return</span> <span class="o">-</span><span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">2</span>, <span class="n">3</span>, <span class="n">5</span>, <span class="n">7</span>, <span class="n">11</span>, <span class="n">13</span>, <span class="n">17</span>, <span class="n">19</span>]
+    <span class="f">print</span>(<span class="f">search</span>(xs, <span class="n">13</span>), <span class="f">search</span>(xs, <span class="n">2</span>), <span class="f">search</span>(xs, <span class="n">4</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>5 0 -1</code></pre></div>
+<h2 id="stack-and-queue"><a class="anchor" href="#stack-and-queue" aria-hidden="true">#</a>Stack and queue</h2>
+<p>An array is a stack: <code>push</code> and <code>pop</code> work at the end. For a queue, keep a read index instead of removing from the front, which would copy the rest of the array each time.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    stack: [<span class="t">str</span>] <span class="o">=</span> []
+    stack.<span class="f">push</span>(<span class="s">"a"</span>)
+    stack.<span class="f">push</span>(<span class="s">"b"</span>)
+    stack.<span class="f">push</span>(<span class="s">"c"</span>)
+    <span class="k">while</span> <span class="f">len</span>(stack) <span class="o">&gt;</span> <span class="n">0</span>:
+        <span class="f">print</span>(<span class="s">"pop"</span>, stack.<span class="f">pop</span>())
+
+    queue: [<span class="t">str</span>] <span class="o">=</span> []
+    head <span class="o">=</span> <span class="n">0</span>                                <span class="c"># the next item to take</span>
+    queue.<span class="f">push</span>(<span class="s">"job1"</span>)
+    queue.<span class="f">push</span>(<span class="s">"job2"</span>)
+    <span class="k">while</span> head <span class="o">&lt;</span> <span class="f">len</span>(queue):
+        job <span class="o">=</span> queue[head]
+        head <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        <span class="f">print</span>(<span class="s">"run"</span>, job)
+        <span class="k">if</span> job <span class="o">==</span> <span class="s">"job1"</span>:
+            queue.<span class="f">push</span>(<span class="s">"job3"</span>)              <span class="c"># work can add more work</span></code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>pop c
+pop b
+pop a
+run job1
+run job2
+run job3</code></pre></div>
+<h2 id="breadth-first-search-on-a-graph"><a class="anchor" href="#breadth-first-search-on-a-graph" aria-hidden="true">#</a>Breadth-first search on a graph</h2>
+<p>Tern has no pointers, so nodes refer to each other by index into an array. BFS finds the fewest hops from one node to every other.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">City</span>:
+    name: <span class="t">str</span>
+    roads: [<span class="t">int</span>]                            <span class="c"># indexes into the cities array</span>
+
+<span class="k">fn</span> <span class="f">hops_from</span>(cities: [<span class="t">City</span>], start: <span class="t">int</span>) [<span class="t">int</span>]:
+    dist <span class="o">=</span> [<span class="o">-</span><span class="n">1</span>] <span class="o">*</span> <span class="f">len</span>(cities)
+    dist[start] <span class="o">=</span> <span class="n">0</span>
+    queue <span class="o">=</span> [start]
+    head <span class="o">=</span> <span class="n">0</span>
+    <span class="k">while</span> head <span class="o">&lt;</span> <span class="f">len</span>(queue):
+        c <span class="o">=</span> queue[head]
+        head <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        <span class="k">for</span> next <span class="k">in</span> cities[c].roads:
+            <span class="k">if</span> dist[next] <span class="o">==</span> <span class="o">-</span><span class="n">1</span>:
+                dist[next] <span class="o">=</span> dist[c] <span class="o">+</span> <span class="n">1</span>
+                queue.<span class="f">push</span>(next)
+    <span class="k">return</span> dist
+
+<span class="k">fn</span> <span class="f">main</span>():
+    cities <span class="o">=</span> [<span class="t">City</span>(<span class="s">"oslo"</span>, [<span class="n">1</span>, <span class="n">2</span>]), <span class="t">City</span>(<span class="s">"bergen"</span>, [<span class="n">3</span>]), <span class="t">City</span>(<span class="s">"trondheim"</span>, [<span class="n">3</span>]), <span class="t">City</span>(<span class="s">"tromso"</span>, []), <span class="t">City</span>(<span class="s">"island"</span>, [])]
+    dist <span class="o">=</span> <span class="f">hops_from</span>(cities, <span class="n">0</span>)
+    <span class="k">for</span> i, c <span class="k">in</span> cities:
+        <span class="k">if</span> dist[i] <span class="o">&lt;</span> <span class="n">0</span>:
+            <span class="f">print</span>(c.name, <span class="s">"unreachable"</span>)
+        <span class="k">else</span>:
+            <span class="f">print</span>(c.name, dist[i])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>oslo 0
+bergen 1
+trondheim 1
+tromso 2
+island unreachable</code></pre></div>
+<h2 id="a-tree-as-an-enum"><a class="anchor" href="#a-tree-as-an-enum" aria-hidden="true">#</a>A tree as an enum</h2>
+<p>Enums can contain themselves, so a binary search tree is an enum with an empty case and a node case. Inserting returns a new tree; there are no pointers to update.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Tree</span>:
+    <span class="t">Leaf</span>
+    <span class="t">Node</span>(left: <span class="t">Tree</span>, key: <span class="t">int</span>, right: <span class="t">Tree</span>)
+
+<span class="k">fn</span> <span class="f">insert</span>(t: <span class="t">Tree</span>, k: <span class="t">int</span>) <span class="t">Tree</span>:
+    <span class="k">match</span> t:
+        <span class="t">Leaf</span>:
+            <span class="k">return</span> <span class="t">Tree</span>.<span class="t">Node</span>(<span class="t">Tree</span>.<span class="t">Leaf</span>, k, <span class="t">Tree</span>.<span class="t">Leaf</span>)
+        <span class="t">Node</span>(l, key, r):
+            <span class="k">if</span> k <span class="o">&lt;</span> key:
+                <span class="k">return</span> <span class="t">Tree</span>.<span class="t">Node</span>(<span class="f">insert</span>(l, k), key, r)
+            <span class="k">if</span> k <span class="o">&gt;</span> key:
+                <span class="k">return</span> <span class="t">Tree</span>.<span class="t">Node</span>(l, key, <span class="f">insert</span>(r, k))
+            <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">in_order</span>(t: <span class="t">Tree</span>, out: <span class="k">mut</span> [<span class="t">int</span>]):
+    <span class="k">match</span> t:
+        <span class="t">Leaf</span>:
+            <span class="k">pass</span>
+        <span class="t">Node</span>(l, key, r):
+            <span class="f">in_order</span>(l, <span class="o">&amp;</span>out)
+            out.<span class="f">push</span>(key)
+            <span class="f">in_order</span>(r, <span class="o">&amp;</span>out)
+
+<span class="k">fn</span> <span class="f">depth</span>(t: <span class="t">Tree</span>) <span class="t">int</span>:
+    <span class="k">match</span> t:
+        <span class="t">Leaf</span>:
+            <span class="k">return</span> <span class="n">0</span>
+        <span class="t">Node</span>(l, _, r):
+            <span class="k">return</span> <span class="n">1</span> <span class="o">+</span> <span class="f">max</span>(<span class="f">depth</span>(l), <span class="f">depth</span>(r))
+
+<span class="k">fn</span> <span class="f">main</span>():
+    t <span class="o">=</span> <span class="t">Tree</span>.<span class="t">Leaf</span>
+    <span class="k">for</span> k <span class="k">in</span> [<span class="n">50</span>, <span class="n">30</span>, <span class="n">70</span>, <span class="n">20</span>, <span class="n">40</span>, <span class="n">60</span>, <span class="n">30</span>]:
+        t <span class="o">=</span> <span class="f">insert</span>(t, k)
+    keys: [<span class="t">int</span>] <span class="o">=</span> []
+    <span class="f">in_order</span>(t, <span class="o">&amp;</span>keys)
+    <span class="f">print</span>(keys, <span class="s">"depth"</span>, <span class="f">depth</span>(t))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[20, 30, 40, 50, 60, 70] depth 3</code></pre></div>
+<h2 id="a-state-machine-with-an-enum-and-match"><a class="anchor" href="#a-state-machine-with-an-enum-and-match" aria-hidden="true">#</a>A state machine with an enum and match</h2>
+<p>Model each state as an enum variant, and write one function that takes the current state and an event and returns the next state.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Door</span>:
+    <span class="t">Open</span>
+    <span class="t">Closed</span>
+    <span class="t">Locked</span>(code: <span class="t">str</span>)
+
+<span class="k">fn</span> <span class="f">step</span>(d: <span class="t">Door</span>, event: <span class="t">str</span>, arg: <span class="t">str</span>) <span class="t">Door</span>:
+    <span class="k">match</span> d:
+        <span class="t">Open</span>:
+            <span class="k">if</span> event <span class="o">==</span> <span class="s">"close"</span>:
+                <span class="k">return</span> <span class="t">Door</span>.<span class="t">Closed</span>
+        <span class="t">Closed</span>:
+            <span class="k">if</span> event <span class="o">==</span> <span class="s">"open"</span>:
+                <span class="k">return</span> <span class="t">Door</span>.<span class="t">Open</span>
+            <span class="k">if</span> event <span class="o">==</span> <span class="s">"lock"</span>:
+                <span class="k">return</span> <span class="t">Door</span>.<span class="t">Locked</span>(arg)
+        <span class="t">Locked</span>(code):
+            <span class="k">if</span> event <span class="o">==</span> <span class="s">"unlock"</span> <span class="k">and</span> arg <span class="o">==</span> code:
+                <span class="k">return</span> <span class="t">Door</span>.<span class="t">Closed</span>
+    <span class="k">return</span> d                                <span class="c"># anything else: no change</span>
+
+<span class="k">fn</span> <span class="f">name</span>(d: <span class="t">Door</span>) <span class="t">str</span>:
+    <span class="k">match</span> d:
+        <span class="t">Open</span>:
+            <span class="k">return</span> <span class="s">"open"</span>
+        <span class="t">Closed</span>:
+            <span class="k">return</span> <span class="s">"closed"</span>
+        <span class="t">Locked</span>(_):
+            <span class="k">return</span> <span class="s">"locked"</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    d <span class="o">=</span> <span class="t">Door</span>.<span class="t">Open</span>
+    events <span class="o">=</span> [[<span class="s">"close"</span>, <span class="s">""</span>], [<span class="s">"lock"</span>, <span class="s">"1234"</span>], [<span class="s">"open"</span>, <span class="s">""</span>], [<span class="s">"unlock"</span>, <span class="s">"0000"</span>], [<span class="s">"unlock"</span>, <span class="s">"1234"</span>], [<span class="s">"open"</span>, <span class="s">""</span>]]
+    <span class="k">for</span> e <span class="k">in</span> events:
+        d <span class="o">=</span> <span class="f">step</span>(d, e[<span class="n">0</span>], e[<span class="n">1</span>])
+        <span class="f">print</span>(<span class="s">f"{e[0]} -&gt; {name(d)}"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>close -&gt; closed
+lock -&gt; locked
+open -&gt; locked
+unlock -&gt; locked
+unlock -&gt; closed
+open -&gt; open</code></pre></div>
+<h2 id="shuffle-an-array"><a class="anchor" href="#shuffle-an-array" aria-hidden="true">#</a>Shuffle an array</h2>
+<p>The Fisher-Yates shuffle swaps each position with a random earlier one. <code>random.int(lo, hi)</code> includes both ends. The output differs on every run, so this example prints only facts that don't change.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> random
+
+<span class="k">fn</span> <span class="f">shuffle</span>(xs: <span class="k">mut</span> [<span class="t">int</span>]):
+    i <span class="o">=</span> <span class="f">len</span>(xs) <span class="o">-</span> <span class="n">1</span>
+    <span class="k">while</span> i <span class="o">&gt;</span> <span class="n">0</span>:
+        j <span class="o">=</span> random.<span class="t">int</span>(<span class="n">0</span>, i)
+        tmp <span class="o">=</span> xs[i]
+        xs[i] <span class="o">=</span> xs[j]
+        xs[j] <span class="o">=</span> tmp
+        i <span class="o">-</span><span class="o">=</span> <span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    deck: [<span class="t">int</span>] <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">1</span><span class="o">..</span><span class="n">11</span>:
+        deck.<span class="f">push</span>(i)
+    <span class="f">shuffle</span>(<span class="o">&amp;</span>deck)
+    <span class="f">print</span>(<span class="f">len</span>(deck), <span class="s">"cards"</span>)
+    <span class="f">print</span>(<span class="s">"same cards:"</span>, deck.<span class="f">sort_by</span>(<span class="k">fn</span>(x) x))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>10 cards
+same cards: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</code></pre></div>
+<p><code>random</code> is fast but not for cryptography: don't use it for passwords or tokens.</p>
+<h2 id="time-a-piece-of-code"><a class="anchor" href="#time-a-piece-of-code" aria-hidden="true">#</a>Time a piece of code</h2>
+<p><code>time.now_ms()</code> is wall-clock milliseconds. Read it before and after, and subtract. Run the work more than once, since the first run can include warm-up costs.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+
+<span class="k">fn</span> <span class="f">count_primes</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+    count <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">2</span><span class="o">..</span>n:
+        prime <span class="o">=</span> <span class="k">true</span>
+        d <span class="o">=</span> <span class="n">2</span>
+        <span class="k">while</span> d <span class="o">*</span> d <span class="o">&lt;=</span> i:
+            <span class="k">if</span> i <span class="o">%</span> d <span class="o">==</span> <span class="n">0</span>:
+                prime <span class="o">=</span> <span class="k">false</span>
+                <span class="k">break</span>
+            d <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        <span class="k">if</span> prime:
+            count <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> count
+
+<span class="k">fn</span> <span class="f">main</span>():
+    start <span class="o">=</span> time.<span class="f">now_ms</span>()
+    n <span class="o">=</span> <span class="f">count_primes</span>(<span class="n">100_000</span>)
+    elapsed <span class="o">=</span> time.<span class="f">now_ms</span>() <span class="o">-</span> start
+    <span class="f">print</span>(n, <span class="s">"primes"</span>)
+    <span class="k">if</span> elapsed <span class="o">&gt;=</span> <span class="n">0</span>:
+        <span class="f">print</span>(<span class="s">"timed ok"</span>)                   <span class="c"># print elapsed itself in real code: f"{elapsed} ms"</span></code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>9592 primes
+timed ok</code></pre></div>
+<h2 id="retry-with-backoff"><a class="anchor" href="#retry-with-backoff" aria-hidden="true">#</a>Retry with backoff</h2>
+<p>Loop a fixed number of times, wait a little longer after each failure, and stop as soon as the operation works. Here the "operation" fails twice before succeeding.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+
+<span class="k">fn</span> <span class="f">fetch</span>(attempt: <span class="t">int</span>) <span class="t">bool</span>:
+    <span class="k">return</span> attempt <span class="o">&gt;=</span> <span class="n">3</span>                     <span class="c"># stands in for a flaky network call</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    ok <span class="o">=</span> <span class="k">false</span>
+    wait_ms <span class="o">=</span> <span class="n">1</span>
+    <span class="k">for</span> attempt <span class="k">in</span> <span class="n">1</span><span class="o">..</span><span class="n">6</span>:
+        <span class="k">if</span> <span class="f">fetch</span>(attempt):
+            <span class="f">print</span>(<span class="s">"succeeded on attempt"</span>, attempt)
+            ok <span class="o">=</span> <span class="k">true</span>
+            <span class="k">break</span>
+        <span class="f">print</span>(<span class="s">"attempt"</span>, attempt, <span class="s">"failed; waiting"</span>, wait_ms, <span class="s">"ms"</span>)
+        time.<span class="f">sleep</span>(wait_ms)
+        wait_ms <span class="o">*</span><span class="o">=</span> <span class="n">2</span>
+    <span class="k">if</span> <span class="k">not</span> ok:
+        <span class="f">print</span>(<span class="s">"gave up"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>attempt 1 failed; waiting 1 ms
+attempt 2 failed; waiting 2 ms
+succeeded on attempt 3</code></pre></div>
+<h2 id="simple-text-templates"><a class="anchor" href="#simple-text-templates" aria-hidden="true">#</a>Simple text templates</h2>
+<p>Replace <code>{{name}}</code> placeholders with values from a map. Braces are ordinary characters in a normal string; only f-strings treat them specially.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">render</span>(template: <span class="t">str</span>, vars: {<span class="t">str</span>: <span class="t">str</span>}) <span class="t">str</span>:
+    out <span class="o">=</span> template
+    <span class="k">for</span> k, v <span class="k">in</span> vars:
+        out <span class="o">=</span> out.<span class="f">replace</span>(<span class="s">"{{"</span> <span class="o">+</span> k <span class="o">+</span> <span class="s">"}}"</span>, v)
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">main</span>():
+    t <span class="o">=</span> <span class="s">"Hello {{name}}, your order #{{id}} ships {{when}}."</span>
+    <span class="f">print</span>(<span class="f">render</span>(t, {<span class="s">"name"</span>: <span class="s">"Ada"</span>, <span class="s">"id"</span>: <span class="s">"1042"</span>, <span class="s">"when"</span>: <span class="s">"today"</span>}))
+    <span class="f">print</span>(<span class="f">render</span>(t, {<span class="s">"name"</span>: <span class="s">"Bob"</span>}))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Hello Ada, your order #1042 ships today.
+Hello Bob, your order #{{id}} ships {{when}}.</code></pre></div>
+<p>Placeholders with no value are left as they are, which makes missing values easy to spot.</p>
+</article>
+<div class="pn"><a class="prev" href="../guides/mobile.html"><span>Previous</span>iOS and Android</a><a class="next" href="../std/index.html"><span>Next</span>Overview</a></div>
+<footer>Source: <code>docs/guides/cookbook.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#read-a-file-line-by-line">Read a file line by line</a></li><li class="l2"><a href="#write-and-append-to-a-file">Write and append to a file</a></li><li class="l2"><a href="#parse-csv">Parse CSV</a></li><li class="l2"><a href="#command-line-arguments">Command-line arguments</a></li><li class="l2"><a href="#count-words">Count words</a></li><li class="l2"><a href="#remove-duplicates-from-an-array">Remove duplicates from an array</a></li><li class="l2"><a href="#reverse-an-array-or-a-string">Reverse an array or a string</a></li><li class="l2"><a href="#sort-structs-by-several-keys">Sort structs by several keys</a></li><li class="l2"><a href="#group-items-into-a-map-of-arrays">Group items into a map of arrays</a></li><li class="l2"><a href="#count-with-a-map">Count with a map</a></li><li class="l2"><a href="#build-a-string-efficiently">Build a string efficiently</a></li><li class="l2"><a href="#parse-integers-safely">Parse integers safely</a></li><li class="l2"><a href="#format-money-decimals-and-padding">Format money, decimals, and padding</a></li><li class="l2"><a href="#read-and-write-json-config">Read and write JSON config</a></li><li class="l2"><a href="#binary-search">Binary search</a></li><li class="l2"><a href="#stack-and-queue">Stack and queue</a></li><li class="l2"><a href="#breadth-first-search-on-a-graph">Breadth-first search on a graph</a></li><li class="l2"><a href="#a-tree-as-an-enum">A tree as an enum</a></li><li class="l2"><a href="#a-state-machine-with-an-enum-and-match">A state machine with an enum and match</a></li><li class="l2"><a href="#shuffle-an-array">Shuffle an array</a></li><li class="l2"><a href="#time-a-piece-of-code">Time a piece of code</a></li><li class="l2"><a href="#retry-with-backoff">Retry with backoff</a></li><li class="l2"><a href="#simple-text-templates">Simple text templates</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

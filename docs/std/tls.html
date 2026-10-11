@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tls · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/tls.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html" class="cur" aria-current="page">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="tls"><a class="anchor" href="#tls" aria-hidden="true">#</a>tls</h1>
+<p>The <code>tls</code> module encrypts connections with TLS 1.2 and 1.3. Importing it does three things: <code>tls.connect</code> opens verified TLS connections as ordinary <code>net.Conn</code> values, the HTTP clients (<code>http.get</code>, <code>http.fetch</code>) accept <code>https://</code> URLs, and <code>http.listen_tls</code> (or <code>roost.serve_tls</code>) serves HTTPS. It uses <a href="https://github.com/aws/aws-lc">aws-lc</a> (the library under rustls), which <code>tern</code> builds and links statically into programs that import <code>tls</code>, and only those, so the program runs on machines without OpenSSL installed. See <a href="#where-tls-comes-from">Where TLS comes from</a>.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> tls
+<span class="k">import</span> http
+<span class="k">import</span> roost
+
+<span class="k">fn</span> <span class="f">main</span>():
+    res <span class="o">=</span> http.<span class="f">get</span>(<span class="s">"https://example.com/"</span>)
+    <span class="k">if</span> http.<span class="f">failed</span>(res):
+        <span class="f">print</span>(<span class="s">"request failed:"</span>, res.body)      <span class="c"># e.g. "tls handshake: certificate verify failed: ..."</span>
+    <span class="k">else</span>:
+        <span class="f">print</span>(res.status, <span class="f">len</span>(res.body))</code></pre></div>
+<p>Without <code>import tls</code>, an <code>https://</code> URL fails with the message <code>https:// needs \</code>import tls\<code>`, and</code>roost.serve_tls` is a runtime error saying the same.</p>
+<h2 id="clients"><a class="anchor" href="#clients" aria-hidden="true">#</a>Clients</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">connect</span>(host: <span class="t">str</span>, port: <span class="t">int</span>) net.<span class="t">Conn</span>
+<span class="k">fn</span> <span class="f">connect_insecure</span>(host: <span class="t">str</span>, port: <span class="t">int</span>) net.<span class="t">Conn</span>
+<span class="k">fn</span> <span class="f">upgrade</span>(c: net.<span class="t">Conn</span>, host: <span class="t">str</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">version</span>(c: net.<span class="t">Conn</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">error</span>() <span class="t">str</span>
+<span class="k">fn</span> <span class="f">trust</span>(ca_file: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p><code>tls.connect</code> connects, does the TLS handshake, and checks the server's certificate: it must chain to a trusted root and name <code>host</code> (a DNS name or an IP address). Check <code>c.ok()</code>; when it is false, <code>tls.error()</code> says why (a refused connection, a failed name lookup, <code>certificate verify failed: hostname mismatch</code>, ...). The connection is an ordinary <code>net.Conn</code>, so <code>c.read</code>, <code>c.read_line</code>, <code>c.read_exact</code>, <code>c.write</code> and <code>c.close</code> encrypt and decrypt, and like every socket wait, a handshake or a read waits only in its task.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> net
+<span class="k">import</span> tls
+
+<span class="k">fn</span> <span class="f">main</span>():
+    c <span class="o">=</span> tls.<span class="f">connect</span>(<span class="s">"example.com"</span>, <span class="n">443</span>)
+    <span class="k">if</span> <span class="k">not</span> c.<span class="f">ok</span>():
+        <span class="f">print</span>(<span class="s">"can't connect:"</span>, tls.<span class="f">error</span>())
+        <span class="k">return</span>
+    <span class="f">print</span>(tls.<span class="f">version</span>(c))                          <span class="c"># "TLSv1.3"</span>
+    c.<span class="f">write</span>(<span class="s">"HEAD / HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n"</span>)
+    <span class="f">print</span>(c.<span class="f">read_line</span>().<span class="f">trim</span>())                    <span class="c"># "HTTP/1.1 200 OK"</span>
+    c.<span class="f">close</span>()</code></pre></div>
+<p><code>tls.upgrade</code> starts TLS on a connection that is already open, for protocols that begin in plain text and switch (SMTP's STARTTLS, PostgreSQL's SSLRequest). <code>connect_insecure</code> skips the certificate check; use it only for tests, never across a network you don't control.</p>
+<p>Trusted roots are the system's CA bundle: <code>/etc/ssl/cert.pem</code> on macOS, and <code>/etc/ssl/certs/ca-certificates.crt</code> (Debian, Ubuntu), <code>/etc/pki/tls/certs/ca-bundle.crt</code> (Fedora, RHEL) and the like on Linux. The environment variables <code>SSL_CERT_FILE</code> and <code>SSL_CERT_DIR</code> override that. <code>tls.trust(ca_file)</code> adds the CA certificates in a PEM file for the rest of the program (a company CA, or a development CA such as mkcert's); it returns false, with <code>tls.error()</code> saying why, if the file can't be read.</p>
+<p>Sessions are resumed: after a first full handshake with a server, the next connection to it uses a session ticket and skips the certificate check and the expensive key agreement.</p>
+<p>With <code>Result</code>: <code>tls.dial(host, port) Result[net.Conn, str]</code>, e.g. <code>c = tls.dial("example.com", 443)?</code>, with errors like <code>"tls: handshake: certificate verify failed: hostname mismatch"</code> (and <code>net.dial</code> for plain TCP).</p>
+<h2 id="servers"><a class="anchor" href="#servers" aria-hidden="true">#</a>Servers</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> roost.<span class="f">serve_tls</span>(r: roost.<span class="t">Router</span>, port: <span class="t">int</span>, cert: <span class="t">str</span>, key: <span class="t">str</span>)
+<span class="k">fn</span> roost.<span class="f">start_tls</span>(r: roost.<span class="t">Router</span>, host: <span class="t">str</span>, port: <span class="t">int</span>, cert: <span class="t">str</span>, key: <span class="t">str</span>) roost.<span class="t">Server</span>
+<span class="k">fn</span> <span class="f">server</span>(cert: <span class="t">str</span>, key: <span class="t">str</span>) <span class="t">Server</span>
+<span class="k">fn</span> <span class="f">accept</span>(c: net.<span class="t">Conn</span>, s: <span class="t">Server</span>) <span class="t">bool</span></code></pre></div>
+<p><code>cert</code> is a PEM file with the server's certificate followed by any intermediate certificates (Let's Encrypt's <code>fullchain.pem</code>), and <code>key</code> is its private key (<code>privkey.pem</code>). A file that can't be loaded, or a key that doesn't match the certificate, is a runtime error at startup. Each connection's handshake runs in the connection's task.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> tls
+<span class="k">import</span> roost
+
+<span class="k">fn</span> <span class="f">main</span>():
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    r.<span class="f">get</span>(<span class="s">"/"</span>, <span class="k">fn</span>(req) roost.<span class="f">text</span>(<span class="s">"hello over https"</span>))
+    roost.<span class="f">serve_tls</span>(r, <span class="n">8443</span>, <span class="s">"fullchain.pem"</span>, <span class="s">"privkey.pem"</span>)</code></pre></div>
+<p>For a TLS server that isn't HTTP, accept plain connections and call <code>tls.accept</code> in each connection's task:</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> net
+<span class="k">import</span> task
+<span class="k">import</span> tls
+
+<span class="k">fn</span> <span class="f">serve_one</span>(c: net.<span class="t">Conn</span>, s: tls.<span class="t">Server</span>):
+    <span class="k">if</span> <span class="k">not</span> tls.<span class="f">accept</span>(c, s):          <span class="c"># a client that isn't speaking TLS, or gave up</span>
+        c.<span class="f">close</span>()
+        <span class="k">return</span>
+    c.<span class="f">write</span>(<span class="s">"hello, "</span> <span class="o">+</span> c.<span class="f">read_line</span>())
+    c.<span class="f">close</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> tls.<span class="f">server</span>(<span class="s">"cert.pem"</span>, <span class="s">"key.pem"</span>)
+    l <span class="o">=</span> net.<span class="f">listen</span>(<span class="n">9443</span>)
+    <span class="k">while</span> <span class="k">true</span>:
+        c <span class="o">=</span> l.<span class="f">accept</span>()
+        task.<span class="f">spawn</span>(<span class="k">fn</span>() <span class="f">serve_one</span>(c, s))</code></pre></div>
+<p>For development, <code>mkcert localhost</code> or <code>openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -keyout key.pem -out cert.pem -days 365 -subj /CN=localhost -addext subjectAltName=DNS:localhost</code> makes a certificate; clients then need <code>tls.trust("cert.pem")</code> (or <code>SSL_CERT_FILE</code>).</p>
+<h2 id="alpn-choosing-the-protocol"><a class="anchor" href="#alpn-choosing-the-protocol" aria-hidden="true">#</a>ALPN: choosing the protocol</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">set_alpn</span>(s: <span class="t">Server</span>, protocols: [<span class="t">str</span>])
+<span class="k">fn</span> <span class="f">connect_alpn</span>(host: <span class="t">str</span>, port: <span class="t">int</span>, protocols: [<span class="t">str</span>]) net.<span class="t">Conn</span>
+<span class="k">fn</span> <span class="f">alpn</span>(c: net.<span class="t">Conn</span>) <span class="t">str</span></code></pre></div>
+<p>Application-Layer Protocol Negotiation lets the client and server agree, during the handshake, on what they will speak over the connection: <code>"h2"</code> for HTTP/2 (which gRPC over TLS requires), <code>"http/1.1"</code>, or any other registered name. <code>tls.set_alpn</code> gives a server the protocols it speaks, preferred first; a client gets the first of them that it offered. A client that offers only other protocols fails the handshake (the <code>no_application_protocol</code> alert, as RFC 7301 says), and one that offers none gets none: <code>tls.alpn(c)</code> is then <code>""</code>, and the server decides whether to go on. <code>tls.connect_alpn</code> connects like <code>tls.connect</code>, offering <code>protocols</code>, and <code>tls.alpn(c)</code> says which one the server chose (<code>""</code> if it chose none, or for a plain connection).</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> net
+<span class="k">import</span> task
+<span class="k">import</span> tls
+
+<span class="k">fn</span> <span class="f">serve_one</span>(c: net.<span class="t">Conn</span>, s: tls.<span class="t">Server</span>):
+    <span class="k">if</span> <span class="k">not</span> tls.<span class="f">accept</span>(c, s) <span class="k">or</span> tls.<span class="f">alpn</span>(c) <span class="o">!=</span> <span class="s">"h2"</span>:   <span class="c"># not TLS, or not HTTP/2: refuse</span>
+        c.<span class="f">close</span>()
+        <span class="k">return</span>
+    <span class="c"># ... speak HTTP/2 on c</span>
+    c.<span class="f">close</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> tls.<span class="f">server</span>(<span class="s">"cert.pem"</span>, <span class="s">"key.pem"</span>)
+    tls.<span class="f">set_alpn</span>(s, [<span class="s">"h2"</span>])
+    l <span class="o">=</span> net.<span class="f">listen</span>(<span class="n">8443</span>)
+    <span class="k">while</span> <span class="k">true</span>:
+        c <span class="o">=</span> l.<span class="f">accept</span>()
+        task.<span class="f">spawn</span>(<span class="k">fn</span>() <span class="f">serve_one</span>(c, s))</code></pre></div>
+<p>The <code>grpc</code> package serves gRPC over TLS this way (<code>grpc.start_tls</code>). <code>roost.serve_tls</code> sets no ALPN, so clients speak HTTP/1.1, as they do when the server doesn't answer their offer.</p>
+<p>A TLS connection may be read by one task and written by another at the same time (a reader task and a writer task, as the grpc package's connections are): the session is taken in turns, never across a wait.</p>
+<h2 id="performance"><a class="anchor" href="#performance" aria-hidden="true">#</a>Performance</h2>
+<p>A one-thread HTTPS server on Linux (Docker, arm64, 4 CPUs), with the same ECDSA P-256 certificate and TLS 1.3 with the hybrid post-quantum X25519MLKEM768 key exchange, against Go (<code>net/http</code>) and Rust (axum + rustls on aws-lc-rs). Method and machine load are in <code>bench/std/results.md</code>:</p>
+<div class="table"><table><thead><tr><th>server, 1 thread</th><th>Tern (aws-lc)</th><th>Tern (<code>TERN_TLS=system</code>, OpenSSL 3.0)</th><th>Rust (rustls)</th><th>Go</th></tr></thead><tbody><tr><td>keep-alive requests/s</td><td>272,576</td><td>243,566</td><td>239,753</td><td>158,784</td></tr><tr><td>CPU per keep-alive request</td><td>3.2 us</td><td>3.7 us</td><td>3.7 us</td><td>5.8 us</td></tr><tr><td>full handshakes/s</td><td>8,115</td><td>6,773</td><td>7,232</td><td>5,968</td></tr><tr><td>CPU per full handshake</td><td>80 us</td><td>146 us</td><td>89 us</td><td>165 us</td></tr><tr><td>p99 at 100,000 keep-alive requests/s</td><td>3.3 ms</td><td>6.1 ms</td><td>5.7 ms</td><td>21.0 ms</td></tr><tr><td>p99 at 4,000 handshakes/s</td><td>3.9 ms</td><td>18.7 ms</td><td>4.9 ms</td><td>13.1 ms</td></tr></tbody></table></div>
+<p>The client, on macOS with one thread (Tern with OpenSSL 3.6, before aws-lc was bundled):</p>
+<div class="table"><table><thead><tr><th>client, 1 thread</th><th>Tern</th><th>Go</th><th>Rust</th></tr></thead><tbody><tr><td>new connection per request</td><td>2,585 req/s</td><td>1,570 req/s</td><td>2,574 req/s</td></tr><tr><td>keep-alive, sequential</td><td>40,376 req/s</td><td>29,818 req/s</td><td>22,192 req/s</td></tr><tr><td>50 concurrent keep-alive clients</td><td>120,391 req/s</td><td>81,740 req/s</td><td>77,998 req/s</td></tr></tbody></table></div>
+<p>Tern reads each socket once per request, whatever has arrived, and knows when the socket is drained, so a keep-alive request costs one read(2) and one write(2). Tern and rustls resume sessions on new client connections; Go's client doesn't by default.</p>
+<h2 id="where-tls-comes-from"><a class="anchor" href="#where-tls-comes-from" aria-hidden="true">#</a>Where TLS comes from</h2>
+<p>The first build that imports <code>tls</code> for a target downloads aws-lc and compiles it, once, into the build cache (<code>~/.cache/tern/aws-lc-&lt;version&gt;/&lt;target&gt;/</code>); later builds reuse it. With <code>git</code> installed, the download is a shallow sparse clone of the pinned release tag that fetches only the files the build needs (about 8 MB, 41 MB on disk) and is checked against the tag's pinned commit; without <code>git</code>, <code>tern</code> downloads the release tarball (about 130 MB) with <code>curl</code> and checks its pinned SHA-256. Either way <code>tern</code> prints a line when it starts:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern: downloading aws-lc 1.61.4 (git, about 8 MB; once, for `import tls`)...
+tern: building aws-lc 1.61.4 for native (once, for `import tls`; about a minute)...</code></pre></div>
+<p>Compiling takes 20 to 60 seconds per target, with the same C compiler <code>tern</code> uses for the target: Xcode on macOS and iOS, the NDK for Android, and Docker for the Linux targets (<code>linux</code>, <code>linux-x86_64</code>, <code>linux-static</code>). The version, commit, checksum and the list of files and flags per target are in <code>compiler/targets/awslc.txt</code>; no cmake, Go or Perl is needed, since the assembly comes pregenerated in aws-lc's tree.</p>
+<p>Why aws-lc rather than the system's OpenSSL: its X25519, ML-KEM and P-256 are hand-written assembly, so full handshakes cost about half the CPU of OpenSSL 3's (see <a href="#performance">Performance</a>); the binary carries its TLS library, so the same executable runs on any Linux distribution, and on iOS and Android, which have no OpenSSL; and it's the same crypto that rustls uses.</p>
+<p>Other choices, set when building:</p>
+<div class="table"><table><thead><tr><th>setting</th><th>TLS library</th></tr></thead><tbody><tr><td>(default)</td><td>aws-lc, built and cached by <code>tern</code></td></tr><tr><td><code>TERN_TLS=system</code></td><td>the system's OpenSSL 3: Homebrew's, linked statically, on macOS; <code>-lssl -lcrypto</code> elsewhere</td></tr><tr><td><code>TERN_OPENSSL=/path/to/prefix</code></td><td>any OpenSSL-compatible install with <code>include/</code> and <code>lib/</code></td></tr><tr><td><code>TERN_OPENSSL_DYNAMIC=1</code></td><td>with one of the two above, links it dynamically</td></tr></tbody></table></div>
+<h2 id="licenses"><a class="anchor" href="#licenses" aria-hidden="true">#</a>Licenses</h2>
+<p>A program that imports <code>tls</code> links aws-lc statically; programs that don't contain none of it. aws-lc is available under the Apache License 2.0 or the ISC license, with code inherited from BoringSSL and OpenSSL under the ISC, OpenSSL and SSLeay licenses, and small parts under MIT, BSD-3-Clause and MIT-0. The full texts are in aws-lc's <code>LICENSE</code> and <code>NOTICE</code> files, in the source tree <code>tern</code> unpacks under <code>~/.cache/tern/aws-lc-&lt;version&gt;/</code>.</p>
+<p>When you distribute such a binary, include those license texts with it (in its documentation or an "open source licenses" screen, for example). The OpenSSL and SSLeay licenses also ask for these acknowledgments:</p>
+<ul><li>This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/).</li><li>This product includes cryptographic software written by Eric Young (eay@cryptsoft.com).</li></ul>
+<p>With <code>TERN_TLS=system</code>, the program uses the system's OpenSSL 3 instead (Apache-2.0).</p>
+<h2 id="binary-size"><a class="anchor" href="#binary-size" aria-hidden="true">#</a>Binary size</h2>
+<p>aws-lc adds about 2 MB to a program that imports <code>tls</code>: a minimal HTTPS GET is 2.3 MB on macOS (2.1 MB stripped) and 2.5 MB on Linux arm64, with no dependency beyond libc. <code>tern</code> compiles aws-lc with each function in its own section and links with dead-code removal, so only the parts the program uses stay in.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/compress.html"><span>Previous</span>compress</a><a class="next" href="../std/log.html"><span>Next</span>log</a></div>
+<footer>Source: <code>docs/std/tls.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#clients">Clients</a></li><li class="l2"><a href="#servers">Servers</a></li><li class="l2"><a href="#alpn-choosing-the-protocol">ALPN: choosing the protocol</a></li><li class="l2"><a href="#performance">Performance</a></li><li class="l2"><a href="#where-tls-comes-from">Where TLS comes from</a></li><li class="l2"><a href="#licenses">Licenses</a></li><li class="l2"><a href="#binary-size">Binary size</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

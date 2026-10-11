@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>9. Values, mut, and &amp; · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/09-values-and-mut.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html" class="cur" aria-current="page">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="9-values-mut-and-"><a class="anchor" href="#9-values-mut-and-" aria-hidden="true">#</a>9. Values, mut, and &amp;</h1>
+<p>This is the chapter that explains what makes Tern different. In Tern every value behaves like a copy: there are no references, so two variables never share data. A function can change a variable of yours only when its parameter says <code>mut</code> and you pass the variable with <code>&amp;</code>. You will learn how this works, why it is cheap, what <code>take</code> is for, and how these rules turn aliasing bugs into compile errors.</p>
+<h2 id="assignment-copies"><a class="anchor" href="#assignment-copies" aria-hidden="true">#</a>Assignment copies</h2>
+<p>In Python, JavaScript, Java, or Go, assigning a list or an object gives you a second name for the <em>same</em> data. Change it through one name and the other sees the change. In Tern, assignment always gives you an independent value:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    a <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    b <span class="o">=</span> a
+    b.<span class="f">push</span>(<span class="n">4</span>)
+    <span class="f">print</span>(a, b)
+    p <span class="o">=</span> <span class="t">Point</span>(<span class="n">1</span>, <span class="n">1</span>)
+    q <span class="o">=</span> p
+    q.x <span class="o">=</span> <span class="n">99</span>
+    <span class="f">print</span>(p, q)
+    m <span class="o">=</span> {<span class="s">"red"</span>: <span class="n">1</span>}
+    n <span class="o">=</span> m
+    n[<span class="s">"blue"</span>] <span class="o">=</span> <span class="n">2</span>
+    <span class="f">print</span>(m, n)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[1, 2, 3] [1, 2, 3, 4]
+Point{x: 1, y: 1} Point{x: 99, y: 1}
+{"red": 1} {"red": 1, "blue": 2}</code></pre></div>
+<p>This holds everywhere a value moves: passing an argument, storing a value in a struct or an array, taking a value out of a map, returning from a function. Here is the classic bug that this prevents. A team is built from a list, and later the list is changed for another purpose:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Team</span>:
+    name: <span class="t">str</span>
+    members: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    roster <span class="o">=</span> [<span class="s">"ada"</span>, <span class="s">"bob"</span>]
+    core <span class="o">=</span> <span class="t">Team</span>(<span class="s">"core"</span>, roster)
+    roster.<span class="f">push</span>(<span class="s">"cy"</span>)                 <span class="c"># in Python, core.members would change too</span>
+    <span class="f">print</span>(core.members, roster)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["ada", "bob"] ["ada", "bob", "cy"]</code></pre></div>
+<p>In a language with references, <code>core.members</code> and <code>roster</code> would be the same list, and adding <code>cy</code> to one would silently add him to the other. In Tern that can't happen: once a value is stored, only code that names that storage can change it.</p>
+<h2 id="copies-are-cheap-copy-on-write"><a class="anchor" href="#copies-are-cheap-copy-on-write" aria-hidden="true">#</a>Copies are cheap: copy-on-write</h2>
+<p>Copying a million-element array on every assignment would be slow, so Tern doesn't. Arrays, maps, and strings share their storage until one side is written, and only then is the data copied. Reading never copies:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    big <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">1_000_000</span>
+    a <span class="o">=</span> big
+    b <span class="o">=</span> big
+    c <span class="o">=</span> big                          <span class="c"># no copies yet: all four share storage</span>
+    <span class="f">print</span>(<span class="f">len</span>(a) <span class="o">+</span> <span class="f">len</span>(b) <span class="o">+</span> <span class="f">len</span>(c))
+    c[<span class="n">0</span>] <span class="o">=</span> <span class="n">1</span>                         <span class="c"># now c gets its own copy</span>
+    <span class="f">print</span>(big[<span class="n">0</span>], c[<span class="n">0</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3000000
+0 1</code></pre></div>
+<p>Running this with <code>TERN_STATS=1 tern run prog.tn</code> prints a summary line to stderr that includes <code>1 copy-on-write copies</code>: the only copy happened when <code>c</code> was written. And when the compiler can prove a value is never shared, it skips even the check.</p>
+<p>So you can write code as if everything is copied, and pay only for copies you actually need. The <a href="../guides/memory.html">memory guide</a> explains how this works under the hood.</p>
+<h2 id="parameters-are-read-only"><a class="anchor" href="#parameters-are-read-only" aria-hidden="true">#</a>Parameters are read-only</h2>
+<p>You met this rule in <a href="04-functions.html#parameters-are-read-only">chapter 4</a>. A parameter can't be assigned, and a collection parameter can't be changed with <code>push</code>, <code>pop</code>, or element assignment:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">add_bonus</span>(scores: [<span class="t">int</span>], bonus: <span class="t">int</span>):
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(scores):
+        scores[i] <span class="o">+</span><span class="o">=</span> bonus
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> [<span class="n">70</span>, <span class="n">80</span>]
+    <span class="f">add_bonus</span>(s, <span class="n">5</span>)
+    <span class="f">print</span>(s)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: can't modify parameter `scores`: parameters are read-only unless declared `mut`
+3: hint: to change only a local copy, copy it first (`scores2 = scores`) and change `scores2`; to change the caller's value, declare `scores: mut T` and call with `f(&amp;x)` or `x.f()`</code></pre></div>
+<p>Why not just let the function change its own copy, as Python does with numbers? Because the reader of <code>add_bonus(s, 5)</code> would then have to guess: does this change <code>s</code> or not? In Tern there are two clear options, and both are visible in the code:</p>
+<ol><li>Return a new value. The caller decides what to do with it: <code>s = with_bonus(s, 5)</code>.</li><li>Declare the parameter <code>mut</code>, and have the caller pass <code>&amp;s</code>.</li></ol>
+<h2 id="mut-and-"><a class="anchor" href="#mut-and-" aria-hidden="true">#</a>mut and &amp;</h2>
+<p>A <code>mut</code> parameter lets the function change the caller's variable. The caller must write <code>&amp;</code> before the argument, so every argument a call might change is marked (the one exception, method syntax on a <code>mut</code> first parameter, is below):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">add_bonus</span>(scores: <span class="k">mut</span> [<span class="t">int</span>], bonus: <span class="t">int</span>):
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(scores):
+        scores[i] <span class="o">+</span><span class="o">=</span> bonus
+
+<span class="k">fn</span> <span class="f">with_bonus</span>(scores: [<span class="t">int</span>], bonus: <span class="t">int</span>) [<span class="t">int</span>]:
+    <span class="k">return</span> scores.<span class="f">map</span>(<span class="k">fn</span>(s) s <span class="o">+</span> bonus)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> [<span class="n">70</span>, <span class="n">80</span>]
+    <span class="f">add_bonus</span>(<span class="o">&amp;</span>s, <span class="n">5</span>)                  <span class="c"># changes s</span>
+    <span class="f">print</span>(s)
+    t <span class="o">=</span> <span class="f">with_bonus</span>(s, <span class="n">10</span>)             <span class="c"># s is untouched</span>
+    <span class="f">print</span>(s, t)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[75, 85]
+[75, 85] [85, 95]</code></pre></div>
+<p>Forgetting the <code>&amp;</code> is an error, not a silent copy:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">add_bonus</span>(scores: <span class="k">mut</span> [<span class="t">int</span>], bonus: <span class="t">int</span>):
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(scores):
+        scores[i] <span class="o">+</span><span class="o">=</span> bonus
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> [<span class="n">70</span>, <span class="n">80</span>]
+    <span class="f">add_bonus</span>(s, <span class="n">5</span>)
+    <span class="f">print</span>(s)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>7: error: argument 1 of `add_bonus` is `mut`: write `&amp;s` so the change is visible here</code></pre></div>
+<p><code>&amp;</code> can be put before a variable, a field (<code>&amp;game.player</code>), or an element (<code>&amp;accounts[2]</code>), and only as an argument to a <code>mut</code> parameter. It is not a pointer; you can't store it or return it. It means "this call may change this, right now".</p>
+<p>With method syntax, the dot plays the role of the <code>&amp;</code>: when the first parameter is <code>mut</code>, <code>s.add_bonus(5)</code> is the same as <code>add_bonus(&amp;s, 5)</code>.</p>
+<h2 id="elements-are-values-too"><a class="anchor" href="#elements-are-values-too" aria-hidden="true">#</a>Elements are values too</h2>
+<p>Taking an element out of an array gives you a copy. To change the element itself, write through the array, or pass the element with <code>&amp;</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Account</span>:
+    owner: <span class="t">str</span>
+    balance: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">deposit</span>(a: <span class="k">mut</span> <span class="t">Account</span>, amount: <span class="t">int</span>):
+    a.balance <span class="o">+</span><span class="o">=</span> amount
+
+<span class="k">fn</span> <span class="f">main</span>():
+    accts <span class="o">=</span> [<span class="t">Account</span>(<span class="s">"ada"</span>, <span class="n">10</span>), <span class="t">Account</span>(<span class="s">"bob"</span>, <span class="n">0</span>)]
+    first <span class="o">=</span> accts[<span class="n">0</span>]                  <span class="c"># a copy</span>
+    first.balance <span class="o">=</span> <span class="n">999</span>               <span class="c"># changes only the copy</span>
+    accts[<span class="n">0</span>].balance <span class="o">+</span><span class="o">=</span> <span class="n">1</span>             <span class="c"># changes the element</span>
+    <span class="f">deposit</span>(<span class="o">&amp;</span>accts[<span class="n">1</span>], <span class="n">5</span>)             <span class="c"># so does this</span>
+    <span class="f">print</span>(accts)
+    <span class="f">print</span>(first.balance)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[Account{owner: "ada", balance: 11}, Account{owner: "bob", balance: 5}]
+999</code></pre></div>
+<p>The same goes for <code>for a in accts:</code>. The loop variable is a (read-only) copy of each element; to change elements, loop over indexes and write <code>accts[i]</code>.</p>
+<h2 id="aliasing-is-a-compile-error"><a class="anchor" href="#aliasing-is-a-compile-error" aria-hidden="true">#</a>Aliasing is a compile error</h2>
+<p>If a function could receive the same value twice, once as <code>mut</code> and once more, a change through one parameter would show up in the other in the middle of the function. This is called aliasing, and it causes some of the hardest bugs to find in C, C++, and Go. Tern refuses such calls:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">append_all</span>(dst: <span class="k">mut</span> [<span class="t">str</span>], src: [<span class="t">str</span>]):
+    <span class="k">for</span> s <span class="k">in</span> src:
+        dst.<span class="f">push</span>(s)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    names <span class="o">=</span> [<span class="s">"ada"</span>, <span class="s">"bob"</span>]
+    <span class="f">append_all</span>(<span class="o">&amp;</span>names, names)
+    <span class="f">print</span>(names)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>7: error: `append_all` would see the same value twice: `&amp;names` can be changed, but `names` is also passed (argument 2)</code></pre></div>
+<p>In a language with references, <code>append_all(names, names)</code> would loop over <code>src</code> while the same list grows through <code>dst</code>, and never finish. The fix is to say what you mean: pass a copy, which is a separate value.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">append_all</span>(dst: <span class="k">mut</span> [<span class="t">str</span>], src: [<span class="t">str</span>]):
+    <span class="k">for</span> s <span class="k">in</span> src:
+        dst.<span class="f">push</span>(s)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    names <span class="o">=</span> [<span class="s">"ada"</span>, <span class="s">"bob"</span>]
+    snapshot <span class="o">=</span> names
+    <span class="f">append_all</span>(<span class="o">&amp;</span>names, snapshot)
+    <span class="f">print</span>(names)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["ada", "bob", "ada", "bob"]</code></pre></div>
+<p>The check is conservative for array elements. The compiler can't always prove that two indexes differ, so <code>transfer(&amp;accts[0], &amp;accts[1], 30)</code> is refused too:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Account</span>:
+    owner: <span class="t">str</span>
+    balance: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">transfer</span>(src: <span class="k">mut</span> <span class="t">Account</span>, dst: <span class="k">mut</span> <span class="t">Account</span>, amount: <span class="t">int</span>):
+    src.balance <span class="o">-</span><span class="o">=</span> amount
+    dst.balance <span class="o">+</span><span class="o">=</span> amount
+
+<span class="k">fn</span> <span class="f">main</span>():
+    accts <span class="o">=</span> [<span class="t">Account</span>(<span class="s">"ada"</span>, <span class="n">100</span>), <span class="t">Account</span>(<span class="s">"bob"</span>, <span class="n">50</span>)]
+    <span class="f">transfer</span>(<span class="o">&amp;</span>accts[<span class="n">0</span>], <span class="o">&amp;</span>accts[<span class="n">1</span>], <span class="n">30</span>)
+    <span class="f">print</span>(accts)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>11: error: `transfer` would see the same value twice: `&amp;accts[..]` can be changed, but `accts[..]` is also passed (argument 2)</code></pre></div>
+<p>When a function works on several elements of one array, pass the array once, with indexes:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Account</span>:
+    owner: <span class="t">str</span>
+    balance: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">transfer</span>(accts: <span class="k">mut</span> [<span class="t">Account</span>], src: <span class="t">int</span>, dst: <span class="t">int</span>, amount: <span class="t">int</span>):
+    accts[src].balance <span class="o">-</span><span class="o">=</span> amount
+    accts[dst].balance <span class="o">+</span><span class="o">=</span> amount
+
+<span class="k">fn</span> <span class="f">main</span>():
+    accts <span class="o">=</span> [<span class="t">Account</span>(<span class="s">"ada"</span>, <span class="n">100</span>), <span class="t">Account</span>(<span class="s">"bob"</span>, <span class="n">50</span>)]
+    <span class="f">transfer</span>(<span class="o">&amp;</span>accts, <span class="n">0</span>, <span class="n">1</span>, <span class="n">30</span>)
+    <span class="f">print</span>(accts)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[Account{owner: "ada", balance: 70}, Account{owner: "bob", balance: 80}]</code></pre></div>
+<h2 id="take-handing-a-value-over"><a class="anchor" href="#take-handing-a-value-over" aria-hidden="true">#</a>take: handing a value over</h2>
+<p>There is a third parameter mode. A <code>take</code> parameter receives the value itself: the function owns it and may change it freely, and the caller can no longer use it. Use it when a function consumes a large value and returns a modified version, to avoid a copy:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">normalized</span>(names: <span class="k">take</span> [<span class="t">str</span>]) [<span class="t">str</span>]:
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(names):
+        names[i] <span class="o">=</span> names[i].<span class="f">trim</span>().<span class="f">lower</span>()
+    <span class="k">return</span> names
+
+<span class="k">fn</span> <span class="f">main</span>():
+    raw <span class="o">=</span> [<span class="s">"  Ada "</span>, <span class="s">"GRACE"</span>, <span class="s">" Linus"</span>]
+    clean <span class="o">=</span> <span class="f">normalized</span>(raw)
+    <span class="f">print</span>(clean)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["ada", "grace", "linus"]</code></pre></div>
+<p><code>normalized</code> changes the array it was given and returns it, so no copy is ever made. The price is that after <code>normalized(raw)</code>, <code>raw</code> is gone. Using it again is an error:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">total</span>(xs: <span class="k">take</span> [<span class="t">int</span>]) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        t <span class="o">+</span><span class="o">=</span> x
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    data <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    <span class="f">print</span>(<span class="f">total</span>(data))
+    <span class="f">print</span>(<span class="f">len</span>(data))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>10: error: `data` was handed to a `take` parameter earlier and is gone (pass `copy(data)` to keep it)</code></pre></div>
+<p>If you still need the value, pass <code>copy(data)</code>, an explicit copy. You will rarely need <code>take</code> at all: plain parameters and copy-on-write already avoid copies in almost all code. Reach for it when profiling shows a copy you want to avoid.</p>
+<h2 id="why-its-worth-it"><a class="anchor" href="#why-its-worth-it" aria-hidden="true">#</a>Why it's worth it</h2>
+<p>These rules can feel strict for the first few programs. Here is what they buy:</p>
+<ul><li><strong>Local reasoning.</strong> To know what a call can change, read the call: only <code>&amp;</code> arguments (and the value before the dot for a <code>mut</code> method). Nothing else in your program can change.</li><li><strong>No aliasing bugs.</strong> Two names never refer to the same data, so a change here never shows up unexpectedly over there.</li><li><strong>Safe parallelism.</strong> Because nothing is shared implicitly, the compiler can check that parallel tasks don't write the same data, which is the subject of <a href="11-parallelism.html">chapter 11</a>.</li><li><strong>No garbage collector and no lifetimes.</strong> Every value has exactly one owner, so memory is freed as soon as it is no longer used, without annotations.</li></ul>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Write a small bank: <code>struct Bank</code> with an <code>accounts: {str: int}</code> map from owner to balance. Write <code>fn open_account(b: mut Bank, owner: str)</code>, <code>fn deposit(b: mut Bank, owner: str, amount: int)</code>, and a read-only <code>fn total(b: Bank) int</code>. Take a snapshot <code>before = bank</code>, make some deposits, and print both totals to see that the snapshot didn't change.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Bank</span>:
+    accounts: {<span class="t">str</span>: <span class="t">int</span>}
+
+<span class="k">fn</span> <span class="f">open_account</span>(b: <span class="k">mut</span> <span class="t">Bank</span>, owner: <span class="t">str</span>):
+    b.accounts[owner] <span class="o">=</span> <span class="n">0</span>
+
+<span class="k">fn</span> <span class="f">deposit</span>(b: <span class="k">mut</span> <span class="t">Bank</span>, owner: <span class="t">str</span>, amount: <span class="t">int</span>):
+    b.accounts[owner] <span class="o">+</span><span class="o">=</span> amount
+
+<span class="k">fn</span> <span class="f">total</span>(b: <span class="t">Bank</span>) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> owner, bal <span class="k">in</span> b.accounts:
+        t <span class="o">+</span><span class="o">=</span> bal
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    bank <span class="o">=</span> <span class="t">Bank</span>({})
+    bank.<span class="f">open_account</span>(<span class="s">"ada"</span>)
+    bank.<span class="f">open_account</span>(<span class="s">"bob"</span>)
+    <span class="f">deposit</span>(<span class="o">&amp;</span>bank, <span class="s">"ada"</span>, <span class="n">100</span>)
+    before <span class="o">=</span> bank
+    bank.<span class="f">deposit</span>(<span class="s">"bob"</span>, <span class="n">40</span>)
+    bank.<span class="f">deposit</span>(<span class="s">"ada"</span>, <span class="n">5</span>)
+    <span class="f">print</span>(before.<span class="f">total</span>(), bank.<span class="f">total</span>())
+    <span class="f">print</span>(before.accounts, bank.accounts)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>100 145
+{"ada": 100, "bob": 0} {"ada": 105, "bob": 40}</code></pre></div>
+<p>Next: <a href="10-closures.html">10. Functions as values</a>. Reference: <a href="../reference.html#14-values-mut-and-the-safety-rules">§14 Values, mut, and the safety rules</a>. Guide: <a href="../guides/memory.html">How memory works</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/08-enums-and-match.html"><span>Previous</span>8. Enums and match</a><a class="next" href="../tour/10-closures.html"><span>Next</span>10. Functions as values</a></div>
+<footer>Source: <code>docs/tour/09-values-and-mut.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#assignment-copies">Assignment copies</a></li><li class="l2"><a href="#copies-are-cheap-copy-on-write">Copies are cheap: copy-on-write</a></li><li class="l2"><a href="#parameters-are-read-only">Parameters are read-only</a></li><li class="l2"><a href="#mut-and-">mut and &amp;</a></li><li class="l2"><a href="#elements-are-values-too">Elements are values too</a></li><li class="l2"><a href="#aliasing-is-a-compile-error">Aliasing is a compile error</a></li><li class="l2"><a href="#take-handing-a-value-over">take: handing a value over</a></li><li class="l2"><a href="#why-its-worth-it">Why it's worth it</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

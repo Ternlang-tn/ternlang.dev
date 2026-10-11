@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4. Functions · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/04-functions.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html" class="cur" aria-current="page">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="4-functions"><a class="anchor" href="#4-functions" aria-hidden="true">#</a>4. Functions</h1>
+<p>This chapter shows how to define and call functions: typed parameters, return types, recursion, and the method-call shorthand <code>x.f()</code>. It also introduces the first of Tern's safety rules, that a function can't change its parameters, and shows how to return more than one result and report failure without exceptions.</p>
+<h2 id="defining-a-function"><a class="anchor" href="#defining-a-function" aria-hidden="true">#</a>Defining a function</h2>
+<p>A function starts with <code>fn</code>, lists its parameters with their types, and puts the return type after the <code>)</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">area</span>(width: <span class="t">float</span>, height: <span class="t">float</span>) <span class="t">float</span>:
+    <span class="k">return</span> width <span class="o">*</span> height
+
+<span class="k">fn</span> <span class="f">describe</span>(name: <span class="t">str</span>, sides: <span class="t">int</span>) <span class="t">str</span>:
+    <span class="k">return</span> <span class="s">f"a {name} has {sides} sides"</span>
+
+<span class="k">fn</span> <span class="f">announce</span>(msg: <span class="t">str</span>):
+    <span class="f">print</span>(<span class="s">"** "</span> <span class="o">+</span> msg <span class="o">+</span> <span class="s">" **"</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">area</span>(<span class="n">3.0</span>, <span class="n">4.5</span>))
+    <span class="f">print</span>(<span class="f">describe</span>(<span class="s">"hexagon"</span>, <span class="n">6</span>))
+    <span class="f">announce</span>(<span class="s">"done"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>13.5
+a hexagon has 6 sides
+** done **</code></pre></div>
+<ul><li>Every parameter needs a type. Types are how the compiler catches mistakes at the call site, and they document the function for the next reader.</li><li>The return type follows the <code>)</code> with no arrow, as in Go. (<code>-&gt; float</code> is also accepted if you are used to Python annotations or Rust.)</li><li>A function with no return type, like <code>announce</code>, returns nothing. You can use <code>return</code> with no value to leave it early.</li><li>Functions can be called before they are defined in the file, so you can order them however reads best. Most programs put <code>main</code> last or first.</li></ul>
+<p>There are no default parameter values, keyword arguments, variable numbers of arguments, or overloading (two functions with the same name). Each function has one signature, and every call passes every argument in order. This keeps calls easy to read: what you see at the call site is everything the function gets.</p>
+<h2 id="every-path-must-return"><a class="anchor" href="#every-path-must-return" aria-hidden="true">#</a>Every path must return</h2>
+<p>If a function has a return type, every way through it must end in <code>return</code>. The compiler checks this:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sign</span>(n: <span class="t">int</span>) <span class="t">str</span>:
+    <span class="k">if</span> n <span class="o">&gt;</span> <span class="n">0</span>:
+        <span class="k">return</span> <span class="s">"positive"</span>
+    <span class="k">elif</span> n <span class="o">&lt;</span> <span class="n">0</span>:
+        <span class="k">return</span> <span class="s">"negative"</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">sign</span>(<span class="n">3</span>))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>1: error: function `sign` must end with a `return`</code></pre></div>
+<p>What should <code>sign(0)</code> return? The compiler can't guess, so it asks you to decide. Adding an <code>else</code> branch (or a final <code>return "zero"</code>) fixes it.</p>
+<h2 id="recursion"><a class="anchor" href="#recursion" aria-hidden="true">#</a>Recursion</h2>
+<p>Functions may call themselves:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">factorial</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">if</span> n <span class="o">&lt;=</span> <span class="n">1</span>:
+        <span class="k">return</span> <span class="n">1</span>
+    <span class="k">return</span> n <span class="o">*</span> <span class="f">factorial</span>(n <span class="o">-</span> <span class="n">1</span>)
+
+<span class="k">fn</span> <span class="f">gcd</span>(a: <span class="t">int</span>, b: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">if</span> b <span class="o">==</span> <span class="n">0</span>:
+        <span class="k">return</span> a
+    <span class="k">return</span> <span class="f">gcd</span>(b, a <span class="o">%</span> b)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">factorial</span>(<span class="n">10</span>), <span class="f">gcd</span>(<span class="n">84</span>, <span class="n">36</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3628800 12</code></pre></div>
+<h2 id="method-call-syntax"><a class="anchor" href="#method-call-syntax" aria-hidden="true">#</a>Method-call syntax</h2>
+<p>There are no classes, but any function can be called as if it were a method: <code>x.f(a, b)</code> is exactly the same call as <code>f(x, a, b)</code>. The value before the dot becomes the first argument:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">shout</span>(s: <span class="t">str</span>) <span class="t">str</span>:
+    <span class="k">return</span> s.<span class="f">upper</span>() <span class="o">+</span> <span class="s">"!"</span>
+
+<span class="k">fn</span> <span class="f">clamp</span>(n: <span class="t">int</span>, lo: <span class="t">int</span>, hi: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">if</span> n <span class="o">&lt;</span> lo:
+        <span class="k">return</span> lo
+    <span class="k">if</span> n <span class="o">&gt;</span> hi:
+        <span class="k">return</span> hi
+    <span class="k">return</span> n
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">shout</span>(<span class="s">"hello"</span>), <span class="s">"hello"</span>.<span class="f">shout</span>())
+    <span class="f">print</span>(<span class="f">clamp</span>(<span class="n">150</span>, <span class="n">0</span>, <span class="n">100</span>), <span class="n">150</span>.<span class="f">clamp</span>(<span class="n">0</span>, <span class="n">100</span>), (<span class="o">-</span><span class="n">5</span>).<span class="f">clamp</span>(<span class="n">0</span>, <span class="n">100</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>HELLO! HELLO!
+100 100 0</code></pre></div>
+<p>This is how built-in functions like <code>upper</code> work too, and it is how you will write "methods" for your own structs in the <a href="05-structs.html">next chapter</a>.</p>
+<h2 id="parameters-are-read-only"><a class="anchor" href="#parameters-are-read-only" aria-hidden="true">#</a>Parameters are read-only</h2>
+<p>Here is the first rule that is different from most languages. Inside a function, you can't change a parameter:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">countdown</span>(n: <span class="t">int</span>):
+    <span class="k">while</span> n <span class="o">&gt;</span> <span class="n">0</span>:
+        <span class="f">print</span>(n)
+        n <span class="o">-</span><span class="o">=</span> <span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">countdown</span>(<span class="n">3</span>)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: can't modify parameter `n`: parameters are read-only unless declared `mut`
+4: hint: to change only a local copy, copy it first (`n2 = n`) and change `n2`; to change the caller's value, declare `n: mut T` and call with `f(&amp;x)` or `x.f()`</code></pre></div>
+<p>Why? In Tern, a function receives its arguments as values, never as references. If a function could quietly change its parameters, a reader could not tell whether <code>countdown(x)</code> changes <code>x</code> or not. So parameters are read-only, and when a function <em>is</em> allowed to change the caller's variable, both the function and the call say so (<code>mut</code> and <code>&amp;</code>, <a href="09-values-and-mut.html">chapter 9</a>). For now, the fix is the first half of the hint: copy the parameter into a local variable and change that.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">countdown</span>(n: <span class="t">int</span>):
+    left <span class="o">=</span> n
+    <span class="k">while</span> left <span class="o">&gt;</span> <span class="n">0</span>:
+        <span class="f">print</span>(left)
+        left <span class="o">-</span><span class="o">=</span> <span class="n">1</span>
+    <span class="f">print</span>(<span class="s">"go"</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">countdown</span>(<span class="n">3</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3
+2
+1
+go</code></pre></div>
+<p>The copy costs nothing for an <code>int</code>, and even for a large array it is cheap: Tern copies lazily, only when one side is actually written.</p>
+<h2 id="returning-more-than-one-value"><a class="anchor" href="#returning-more-than-one-value" aria-hidden="true">#</a>Returning more than one value</h2>
+<p>To return several values, return a tuple: write the types in parentheses after the <code>)</code>, return the values separated by commas, and unpack them at the call:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">min_max</span>(xs: [<span class="t">int</span>]) (<span class="t">int</span>, <span class="t">int</span>):
+    lo <span class="o">=</span> xs[<span class="n">0</span>]
+    hi <span class="o">=</span> xs[<span class="n">0</span>]
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        <span class="k">if</span> x <span class="o">&lt;</span> lo:
+            lo <span class="o">=</span> x
+        <span class="k">if</span> x <span class="o">&gt;</span> hi:
+            hi <span class="o">=</span> x
+    <span class="k">return</span> lo, hi
+
+<span class="k">fn</span> <span class="f">main</span>():
+    temps <span class="o">=</span> [<span class="n">18</span>, <span class="n">23</span>, <span class="n">15</span>, <span class="n">27</span>, <span class="n">21</span>]
+    lo, hi <span class="o">=</span> <span class="f">min_max</span>(temps)
+    <span class="f">print</span>(<span class="s">"low"</span>, lo, <span class="s">"high"</span>, hi)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>low 15 high 27</code></pre></div>
+<p>For more than two or three values, a struct (the next chapter) with named fields reads better. A function can also change variables the caller passes in with <code>&amp;</code>, when their parameters are declared <code>mut</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">widen</span>(lo: <span class="k">mut</span> <span class="t">int</span>, hi: <span class="k">mut</span> <span class="t">int</span>, by: <span class="t">int</span>):
+    lo <span class="o">-</span><span class="o">=</span> by
+    hi <span class="o">+</span><span class="o">=</span> by
+
+<span class="k">fn</span> <span class="f">main</span>():
+    lo <span class="o">=</span> <span class="n">15</span>
+    hi <span class="o">=</span> <span class="n">27</span>
+    <span class="f">widen</span>(<span class="o">&amp;</span>lo, <span class="o">&amp;</span>hi, <span class="n">5</span>)
+    <span class="f">print</span>(lo, hi)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>10 32</code></pre></div>
+<p><code>lo: mut int</code> means "this function may change the caller's variable", and the caller marks each such argument with <code>&amp;</code>. You can see at the call site exactly which variables might change. <a href="09-values-and-mut.html">Chapter 9</a> explains <code>mut</code> fully.</p>
+<h2 id="reporting-failure"><a class="anchor" href="#reporting-failure" aria-hidden="true">#</a>Reporting failure</h2>
+<p>There are no exceptions. A function that can fail returns a <code>Result</code>: either <code>Ok(value)</code> or <code>Err(why)</code>. The caller checks which it got, here with <code>is</code>, which also names the value inside:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">parse_percent</span>(text: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    n <span class="o">=</span> text.<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+    <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">0</span> <span class="k">or</span> n <span class="o">&gt;</span> <span class="n">100</span>:
+        <span class="k">return</span> <span class="t">Err</span>(<span class="s">f"{text} is not a percentage"</span>)
+    <span class="k">return</span> <span class="t">Ok</span>(n)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> input <span class="k">in</span> [<span class="s">"42"</span>, <span class="s">"150"</span>, <span class="s">"abc"</span>]:
+        r <span class="o">=</span> <span class="f">parse_percent</span>(input)
+        <span class="k">if</span> r is <span class="t">Ok</span>(value):
+            <span class="f">print</span>(input, <span class="s">"-&gt;"</span>, value)
+        <span class="k">elif</span> r is <span class="t">Err</span>(why):
+            <span class="f">print</span>(why)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>42 -&gt; 42
+150 is not a percentage
+abc is not a percentage</code></pre></div>
+<p>A value that may simply be missing is an <code>Option</code>: <code>Some(value)</code> or <code>None</code>. <a href="08-enums-and-match.html">Chapter 8</a> has more on both, including <code>?</code>, which passes a failure up to the caller in one character.</p>
+<p><code>text.to_int(-1)</code> parses a string as an int, giving <code>-1</code> if it isn't a number. The <a href="07-strings.html">strings chapter</a> covers it and similar functions.</p>
+<h2 id="sharing-a-name-with-a-builtin"><a class="anchor" href="#sharing-a-name-with-a-builtin" aria-hidden="true">#</a>Sharing a name with a builtin</h2>
+<p>Built-in functions such as <code>get</code>, <code>find</code>, <code>len</code>, and <code>min</code> need no import. Your own functions can have the same names. A call goes to yours when its first argument fits your first parameter, and to the builtin otherwise:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Inventory</span>:
+    counts: {<span class="t">str</span>: <span class="t">int</span>}
+
+<span class="k">fn</span> <span class="f">get</span>(inv: <span class="t">Inventory</span>, item: <span class="t">str</span>) <span class="t">int</span>:
+    <span class="k">return</span> inv.counts.<span class="f">get</span>(item, <span class="n">0</span>)         <span class="c"># the builtin: counts is a map</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    inv <span class="o">=</span> <span class="t">Inventory</span>({<span class="s">"apple"</span>: <span class="n">3</span>})
+    <span class="f">print</span>(inv.<span class="f">get</span>(<span class="s">"apple"</span>), inv.<span class="f">get</span>(<span class="s">"pear"</span>), <span class="f">get</span>(inv, <span class="s">"apple"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 0 3</code></pre></div>
+<p>The full list of builtins is in <a href="../reference.html#20-builtin-names">§20 of the reference</a>.</p>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Write <code>fn is_prime(n: int) bool</code> that checks divisors from 2 while <code>d * d &lt;= n</code>, and use it to print the prime numbers below 30 on one line. Since <code>print</code> always ends the line, build the line as a string first and print it once. Then write <code>fn count_primes(limit: int) int</code> that calls <code>is_prime</code> as a method: <code>n.is_prime()</code>.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">is_prime</span>(n: <span class="t">int</span>) <span class="t">bool</span>:
+    <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">2</span>:
+        <span class="k">return</span> <span class="k">false</span>
+    d <span class="o">=</span> <span class="n">2</span>
+    <span class="k">while</span> d <span class="o">*</span> d <span class="o">&lt;=</span> n:
+        <span class="k">if</span> n <span class="o">%</span> d <span class="o">==</span> <span class="n">0</span>:
+            <span class="k">return</span> <span class="k">false</span>
+        d <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> <span class="k">true</span>
+
+<span class="k">fn</span> <span class="f">count_primes</span>(limit: <span class="t">int</span>) <span class="t">int</span>:
+    count <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> n <span class="k">in</span> <span class="n">0</span><span class="o">..</span>limit:
+        <span class="k">if</span> n.<span class="f">is_prime</span>():
+            count <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> count
+
+<span class="k">fn</span> <span class="f">main</span>():
+    line <span class="o">=</span> <span class="s">""</span>
+    <span class="k">for</span> n <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">30</span>:
+        <span class="k">if</span> <span class="f">is_prime</span>(n):
+            line <span class="o">+</span><span class="o">=</span> <span class="t">str</span>(n) <span class="o">+</span> <span class="s">" "</span>
+    <span class="f">print</span>(line.<span class="f">trim</span>())
+    <span class="f">print</span>(<span class="f">count_primes</span>(<span class="n">1000</span>), <span class="s">"primes below 1000"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2 3 5 7 11 13 17 19 23 29
+168 primes below 1000</code></pre></div>
+<p>Next: <a href="05-structs.html">5. Structs</a>. Reference: <a href="../reference.html#6-functions">§6 Functions</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/03-control-flow.html"><span>Previous</span>3. Control flow</a><a class="next" href="../tour/05-structs.html"><span>Next</span>5. Structs</a></div>
+<footer>Source: <code>docs/tour/04-functions.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#defining-a-function">Defining a function</a></li><li class="l2"><a href="#every-path-must-return">Every path must return</a></li><li class="l2"><a href="#recursion">Recursion</a></li><li class="l2"><a href="#method-call-syntax">Method-call syntax</a></li><li class="l2"><a href="#parameters-are-read-only">Parameters are read-only</a></li><li class="l2"><a href="#returning-more-than-one-value">Returning more than one value</a></li><li class="l2"><a href="#reporting-failure">Reporting failure</a></li><li class="l2"><a href="#sharing-a-name-with-a-builtin">Sharing a name with a builtin</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

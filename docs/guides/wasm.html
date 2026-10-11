@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebAssembly and JavaScript · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/wasm.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html" class="cur" aria-current="page">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="webassembly-and-javascript"><a class="anchor" href="#webassembly-and-javascript" aria-hidden="true">#</a>WebAssembly and JavaScript</h1>
+<p>Tern compiles to WebAssembly (WASI) with one flag, <code>--target wasm</code>. This guide covers installing the toolchain, building and running whole programs under wasmtime or Node, building a library that JavaScript can call (with a generated loader and TypeScript types), how values cross between Tern and JavaScript, how runtime errors surface, using a module in the browser, and what doesn't work on wasm.</p>
+<h2 id="installing-the-toolchain"><a class="anchor" href="#installing-the-toolchain" aria-hidden="true">#</a>Installing the toolchain</h2>
+<p>Tern compiles to C, so wasm needs a C compiler that targets <code>wasm32-wasip1</code>. Either install Homebrew's LLVM with the WASI libraries:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">brew</span> install llvm lld wasi-libc wasi-runtimes</code></pre></div>
+<p>or install a <a href="https://github.com/WebAssembly/wasi-sdk">wasi-sdk</a> and point <code>WASI_SDK_PATH</code> at it (<code>tern</code> also looks in <code>/opt/wasi-sdk</code>). If neither is found, <code>tern</code> stops with a message saying which packages to install.</p>
+<p>To run programs you need <a href="https://wasmtime.dev">wasmtime</a> or Node.js 18 or newer. JavaScript libraries need only Node or a browser.</p>
+<h2 id="building-and-running-a-program"><a class="anchor" href="#building-and-running-a-program" aria-hidden="true">#</a>Building and running a program</h2>
+<p>Any program that doesn't use <code>sqlite</code> or <code>http</code> builds for wasm unchanged:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">count_primes</span>(lo: <span class="t">int</span>, hi: <span class="t">int</span>) <span class="t">int</span>:
+    n <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> k <span class="k">in</span> lo<span class="o">..</span>hi:
+        <span class="k">if</span> k <span class="o">&lt;</span> <span class="n">2</span>:
+            <span class="k">continue</span>
+        prime <span class="o">=</span> <span class="k">true</span>
+        d <span class="o">=</span> <span class="n">2</span>
+        <span class="k">while</span> d <span class="o">*</span> d <span class="o">&lt;=</span> k:
+            <span class="k">if</span> k <span class="o">%</span> d <span class="o">==</span> <span class="n">0</span>:
+                prime <span class="o">=</span> <span class="k">false</span>
+                <span class="k">break</span>
+            d <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        <span class="k">if</span> prime:
+            n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> n
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">parallel</span>:                     <span class="c"># two tasks on native; one after the other on wasm</span>
+        low <span class="o">=</span> <span class="f">count_primes</span>(<span class="n">0</span>, <span class="n">50_000</span>)
+        high <span class="o">=</span> <span class="f">count_primes</span>(<span class="n">50_000</span>, <span class="n">100_000</span>)
+    <span class="f">print</span>(<span class="s">f"{low} + {high} = {low + high} primes below 100,000"</span>)
+    <span class="f">print</span>(<span class="s">"arguments:"</span>, <span class="f">len</span>(os.<span class="f">args</span>()) <span class="o">-</span> <span class="n">1</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>5133 + 4459 = 9592 primes below 100,000
+arguments: 0</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern run --target wasm app.tn -- one two<span class="c">                 # build, then run under wasmtime (or Node)</span>
+tern build --target wasm app.tn<span class="c">                          # writes app.wasm (about 40 KB)</span>
+<span class="k">wasmtime</span> run app.wasm one two
+<span class="k">wasmtime</span> run --dir=/tmp -S inherit-env=y app.wasm<span class="c">        # let it see /tmp and the environment</span></code></pre></div>
+<p><code>tern run</code> uses wasmtime if it's installed and Node's <code>node:wasi</code> otherwise. Either way it gives the program the current directory, <code>/tmp</code>, and the environment. When you run <code>wasmtime</code> yourself, the module sees only what you grant: without <code>--dir</code>, <code>fs.read</code> returns <code>""</code> and <code>fs.write</code> returns <code>false</code>, as they do for any unreadable path, and without <code>-S inherit-env=y</code>, <code>os.env</code> returns its default.</p>
+<p>A runtime error in a wasm <em>program</em> prints <code>runtime error in f (prog.tn:N): ...</code> to stderr and exits with status 2, the same as natively.</p>
+<h2 id="building-a-library-for-javascript"><a class="anchor" href="#building-a-library-for-javascript" aria-hidden="true">#</a>Building a library for JavaScript</h2>
+<p>Mark the functions JavaScript should see with <code>export fn</code>. A library file can still have a <code>main</code>; <code>--lib</code> ignores it, and it lets you test the functions natively with <code>tern run</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">export</span> <span class="k">fn</span> <span class="f">word_count</span>(text: <span class="t">str</span>) <span class="t">int</span>:
+    n <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> w <span class="k">in</span> text.<span class="f">split</span>(<span class="s">" "</span>):
+        <span class="k">if</span> w.<span class="f">trim</span>() <span class="o">!=</span> <span class="s">""</span>:
+            n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> n
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">title_case</span>(text: <span class="t">str</span>) <span class="t">str</span>:
+    words: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="k">for</span> w <span class="k">in</span> text.<span class="f">split</span>(<span class="s">" "</span>):
+        <span class="k">if</span> w <span class="o">!=</span> <span class="s">""</span>:
+            words.<span class="f">push</span>(w[<span class="n">0</span>].<span class="f">upper</span>() <span class="o">+</span> w[<span class="n">1</span><span class="o">..</span>].<span class="f">lower</span>())
+    <span class="k">return</span> <span class="s">" "</span>.<span class="f">join</span>(words)
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">average</span>(total: <span class="t">float</span>, count: <span class="t">int</span>) <span class="t">float</span>:
+    <span class="k">return</span> total <span class="o">/</span> <span class="t">float</span>(count)
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">nth_word</span>(text: <span class="t">str</span>, i: <span class="t">int</span>) <span class="t">str</span>:
+    <span class="k">return</span> text.<span class="f">split</span>(<span class="s">" "</span>)[i]           <span class="c"># out of range: a runtime error</span>
+
+<span class="k">fn</span> <span class="f">main</span>():                              <span class="c"># ignored by --lib; lets you test with `tern run`</span>
+    <span class="f">print</span>(<span class="f">word_count</span>(<span class="s">"the quick  brown fox"</span>), <span class="f">title_case</span>(<span class="s">"hello WASM world"</span>))
+    <span class="f">print</span>(<span class="f">average</span>(<span class="n">7.0</span>, <span class="n">2</span>), <span class="f">nth_word</span>(<span class="s">"a b c"</span>, <span class="n">1</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>4 Hello Wasm World
+3.5 b</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern build --lib --target wasm textstats.tn -o textstats.wasm</code></pre></div>
+<p>This writes three files next to each other:</p>
+<ul><li><code>textstats.wasm</code>: the module (about 50 KB here).</li><li><code>textstats.mjs</code>: an ES module that loads it and wraps each exported function. It works in browsers, Node, and other JavaScript runtimes, and needs no npm packages.</li><li><code>textstats.d.ts</code>: TypeScript types for the loader.</li></ul>
+<p>Call it from Node:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>import { load, TernError } from './textstats.mjs';
+
+const lib = await load();                     // finds textstats.wasm next to this file
+console.log(lib.word_count('the quick  brown fox'));    // a bigint
+console.log(lib.title_case('héllo wasm'));
+console.log(lib.average(7.5, 2));             // numbers work where an int is expected
+console.log(Number(lib.word_count('a b')) * 10);
+try {
+  lib.nth_word('a b c', 5);
+} catch (e) {
+  if (e instanceof TernError) console.log('TernError:', e.message);
+}
+console.log(lib.nth_word('a b c', 2));        // the module still works</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>4n
+Héllo Wasm
+3.75
+20
+TernError: runtime error (line 19): index 5 out of bounds (length 3)
+c</code></pre></div>
+<p>With no argument, <code>load()</code> loads the <code>.wasm</code> file with the same name next to the <code>.mjs</code>. You can also pass the module: its bytes (an <code>ArrayBuffer</code> or typed array, such as the result of <code>readFile</code> in Node), a <code>Response</code> (<code>load(await fetch('/static/textstats.wasm'))</code>), or a URL to fetch (in Node, use a <code>file:</code> URL such as <code>new URL('./textstats.wasm', import.meta.url)</code>). Each call to <code>load()</code> makes a new, independent instance with its own memory.</p>
+<h2 id="how-values-cross"><a class="anchor" href="#how-values-cross" aria-hidden="true">#</a>How values cross</h2>
+<div class="table"><table><thead><tr><th>Tern</th><th>JavaScript argument</th><th>JavaScript result</th></tr></thead><tbody><tr><td><code>int</code></td><td><code>bigint</code> or <code>number</code></td><td><code>bigint</code></td></tr><tr><td><code>float</code></td><td><code>number</code></td><td><code>number</code></td></tr><tr><td><code>bool</code></td><td>any value (truthy or falsy)</td><td><code>boolean</code></td></tr><tr><td><code>str</code></td><td><code>string</code> (sent as UTF-8)</td><td><code>string</code></td></tr><tr><td><code>ptr</code></td><td><code>number</code></td><td><code>number</code></td></tr><tr><td>no return type</td><td></td><td><code>undefined</code></td></tr></tbody></table></div>
+<ul><li>Ints are 64-bit, so they come back as <code>bigint</code>. Convert with <code>Number(x)</code> when you know the value fits in a double. An <code>int</code> argument accepts a <code>number</code>, but it must be a whole number: <code>BigInt(1.5)</code> throws a <code>RangeError</code> in JavaScript before Tern is called.</li><li>Strings are copied into the module's memory for the call and freed afterwards. Returned strings are copied out and freed by the loader, so you never manage wasm memory yourself.</li><li>Only <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, and <code>ptr</code> cross the boundary. Arrays, maps, structs, and enums are compile errors in an exported signature. To pass structured data, encode it as JSON text (<code>json.encode</code> / <code>json.decode</code>) or a delimited string:</li></ul>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">int</span>
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">total</span>(xs: [<span class="t">int</span>]) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        t <span class="o">+</span><span class="o">=</span> x
+    <span class="k">return</span> t
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">origin</span>() <span class="t">Point</span>:
+    <span class="k">return</span> <span class="t">Point</span>(<span class="n">0</span>, <span class="n">0</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">total</span>([<span class="n">1</span>, <span class="n">2</span>]))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: `[int]` can't cross the C boundary (exported functions take int, float, bool, str, or ptr)
+10: error: exported `origin` returns Point, which can't cross the C boundary (return int, float, bool, str, or ptr)</code></pre></div>
+<ul><li>Calling a function with the wrong number of arguments throws a <code>TypeError</code> from the loader (<code>average takes 2 argument(s), got 1</code>).</li><li>The library object also has <code>memory</code>, the module's <code>WebAssembly.Memory</code>.</li></ul>
+<h2 id="runtime-errors-become-ternerror"><a class="anchor" href="#runtime-errors-become-ternerror" aria-hidden="true">#</a>Runtime errors become <code>TernError</code></h2>
+<p>A runtime error inside an exported function (an index out of bounds, a missing map key, division by zero) doesn't end anything. The call unwinds, and the loader throws a <code>TernError</code> whose message is the same text a program would print. The module keeps working, so later calls behave normally, as the <code>nth_word</code> example above shows.</p>
+<p>This costs nothing for functions that can't fail. The compiler works out which exported functions might hit a runtime error, and the loader checks for an error only after those.</p>
+<h2 id="printing-from-a-library"><a class="anchor" href="#printing-from-a-library" aria-hidden="true">#</a>Printing from a library</h2>
+<p><code>print</code> inside a library goes to <code>process.stdout</code> under Node and to <code>console.log</code> in a browser (a line at a time; stderr goes to <code>console.error</code>). To send it somewhere else, pass a <code>write</code> function:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>const lines = [];
+const lib = await load(undefined, { write: (fd, text) =&gt; lines.push(text) });   // fd is 1 or 2</code></pre></div>
+<p>A library has no files, arguments, or environment: the loader provides only printing, clocks (<code>time</code>), and random numbers (<code>random</code>, from <code>crypto.getRandomValues</code>). <code>fs.read</code> returns <code>""</code> and <code>os.args()</code> is empty.</p>
+<h2 id="in-the-browser"><a class="anchor" href="#in-the-browser" aria-hidden="true">#</a>In the browser</h2>
+<p><code>examples/wasm/</code> has a complete page. Build the library, serve the directory over HTTP (the loader uses <code>fetch</code>, which doesn't work on <code>file://</code> URLs), and open the page:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>cd examples/wasm
+tern build --lib --target wasm lib.tn -o lib.wasm
+<span class="k">node</span> demo.mjs<span class="c">                        # the same library from Node</span>
+<span class="k">python3</span> -m http.server 8000<span class="c">          # then open http://localhost:8000/index.html</span></code></pre></div>
+<p>The page imports the loader as a module and calls Tern on every keystroke:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>import { load, TernError } from './lib.mjs';
+const lib = await load();
+const c = lib.count_primes(Number(document.getElementById('n').value) || 2);
+try { lib.char_at('abc', 10); }
+catch (e) { console.log(e instanceof TernError, e.message); }   // true "runtime error (line 52): index 10 out of bounds (length 3)"</code></pre></div>
+<p>Counting the primes below 1,000,000 takes about 77 ms in the page (Chromium, Apple M4 Pro), and <code>lib.wasm</code> is about 51 KB.</p>
+<h2 id="threads---target-wasm-threads"><a class="anchor" href="#threads---target-wasm-threads" aria-hidden="true">#</a>Threads: <code>--target wasm-threads</code></h2>
+<p><code>--target wasm</code> has one thread. <code>--target wasm-threads</code> builds for WebAssembly's shared memory, and then <code>parallel:</code> blocks and <code>parallel for</code> really run in parallel, on a pool of Web Workers (<code>worker_threads</code> under Node) that the generated loader starts. The same source works for both targets; only the build changes:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern build --lib --target wasm-threads primes.tn -o primes.wasm
+tern run --target wasm-threads prog.tn        # programs run under Node</code></pre></div>
+<ul><li><code>load(source, { threads: 8 })</code> picks the number of threads (default: the number of cores); <code>lib.close()</code> stops the workers. Programs read <code>TERN_THREADS</code>.</li><li><strong>In a browser</strong>, shared memory needs a cross-origin-isolated page (served with <code>Cross-Origin-Opener-Policy: same-origin</code> and <code>Cross-Origin-Embedder-Policy: require-corp</code>), and the library must be loaded from a Worker, since the page's own thread isn't allowed to wait. <code>examples/wasm/threads/</code> has the whole setup, including a small server: counting primes below 3,000,000 takes 326 ms on 1 thread and 22 ms on 14 (Chromium).</li><li>Runtime errors inside parallel tasks still come back as <code>TernError</code>.</li><li>The loader runs any WASI-threads module, not only Tern's (the benchmarks below run Rust's <code>wasm32-wasip1-threads</code> builds with it).</li></ul>
+<h2 id="limits"><a class="anchor" href="#limits" aria-hidden="true">#</a>Limits</h2>
+<ul><li><strong>One thread on <code>wasm</code>.</strong> With <code>--target wasm</code>, the tasks of a <code>parallel:</code> block and the iterations of a <code>parallel for</code> run one after another (use <code>wasm-threads</code> for real threads). The race checks still apply, so the same code is correct everywhere.</li><li><strong>No database or web server.</strong> <code>import sqlite</code> and <code>http.serve</code> are compile errors on wasm:</li></ul>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>app.tn:1: error: `import sqlite` is not available on wasm</code></pre></div>
+<ul><li><strong>Runtime errors in programs</strong> end the program (exit status 2). Only libraries recover and report them as <code>TernError</code>.</li><li><strong>Memory</strong> grows in chunks of at least 1 MB as the program allocates, and is never given back to the host; freed memory is reused by later allocations. Tern code runs on an 8 MB wasm stack, which bounds recursion depth.</li><li><strong>The C boundary</strong> is the same as for native libraries (see <a href="c-interop.html">Calling C, and Tern as a library</a>): no structs or arrays in exported signatures (<code>extern</code> structs work for calling C). <code>extern</code> blocks work if the C code builds for WASI (libc functions such as <code>math.h</code>'s <code>cbrt</code> do).</li></ul>
+<h2 id="performance"><a class="anchor" href="#performance" aria-hidden="true">#</a>Performance</h2>
+<p><code>bench/platforms.tn</code> runs the compute benchmarks under wasmtime against Rust built for <code>wasm32-wasip1</code> (full table in <code>bench/platforms_results.md</code>; median of 5 runs):</p>
+<div class="table"><table><thead><tr><th>benchmark</th><th>Tern</th><th>Rust</th><th></th></tr></thead><tbody><tr><td>binary-trees</td><td class=r>3.65 s</td><td class=r>5.98 s</td><td>Tern 1.64x faster</td></tr><tr><td>sieve</td><td class=r>731 ms, 33 MB</td><td class=r>747 ms, 199 MB</td><td>tie, 6x less memory</td></tr><tr><td>fib</td><td class=r>1.76 s</td><td class=r>1.76 s</td><td>tie</td></tr><tr><td>tasks</td><td class=r>354 ms</td><td class=r>357 ms</td><td>tie</td></tr><tr><td>n-body</td><td class=r>1.18 s</td><td class=r>1.42 s</td><td>Tern 1.2x faster (wasm SIMD)</td></tr><tr><td><code>.wasm</code> size</td><td class=r>32–44 KB</td><td class=r>49–113 KB</td><td></td></tr></tbody></table></div>
+<p>Tern builds use wasm SIMD, which browsers, Node, and wasmtime all support; set <code>TERN_WASM_SIMD=0</code> when compiling for a host that rejects it. Programs shaped like what wasm is used for are compared with Rust and Go in <code>bench/wasm_apps/README.md</code>:</p>
+<div class="table"><table><thead><tr><th>workload</th><th>Tern</th><th>Rust</th><th>Go</th></tr></thead><tbody><tr><td>JSON: encode + decode 100k records, 5 times</td><td class=r><strong>137 ms, 64 MB</strong></td><td class=r>190 ms, 64 MB</td><td class=r>2238 ms, 259 MB</td></tr><tr><td>request handler (cold start)</td><td class=r><strong>6 ms, 76 KB module</strong></td><td class=r>7 ms, 154 KB</td><td class=r>20 ms, 3129 KB</td></tr><tr><td>virtual DOM: build, render, diff</td><td class=r><strong>20 ms, 10 MB</strong></td><td class=r>32 ms, 11 MB</td><td class=r>162 ms, 35 MB</td></tr><tr><td>text: split 2M words, count them</td><td class=r>56 ms, <strong>30 MB</strong></td><td class=r><strong>55 ms</strong>, 38 MB</td><td class=r>286 ms, 104 MB</td></tr><tr><td>image: grayscale + blur, 1024x1024 <code>[byte]</code></td><td class=r><strong>16 ms, 15 MB</strong></td><td class=r>29 ms, 15 MB</td><td class=r>83 ms, 35 MB</td></tr><tr><td>regex: find emails in 2MB of text</td><td class=r><strong>28 ms, 114 KB module</strong></td><td class=r>33 ms, 1171 KB</td><td class=r>944 ms</td></tr><tr><td>base64: encode + decode 3MB</td><td class=r><strong>57 ms</strong></td><td class=r>60 ms</td><td class=r>125 ms</td></tr><tr><td>sort: 1M records by int, 200k strings</td><td class=r><strong>53 ms</strong></td><td class=r>171 ms</td><td class=r>9854 ms</td></tr><tr><td>expressions: parse into trees, evaluate</td><td class=r><strong>43 ms</strong></td><td class=r>72 ms</td><td class=r>171 ms</td></tr></tbody></table></div>
+<p>With threads (<code>wasm32-wasip1-threads</code> for both, 14 threads under Node, Rust using rayon):</p>
+<div class="table"><table><thead><tr><th>benchmark</th><th>Tern</th><th>Rust</th><th></th></tr></thead><tbody><tr><td>binary-trees</td><td class=r>0.51 s</td><td class=r>150 s</td><td>Tern ~300x faster: Rust's wasm allocator is one global lock</td></tr><tr><td>fib</td><td class=r>210 ms</td><td class=r>217 ms</td><td>tie</td></tr><tr><td>tasks</td><td class=r>120 ms</td><td class=r>121 ms</td><td>tie</td></tr></tbody></table></div>
+<p>To check that your own programs behave the same on wasm, the test suite runs on it too: <code>tern run tests/runner/main.tn -- run --target=wasm</code> or <code>--target=wasm-threads</code> (tests that use <code>sqlite</code> or <code>http</code> are skipped).</p>
+</article>
+<div class="pn"><a class="prev" href="../guides/c-interop.html"><span>Previous</span>Calling C, and Tern as a library</a><a class="next" href="../guides/mobile.html"><span>Next</span>iOS and Android</a></div>
+<footer>Source: <code>docs/guides/wasm.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#installing-the-toolchain">Installing the toolchain</a></li><li class="l2"><a href="#building-and-running-a-program">Building and running a program</a></li><li class="l2"><a href="#building-a-library-for-javascript">Building a library for JavaScript</a></li><li class="l2"><a href="#how-values-cross">How values cross</a></li><li class="l2"><a href="#runtime-errors-become-ternerror">Runtime errors become TernError</a></li><li class="l2"><a href="#printing-from-a-library">Printing from a library</a></li><li class="l2"><a href="#in-the-browser">In the browser</a></li><li class="l2"><a href="#threads---target-wasm-threads">Threads: --target wasm-threads</a></li><li class="l2"><a href="#limits">Limits</a></li><li class="l2"><a href="#performance">Performance</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7. Strings · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/07-strings.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html" class="cur" aria-current="page">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="7-strings"><a class="anchor" href="#7-strings" aria-hidden="true">#</a>7. Strings</h1>
+<p>Text processing is a large part of everyday programming: reading input, splitting lines, searching, and formatting output. This chapter covers Tern's <code>str</code> type in depth: indexing and slicing, the built-in string functions, parsing numbers, f-strings, and the <code>fmt</code> module for formatting numbers. It ends with a small parser that ties them together.</p>
+<h2 id="strings-are-values"><a class="anchor" href="#strings-are-values" aria-hidden="true">#</a>Strings are values</h2>
+<p>A <code>str</code> is a sequence of bytes, written in double quotes. Like every value in Tern, a string behaves like a copy, and it can't be changed in place. Functions like <code>upper</code> and <code>replace</code> return a new string:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    city <span class="o">=</span> <span class="s">"Lisbon"</span>
+    loud <span class="o">=</span> city.<span class="f">upper</span>()
+    <span class="f">print</span>(city, loud)
+    greeting <span class="o">=</span> <span class="s">"Hello"</span>
+    greeting <span class="o">+</span><span class="o">=</span> <span class="s">", "</span> <span class="o">+</span> city        <span class="c"># builds a new string (cheaply) and reassigns</span>
+    <span class="f">print</span>(greeting)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Lisbon LISBON
+Hello, Lisbon</code></pre></div>
+<p>Assigning into a string is an error, and so is using <code>int()</code> to parse one:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="s">"hello"</span>
+    s[<span class="n">0</span>] <span class="o">=</span> <span class="s">"H"</span>
+    n <span class="o">=</span> <span class="t">int</span>(<span class="s">"42"</span>)
+    <span class="f">print</span>(s, n)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: strings can't be changed in place; build a new one, e.g. `s = s[..i] + x + s[i + 1..]`
+4: error: int() needs a float
+4: hint: to parse a string, use `s.to_int(default)`, e.g. `"42".to_int(0)`</code></pre></div>
+<p>Building a long string with <code>+=</code> in a loop is fine: when nothing else shares the string, Tern grows it in place.</p>
+<h2 id="indexing-and-slicing"><a class="anchor" href="#indexing-and-slicing" aria-hidden="true">#</a>Indexing and slicing</h2>
+<p><code>len(s)</code> is the length in bytes. <code>s[i]</code> is the byte at index <code>i</code>, as a one-byte string, and <code>s[a..b]</code> is a substring, with the same rules as array slices:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="s">"2024-06-15"</span>
+    <span class="f">print</span>(<span class="f">len</span>(s), s[<span class="n">0</span>], s[<span class="n">5</span><span class="o">..</span><span class="n">7</span>], s[<span class="o">..</span><span class="n">4</span>], s[<span class="n">8</span><span class="o">..</span>])
+    year <span class="o">=</span> s[<span class="o">..</span><span class="n">4</span>].<span class="f">to_int</span>(<span class="n">0</span>)
+    <span class="f">print</span>(year <span class="o">+</span> <span class="n">1</span>)
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">3</span>:
+        <span class="f">print</span>(i, s[i])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>10 2 06 2024 15
+2025
+0 2
+1 0
+2 2</code></pre></div>
+<p>For ASCII text (English letters, digits, punctuation) a byte is a character. Text in other scripts is stored as UTF-8, where one character can take several bytes, so <code>len("héllo")</code> is 6, and <code>s[1]</code> of it is only the first half of <code>é</code>. Strings as a whole (printing, comparing, <code>find</code>, <code>split</code>, <code>replace</code>) work fine with any UTF-8 text; only the positions are in bytes.</p>
+<h2 id="searching-and-testing"><a class="anchor" href="#searching-and-testing" aria-hidden="true">#</a>Searching and testing</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    line <span class="o">=</span> <span class="s">"ERROR 2024-06-15 disk full on /dev/sda1"</span>
+    <span class="f">print</span>(line.<span class="f">starts_with</span>(<span class="s">"ERROR"</span>), line.<span class="f">ends_with</span>(<span class="s">"sda1"</span>))
+    <span class="f">print</span>(line.<span class="f">contains</span>(<span class="s">"disk"</span>), <span class="s">"memory"</span> <span class="k">in</span> line)
+    at <span class="o">=</span> line.<span class="f">find</span>(<span class="s">"/dev"</span>)
+    <span class="f">print</span>(at, line[at<span class="o">..</span>])
+    <span class="f">print</span>(line.<span class="f">find</span>(<span class="s">"warning"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true true
+true false
+30 /dev/sda1
+-1</code></pre></div>
+<p><code>s.find(sub)</code> returns the index of the first match, or <code>-1</code> when there is none. <code>sub in s</code> is the same test as <code>s.contains(sub)</code>.</p>
+<h2 id="changing-case-trimming-replacing"><a class="anchor" href="#changing-case-trimming-replacing" aria-hidden="true">#</a>Changing case, trimming, replacing</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    raw <span class="o">=</span> <span class="s">"   Hello,  World!   "</span>
+    clean <span class="o">=</span> raw.<span class="f">trim</span>()
+    <span class="f">print</span>(<span class="s">"["</span> <span class="o">+</span> clean <span class="o">+</span> <span class="s">"]"</span>)
+    <span class="f">print</span>(clean.<span class="f">lower</span>(), clean.<span class="f">upper</span>())
+    <span class="f">print</span>(clean.<span class="f">replace</span>(<span class="s">"l"</span>, <span class="s">"L"</span>), clean.<span class="f">replace</span>(<span class="s">"  "</span>, <span class="s">" "</span>))
+    <span class="f">print</span>(<span class="s">"="</span> <span class="o">*</span> <span class="n">12</span>, <span class="s">"ab"</span>.<span class="f">repeat</span>(<span class="n">3</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[Hello,  World!]
+hello,  world! HELLO,  WORLD!
+HeLLo,  WorLd! Hello, World!
+============ ababab</code></pre></div>
+<p><code>trim</code> removes whitespace at both ends. <code>replace</code> replaces every occurrence. <code>upper</code> and <code>lower</code> change ASCII letters only.</p>
+<h2 id="splitting-and-joining"><a class="anchor" href="#splitting-and-joining" aria-hidden="true">#</a>Splitting and joining</h2>
+<p><code>s.split(sep)</code> cuts a string into an array of pieces; <code>sep.join(parts)</code> glues an array of strings together. As in Python, <code>join</code> is called on the separator:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    csv <span class="o">=</span> <span class="s">"ada,36,london"</span>
+    fields <span class="o">=</span> csv.<span class="f">split</span>(<span class="s">","</span>)
+    <span class="f">print</span>(fields, <span class="f">len</span>(fields))
+    <span class="f">print</span>(<span class="s">" | "</span>.<span class="f">join</span>(fields))
+    <span class="f">print</span>(<span class="s">"a,,b"</span>.<span class="f">split</span>(<span class="s">","</span>))
+    words <span class="o">=</span> <span class="s">"the quick brown fox"</span>.<span class="f">split</span>(<span class="s">" "</span>)
+    initials <span class="o">=</span> <span class="s">""</span>
+    <span class="k">for</span> w <span class="k">in</span> words:
+        initials <span class="o">+</span><span class="o">=</span> w[<span class="n">0</span>].<span class="f">upper</span>()
+    <span class="f">print</span>(initials)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["ada", "36", "london"] 3
+ada | 36 | london
+["a", "", "b"]
+TQBF</code></pre></div>
+<p>Empty pieces are kept: <code>"a,,b".split(",")</code> has three elements.</p>
+<h2 id="parsing-numbers"><a class="anchor" href="#parsing-numbers" aria-hidden="true">#</a>Parsing numbers</h2>
+<p><code>s.to_int(default)</code> and <code>s.to_float(default)</code> parse a whole string as a number. If the string is not a number, you get the default you passed, so there is no exception to handle. Pick a default that can't be a real value, or check first:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> text <span class="k">in</span> [<span class="s">"42"</span>, <span class="s">" 7 "</span>, <span class="s">"3.5"</span>, <span class="s">"abc"</span>]:
+        n <span class="o">=</span> text.<span class="f">trim</span>().<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+        x <span class="o">=</span> text.<span class="f">trim</span>().<span class="f">to_float</span>(<span class="o">-</span><span class="n">1.0</span>)
+        <span class="f">print</span>(<span class="s">f"[{text}] int={n} float={x}"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[42] int=42 float=42.0
+[ 7 ] int=7 float=7.0
+[3.5] int=-1 float=3.5
+[abc] int=-1 float=-1.0</code></pre></div>
+<p>Going the other way, <code>str(x)</code> turns an <code>int</code>, <code>float</code>, or <code>bool</code> into text.</p>
+<h2 id="bytes-and-characters"><a class="anchor" href="#bytes-and-characters" aria-hidden="true">#</a>Bytes and characters</h2>
+<p><code>s.byte(i)</code> gives the byte at <code>i</code> as an <code>int</code>, and <code>chr(n)</code> makes a one-byte string from a number. Together they handle simple character arithmetic, like a Caesar cipher:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">shift</span>(s: <span class="t">str</span>, k: <span class="t">int</span>) <span class="t">str</span>:
+    out <span class="o">=</span> <span class="s">""</span>
+    <span class="k">for</span> ch <span class="k">in</span> s:
+        b <span class="o">=</span> ch.<span class="f">byte</span>(<span class="n">0</span>)
+        <span class="k">if</span> b <span class="o">&gt;=</span> <span class="n">97</span> <span class="k">and</span> b <span class="o">&lt;=</span> <span class="n">122</span>:              <span class="c"># a to z</span>
+            out <span class="o">+</span><span class="o">=</span> <span class="f">chr</span>((b <span class="o">-</span> <span class="n">97</span> <span class="o">+</span> k) <span class="o">%</span> <span class="n">26</span> <span class="o">+</span> <span class="n">97</span>)
+        <span class="k">else</span>:
+            out <span class="o">+</span><span class="o">=</span> ch
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">main</span>():
+    secret <span class="o">=</span> <span class="f">shift</span>(<span class="s">"attack at dawn"</span>, <span class="n">3</span>)
+    <span class="f">print</span>(secret, <span class="s">"-&gt;"</span>, <span class="f">shift</span>(secret, <span class="n">23</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>dwwdfn dw gdzq -&gt; attack at dawn</code></pre></div>
+<p>To write a byte or a character by its number, use an escape: <code>\xNN</code> is one byte, and <code>\u00e9</code> or <code>\u{1F600}</code> is a Unicode character (stored as its UTF-8 bytes, so it can take up to four):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    sep <span class="o">=</span> <span class="s">"\x01"</span>                      <span class="c"># a byte that won't appear in normal text</span>
+    key <span class="o">=</span> <span class="s">"2026-09-28"</span> <span class="o">+</span> sep <span class="o">+</span> <span class="s">"checkout"</span>
+    parts <span class="o">=</span> key.<span class="f">split</span>(sep)
+    <span class="f">print</span>(<span class="f">len</span>(sep), parts[<span class="n">1</span>], <span class="s">"caf\u00e9"</span> <span class="o">==</span> <span class="s">"café"</span>, <span class="f">len</span>(<span class="s">"\u{1F600}"</span>), <span class="s">"\u{1F600}"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1 checkout true 4 😀</code></pre></div>
+<p>For binary data (an image's pixels, a file's bytes, a network buffer), use <code>[byte]</code>: one byte per element, numbers from 0 to 255. <code>s.to_bytes()</code> turns a string into one and <code>bs.to_str()</code> turns it back, without copying. Arithmetic on bytes gives an <code>int</code>, and <code>byte(n)</code> stores one back (keeping its low 8 bits):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    bs <span class="o">=</span> <span class="s">"Tern"</span>.<span class="f">to_bytes</span>()
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(bs):
+        bs[i] <span class="o">=</span> <span class="f">byte</span>(bs[i] ^ <span class="n">32</span>)              <span class="c"># flip ASCII case</span>
+    <span class="f">print</span>(bs, bs.<span class="f">to_str</span>(), bs[<span class="n">0</span>] <span class="o">+</span> bs[<span class="n">1</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[116, 69, 82, 78] tERN 185</code></pre></div>
+<p>The <a href="../reference.html#bytes">reference</a> has the details.</p>
+<h2 id="f-strings-and-formatting"><a class="anchor" href="#f-strings-and-formatting" aria-hidden="true">#</a>f-strings and formatting</h2>
+<p>An f-string evaluates each <code>{expression}</code> and inserts the result. The value must be an <code>int</code>, <code>float</code>, <code>bool</code>, or <code>str</code>. <code>{{</code> and <code>}}</code> are literal braces:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    item <span class="o">=</span> <span class="s">"tea"</span>
+    qty <span class="o">=</span> <span class="n">3</span>
+    price <span class="o">=</span> <span class="n">2.5</span>
+    <span class="f">print</span>(<span class="s">f"{qty} x {item} = {float(qty) * price}"</span>)
+    <span class="f">print</span>(<span class="s">f"{item.upper()} costs {price} {{per cup}}"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 x tea = 7.5
+TEA costs 2.5 {per cup}</code></pre></div>
+<p>f-strings have no format specs. For fixed decimals, padding, and digit grouping, use the standard <code>fmt</code> module:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    price <span class="o">=</span> <span class="n">3.14159</span>
+    <span class="f">print</span>(<span class="s">f"{price:.2f}"</span>)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: can't read `price:.2f` inside the f-string
+3: hint: f-strings have no format specs: `import fmt`, then `{fmt.fixed(x, 2)}` (2 decimals), `fmt.zero_pad(n, 3)`, `fmt.pad_left(s, width, " ")`</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    rows <span class="o">=</span> [<span class="s">"apples"</span>, <span class="s">"kiwis"</span>, <span class="s">"watermelons"</span>]
+    cents <span class="o">=</span> [<span class="n">349</span>, <span class="n">1205</span>, <span class="n">99</span>]
+    <span class="k">for</span> i, name <span class="k">in</span> rows:
+        <span class="f">print</span>(fmt.<span class="f">pad_right</span>(name, <span class="n">12</span>, <span class="s">"."</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(fmt.<span class="f">cents</span>(cents[i]), <span class="n">7</span>, <span class="s">" "</span>))
+    <span class="f">print</span>(fmt.<span class="f">fixed</span>(<span class="n">3.14159</span>, <span class="n">2</span>), fmt.<span class="f">zero_pad</span>(<span class="n">7</span>, <span class="n">3</span>), fmt.<span class="f">thousands</span>(<span class="n">1234567</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>apples......   3.49
+kiwis.......  12.05
+watermelons.   0.99
+3.14 007 1,234,567</code></pre></div>
+<p><code>import fmt</code> makes the module's functions available as <code>fmt.name(...)</code>. Modules are covered in <a href="12-modules.html">chapter 12</a>, and the <a href="../std/fmt.html">fmt page</a> lists every function.</p>
+<h2 id="putting-it-together"><a class="anchor" href="#putting-it-together" aria-hidden="true">#</a>Putting it together</h2>
+<p>A tiny parser for <code>key = value</code> configuration lines, skipping blanks and comments. (The loop variable <code>raw</code> is read-only, like all loop variables, so the trimmed line gets its own name.)</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    text <span class="o">=</span> <span class="s">"# server config\nhost = example.com\nport = 8080\n\ndebug = true\n"</span>
+    settings: {<span class="t">str</span>: <span class="t">str</span>} <span class="o">=</span> {}
+    <span class="k">for</span> raw <span class="k">in</span> text.<span class="f">split</span>(<span class="s">"\n"</span>):
+        line <span class="o">=</span> raw.<span class="f">trim</span>()
+        <span class="k">if</span> line <span class="o">==</span> <span class="s">""</span> <span class="k">or</span> line.<span class="f">starts_with</span>(<span class="s">"#"</span>):
+            <span class="k">continue</span>
+        eq <span class="o">=</span> line.<span class="f">find</span>(<span class="s">"="</span>)
+        <span class="k">if</span> eq <span class="o">&lt;</span> <span class="n">0</span>:
+            <span class="f">print</span>(<span class="s">"bad line:"</span>, line)
+            <span class="k">continue</span>
+        settings[line[<span class="o">..</span>eq].<span class="f">trim</span>()] <span class="o">=</span> line[eq <span class="o">+</span> <span class="n">1</span><span class="o">..</span>].<span class="f">trim</span>()
+    <span class="f">print</span>(settings)
+    port <span class="o">=</span> settings.<span class="f">get</span>(<span class="s">"port"</span>, <span class="s">"80"</span>).<span class="f">to_int</span>(<span class="n">80</span>)
+    host <span class="o">=</span> settings[<span class="s">"host"</span>]
+    <span class="f">print</span>(<span class="s">f"connecting to {host}:{port}"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"host": "example.com", "port": "8080", "debug": "true"}
+connecting to example.com:8080</code></pre></div>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Write <code>fn is_palindrome(s: str) bool</code> that ignores case and spaces, so <code>"Never odd or even"</code> is a palindrome. Build a cleaned string with only the non-space characters, lowercased, then compare bytes from both ends toward the middle with a <code>while</code> loop.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">is_palindrome</span>(s: <span class="t">str</span>) <span class="t">bool</span>:
+    clean <span class="o">=</span> s.<span class="f">lower</span>().<span class="f">replace</span>(<span class="s">" "</span>, <span class="s">""</span>)
+    i <span class="o">=</span> <span class="n">0</span>
+    j <span class="o">=</span> <span class="f">len</span>(clean) <span class="o">-</span> <span class="n">1</span>
+    <span class="k">while</span> i <span class="o">&lt;</span> j:
+        <span class="k">if</span> clean[i] <span class="o">!=</span> clean[j]:
+            <span class="k">return</span> <span class="k">false</span>
+        i <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        j <span class="o">-</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> <span class="k">true</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> s <span class="k">in</span> [<span class="s">"Never odd or even"</span>, <span class="s">"tern"</span>, <span class="s">"A man a plan a canal Panama"</span>]:
+        <span class="f">print</span>(<span class="f">is_palindrome</span>(s), s)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true Never odd or even
+false tern
+true A man a plan a canal Panama</code></pre></div>
+<p>Next: <a href="08-enums-and-match.html">8. Enums and match</a>. Reference: <a href="../reference.html#10-strings-str">§10 Strings</a>, <a href="../reference.html#12-printing">§12 Printing</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/06-arrays-and-maps.html"><span>Previous</span>6. Arrays and maps</a><a class="next" href="../tour/08-enums-and-match.html"><span>Next</span>8. Enums and match</a></div>
+<footer>Source: <code>docs/tour/07-strings.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#strings-are-values">Strings are values</a></li><li class="l2"><a href="#indexing-and-slicing">Indexing and slicing</a></li><li class="l2"><a href="#searching-and-testing">Searching and testing</a></li><li class="l2"><a href="#changing-case-trimming-replacing">Changing case, trimming, replacing</a></li><li class="l2"><a href="#splitting-and-joining">Splitting and joining</a></li><li class="l2"><a href="#parsing-numbers">Parsing numbers</a></li><li class="l2"><a href="#bytes-and-characters">Bytes and characters</a></li><li class="l2"><a href="#f-strings-and-formatting">f-strings and formatting</a></li><li class="l2"><a href="#putting-it-together">Putting it together</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

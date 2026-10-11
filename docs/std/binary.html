@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>binary · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/binary.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html" class="cur" aria-current="page">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="binary"><a class="anchor" href="#binary" aria-hidden="true">#</a>binary</h1>
+<p>The <code>binary</code> module reads and writes numbers in binary formats: fixed-width integers and floats in big- or little-endian byte order, and varints (LEB128, the variable-length integers of protobuf, Go's <code>encoding/binary</code>, WebAssembly and SQLite records). Bytes are a <code>str</code> (any bytes, NULs included); a <code>[byte]</code> converts with <code>to_str()</code> and <code>to_bytes()</code> without a copy.</p>
+<p>Build bytes with a <code>Writer</code>, read them back in order with a <code>Reader</code>, or read and overwrite at any offset:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> binary
+<span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    w <span class="o">=</span> binary.<span class="f">writer</span>()
+    w.<span class="f">put_u16be</span>(0xCAFE)              <span class="c"># CA FE</span>
+    w.<span class="f">put_u32le</span>(<span class="n">7</span>)                   <span class="c"># 07 00 00 00</span>
+    w.<span class="f">put_uvarint</span>(<span class="n">300</span>)               <span class="c"># AC 02</span>
+    w.<span class="f">put_varint</span>(<span class="o">-</span><span class="n">3</span>)                 <span class="c"># 05 (zigzag: small negatives stay short)</span>
+    w.<span class="f">put_f64be</span>(<span class="n">1.5</span>)
+    w.<span class="f">put_bytes</span>(<span class="s">"hi"</span>)
+    out <span class="o">=</span> w.<span class="f">bytes</span>()
+    <span class="f">print</span>(<span class="f">len</span>(out), crypto.<span class="f">hex</span>(out))
+
+    r <span class="o">=</span> binary.<span class="f">reader</span>(out)
+    <span class="f">print</span>(r.<span class="f">read_u16be</span>(), r.<span class="f">read_u32le</span>(), r.<span class="f">read_uvarint</span>(), r.<span class="f">read_varint</span>(), r.<span class="f">read_f64be</span>(), r.<span class="f">read_bytes</span>(<span class="n">2</span>))
+    <span class="f">print</span>(r.<span class="f">ok</span>(), r.<span class="f">left</span>())
+
+    <span class="f">print</span>(binary.<span class="f">u32le</span>(out, <span class="n">2</span>))      <span class="c"># at an offset</span>
+    binary.<span class="f">set_u16be</span>(<span class="o">&amp;</span>out, <span class="n">0</span>, <span class="n">1</span>)     <span class="c"># overwrite in place</span>
+    <span class="f">print</span>(crypto.<span class="f">hex</span>(out[<span class="o">..</span><span class="n">2</span>]))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>19 cafe07000000ac02053ff80000000000006869
+51966 7 300 -3 1.5 hi
+true 0
+7
+0001</code></pre></div>
+<h2 id="writer"><a class="anchor" href="#writer" aria-hidden="true">#</a>Writer</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">writer</span>() <span class="t">Writer</span>
+<span class="k">fn</span> <span class="f">put_u8</span>(w: <span class="k">mut</span> <span class="t">Writer</span>, v: <span class="t">int</span>)      put_u16be  put_u16le  put_u32be  put_u32le  put_u64be  put_u64le
+<span class="k">fn</span> <span class="f">put_f32be</span>(w: <span class="k">mut</span> <span class="t">Writer</span>, v: <span class="t">float</span>) put_f32le  put_f64be  put_f64le
+<span class="k">fn</span> <span class="f">put_uvarint</span>(w: <span class="k">mut</span> <span class="t">Writer</span>, v: <span class="t">int</span>) <span class="n">7</span> bits a byte, low first; v is read as unsigned (<span class="o">-</span><span class="n">1</span> takes <span class="n">10</span> bytes)
+<span class="k">fn</span> <span class="f">put_varint</span>(w: <span class="k">mut</span> <span class="t">Writer</span>, v: <span class="t">int</span>)  zigzag first: <span class="n">0</span>, <span class="o">-</span><span class="n">1</span>, <span class="n">1</span>, <span class="o">-</span><span class="n">2</span> <span class="o">..</span>. are <span class="n">0</span>, <span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span> <span class="o">..</span>.
+<span class="k">fn</span> <span class="f">put_bytes</span>(w: <span class="k">mut</span> <span class="t">Writer</span>, s: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">len</span>(w: <span class="t">Writer</span>) <span class="t">int</span>                 the bytes written so far
+<span class="k">fn</span> <span class="f">bytes</span>(w: <span class="k">mut</span> <span class="t">Writer</span>) <span class="t">str</span>           what was written (the <span class="t">Writer</span> can go on writing)</code></pre></div>
+<p>A put of an int writes its low bytes, so signed and unsigned values are written alike: <code>put_u32be(-1)</code> is <code>FF FF FF FF</code>, and <code>put_u16le(70000)</code> keeps the low 16 bits.</p>
+<p>A Writer is a value like any other: copying one (<code>w2 = w</code>) gives two writers that go their own ways, and <code>bytes()</code> doesn't change when the Writer writes more afterwards.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> binary
+<span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    a <span class="o">=</span> binary.<span class="f">writer</span>()
+    a.<span class="f">put_u8</span>(<span class="n">1</span>)
+    b <span class="o">=</span> a
+    b.<span class="f">put_u8</span>(<span class="n">2</span>)
+    first <span class="o">=</span> a.<span class="f">bytes</span>()
+    a.<span class="f">put_u8</span>(<span class="n">3</span>)
+    <span class="f">print</span>(crypto.<span class="f">hex</span>(first), crypto.<span class="f">hex</span>(a.<span class="f">bytes</span>()), crypto.<span class="f">hex</span>(b.<span class="f">bytes</span>()))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>01 0103 0102</code></pre></div>
+<h2 id="reader"><a class="anchor" href="#reader" aria-hidden="true">#</a>Reader</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">reader</span>(data: <span class="t">str</span>) <span class="t">Reader</span>           fields: data <span class="t">str</span>, pos <span class="t">int</span> (where the next read starts)
+<span class="k">fn</span> <span class="f">read_u8</span>(r: <span class="k">mut</span> <span class="t">Reader</span>) <span class="t">int</span>         read_i8  read_u16be  read_u16le  read_i16be  read_i16le
+                                      read_u32be  read_u32le  read_i32be  read_i32le  read_u64be  read_u64le
+<span class="k">fn</span> <span class="f">read_f32be</span>(r: <span class="k">mut</span> <span class="t">Reader</span>) <span class="t">float</span>    read_f32le  read_f64be  read_f64le
+<span class="k">fn</span> <span class="f">read_uvarint</span>(r: <span class="k">mut</span> <span class="t">Reader</span>) <span class="t">int</span>    read_varint
+<span class="k">fn</span> <span class="f">read_bytes</span>(r: <span class="k">mut</span> <span class="t">Reader</span>, n: <span class="t">int</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">skip</span>(r: <span class="k">mut</span> <span class="t">Reader</span>, n: <span class="t">int</span>)
+<span class="k">fn</span> <span class="f">has</span>(r: <span class="t">Reader</span>, n: <span class="t">int</span>) <span class="t">bool</span>        are n more bytes there?
+<span class="k">fn</span> <span class="f">left</span>(r: <span class="t">Reader</span>) <span class="t">int</span>                the bytes after pos
+<span class="k">fn</span> <span class="f">ok</span>(r: <span class="t">Reader</span>) <span class="t">bool</span>                 no read has failed
+<span class="k">fn</span> <span class="f">error</span>(r: <span class="t">Reader</span>) <span class="t">str</span>               what the first failed read was (<span class="s">""</span> when none)</code></pre></div>
+<p>A read that doesn't fit (past the end of the data, a varint cut short or longer than 64 bits, as Go's <code>binary.Uvarint</code> decides) returns 0 (or <code>""</code>), and so does every read after it. The first problem is kept with its offset, so a parser reads a whole message and checks once:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> binary
+
+<span class="k">struct</span> <span class="t">Header</span>:
+    kind: <span class="t">int</span>
+    size: <span class="t">int</span>
+    name: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">parse</span>(data: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Header</span>, <span class="t">str</span>]:
+    r <span class="o">=</span> binary.<span class="f">reader</span>(data)
+    kind <span class="o">=</span> r.<span class="f">read_u8</span>()
+    size <span class="o">=</span> r.<span class="f">read_u32be</span>()
+    name <span class="o">=</span> r.<span class="f">read_bytes</span>(r.<span class="f">read_uvarint</span>())
+    <span class="k">if</span> <span class="k">not</span> r.<span class="f">ok</span>():
+        <span class="k">return</span> <span class="t">Err</span>(r.<span class="f">error</span>())
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="t">Header</span>(kind, size, name))
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">parse</span>(<span class="s">"\x01\x00\x00\x01\x00\x03abc"</span>))
+    <span class="f">print</span>(<span class="f">parse</span>(<span class="s">"\x01\x00\x00\x01\x00\x09abc"</span>))
+    <span class="f">print</span>(<span class="f">parse</span>(<span class="s">"\x01\x00\x00"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Ok(Header{kind: 1, size: 256, name: "abc"})
+Err("binary: 9 bytes at 6 are past the end of 9")
+Err("binary: 4 bytes at 1 are past the end of 3")</code></pre></div>
+<p><code>has</code> checks a fixed-size record once: after <code>if not r.has(22): ...</code> the compiler drops the checks of the reads that follow, so they cost what reads of a plain array do.</p>
+<h2 id="at-an-offset"><a class="anchor" href="#at-an-offset" aria-hidden="true">#</a>At an offset</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">u8</span>(s: <span class="t">str</span>, i: <span class="t">int</span>) <span class="t">int</span>             i8  u16be  u16le  i16be  i16le  u32be  u32le  i32be  i32le
+<span class="k">fn</span> <span class="f">u64be</span>(s: <span class="t">str</span>, i: <span class="t">int</span>) <span class="t">int</span>          u64le
+<span class="k">fn</span> <span class="f">f32be</span>(s: <span class="t">str</span>, i: <span class="t">int</span>) <span class="t">float</span>        f32le  f64be  f64le
+<span class="k">fn</span> <span class="f">set_u8</span>(s: <span class="k">mut</span> <span class="t">str</span>, i: <span class="t">int</span>, v: <span class="t">int</span>) set_u16be <span class="o">..</span>. set_u64le, set_f32be <span class="o">..</span>. set_f64le
+<span class="k">fn</span> <span class="f">uvarint_len</span>(v: <span class="t">int</span>) <span class="t">int</span>            the bytes put_uvarint takes; varint_len <span class="k">for</span> put_varint</code></pre></div>
+<p>Reading or writing past the end of <code>s</code> is a runtime error, as <code>s.byte(i)</code> is. <code>int</code> is 64 bits, so a <code>u64</code> above 2^63-1 reads as a negative number with the same bits: <code>u64be</code> of eight <code>FF</code> bytes is -1.</p>
+<h2 id="many-floats-at-once"><a class="anchor" href="#many-floats-at-once" aria-hidden="true">#</a>Many floats at once</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">f32s_le</span>(s: <span class="t">str</span>, i: <span class="t">int</span>, n: <span class="t">int</span>) [f32]    n f32s <span class="k">from</span> byte i (a runtime error past the end)
+<span class="k">fn</span> <span class="f">f16s_le</span>(s: <span class="t">str</span>, i: <span class="t">int</span>, n: <span class="t">int</span>) [f32]    n <span class="t">IEEE</span> halves (<span class="n">2</span> bytes each) <span class="k">from</span> byte i, widened to f32
+<span class="k">fn</span> <span class="f">f32s_le_bytes</span>(xs: [f32]) <span class="t">str</span>             <span class="n">4</span> bytes each
+<span class="k">fn</span> <span class="f">f16s_le_bytes</span>(xs: [f32]) <span class="t">str</span>             <span class="n">2</span> bytes each, rounded to the nearest half (inf past <span class="n">65504</span>)</code></pre></div>
+<p>Vectors, embeddings and model weights are stored as raw little-endian floats (numpy's <code>.tofile</code>, <code>.npy</code> data, safetensors). These read a whole run into an <code>[f32]</code> in one copy, and write one back; halves save half the space where 3 significant digits are enough.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> binary
+
+<span class="k">fn</span> <span class="f">main</span>():
+    xs: [f32] <span class="o">=</span> [<span class="n">0.1</span>, <span class="o">-</span><span class="n">2.5</span>, <span class="n">1000.0</span>]
+    raw <span class="o">=</span> binary.<span class="f">f32s_le_bytes</span>(xs)
+    <span class="f">print</span>(<span class="f">len</span>(raw), binary.<span class="f">f32s_le</span>(raw, <span class="n">4</span>, <span class="n">2</span>), binary.<span class="f">f32s_le</span>(raw, <span class="n">0</span>, <span class="n">3</span>) <span class="o">==</span> xs)
+    half <span class="o">=</span> binary.<span class="f">f16s_le_bytes</span>(xs)
+    <span class="f">print</span>(<span class="f">len</span>(half), binary.<span class="f">f16s_le</span>(half, <span class="n">0</span>, <span class="n">3</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>12 [-2.5, 1000.0] true
+6 [0.099975586, -2.5, 1000.0]</code></pre></div>
+<h2 id="speed-and-memory"><a class="anchor" href="#speed-and-memory" aria-hidden="true">#</a>Speed and memory</h2>
+<p><code>bench/std</code> does the same work with Go's <code>encoding/binary</code> (<code>Append*</code>, the byte-order getters, <code>Uvarint</code>) and Rust's <code>bytes</code> crate (<code>BufMut</code> on a <code>Vec&lt;u8&gt;</code>, <code>Buf</code> on a <code>&amp;[u8]</code>) with prost's varints, the ones protobuf uses in Rust. Fixed-width: 100,000 records of a u16, a u32, a u64 and an f64 (2.2 MB) appended, then read back at offsets and in order; varints: 500,000 values of every length from 1 to 10 bytes, and 500,000 small ones (one or two bytes, as tags and lengths mostly are). Millions of values a second, best of 7 interleaved runs:</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Go</th><th>Rust</th></tr></thead><tbody><tr><td>fixed-width put</td><td><strong>773</strong></td><td>205</td><td>672</td></tr><tr><td>fixed-width get at offsets</td><td>1343</td><td>727</td><td><strong>1473</strong></td></tr><tr><td>fixed-width Reader</td><td>1908</td><td>1336</td><td><strong>2548</strong></td></tr><tr><td>varint put, 1-10 bytes</td><td><strong>359</strong></td><td>167</td><td>171</td></tr><tr><td>varint get, 1-10 bytes</td><td><strong>268</strong></td><td>143</td><td>129</td></tr><tr><td>varint put, small</td><td><strong>1270</strong></td><td>799</td><td>769</td></tr><tr><td>varint get, small</td><td><strong>1809</strong></td><td>493</td><td>597</td></tr><tr><td>peak RSS of the program</td><td><strong>18 MB</strong></td><td>46-155 MB</td><td>22 MB</td></tr></tbody></table></div>
+<p>Varints are where the formats spend their time, and there the module does no loop: up to eight bytes are gathered from (or spread into) one 64-bit word with three shift-and-mask steps (the bit moves of x86's pdep/pext, which any target can do), so lengths that vary don't cost a mispredicted branch a byte. One- and two-byte values take a test each.</p>
+<p>A put is a compare, a store and an add: the Writer keeps its length and capacity in registers, and catches a copy of itself by keeping its buffer's own length equal to its own (a copy that wrote first has moved it). A buffer grows 2x while small and 8x past 64 KB, and an outgrown block goes back to the allocator for the next Writer to reuse.</p>
+<p>Rust leads the two fixed-width read rows. Its loop moves one slice pointer and reads at constant offsets from it; Tern's reads are the same loads with no checks left, but the C compiler gives each its own base pointer, and in a large function those spill.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/toml.html"><span>Previous</span>toml</a><a class="next" href="../std/heap.html"><span>Next</span>heap</a></div>
+<footer>Source: <code>docs/std/binary.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#writer">Writer</a></li><li class="l2"><a href="#reader">Reader</a></li><li class="l2"><a href="#at-an-offset">At an offset</a></li><li class="l2"><a href="#many-floats-at-once">Many floats at once</a></li><li class="l2"><a href="#speed-and-memory">Speed and memory</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>toml · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/toml.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html" class="cur" aria-current="page">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="toml"><a class="anchor" href="#toml" aria-hidden="true">#</a>toml</h1>
+<p>The <code>toml</code> module reads TOML 1.0 (config files such as <code>Cargo.toml</code> and <code>pyproject.toml</code>) into a struct or into a <code>json.Value</code>, and writes structs back out as TOML. It passes every TOML 1.0 case in the <a href="https://github.com/toml-lang/toml-test">toml-test</a> suite: the valid documents parse to the expected values, and the invalid ones are errors.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> toml
+
+<span class="k">struct</span> <span class="t">Server</span>:
+    host: <span class="t">str</span>
+    port: <span class="t">int</span>
+
+<span class="k">struct</span> <span class="t">Config</span>:
+    name: <span class="t">str</span>
+    debug: <span class="t">bool</span>
+    server: <span class="t">Server</span>
+    tags: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    text <span class="o">=</span> <span class="s">"""name = "app"
+tags = ["web", "api"]
+
+[server]
+host = "0.0.0.0"
+port = 8_080
+"""</span>
+    cfg <span class="o">=</span> <span class="t">Config</span>(<span class="s">""</span>, <span class="k">false</span>, <span class="t">Server</span>(<span class="s">"localhost"</span>, <span class="n">80</span>), [])
+    <span class="f">print</span>(toml.<span class="f">decode</span>(text, <span class="o">&amp;</span>cfg))
+    <span class="f">print</span>(cfg.name, cfg.debug, cfg.server.port, cfg.tags)
+    <span class="f">print</span>(toml.<span class="f">encode</span>(cfg).<span class="f">unwrap</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Ok(0)
+app false 8080 ["web", "api"]
+name = "app"
+debug = false
+tags = ["web", "api"]
+
+[server]
+host = "0.0.0.0"
+port = 8080
+</code></pre></div>
+<p><code>decode</code> fills the struct by field name, as <code>json.decode</code> does: a key the file leaves out keeps the value the struct started with (so start it with the defaults), a key the struct doesn't have is ignored, and a field that may be missing can be an <code>Option</code> that starts at <code>None</code>.</p>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">decode</span>(text: <span class="t">str</span>, out: <span class="k">mut</span> <span class="t">T</span>) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]   fill out <span class="k">from</span> the document
+<span class="k">fn</span> <span class="f">parse</span>(text: <span class="t">str</span>) <span class="t">Result</span>[json.<span class="t">Value</span>, <span class="t">str</span>]         the document as a json.<span class="t">Value</span>
+<span class="k">fn</span> <span class="f">encode</span>(value: <span class="t">T</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]                a <span class="k">struct</span> <span class="k">or</span> map as <span class="t">TOML</span>
+<span class="k">fn</span> <span class="f">dump</span>(v: json.<span class="t">Value</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]             a json.<span class="t">Value</span> (an object) as <span class="t">TOML</span></code></pre></div>
+<h2 id="values"><a class="anchor" href="#values" aria-hidden="true">#</a>Values</h2>
+<div class="table"><table><thead><tr><th>TOML</th><th>becomes</th></tr></thead><tbody><tr><td>table, inline table</td><td>object (<code>Obj</code>), keys in the order written</td></tr><tr><td>array, array of tables</td><td>array</td></tr><tr><td>string (all four kinds)</td><td>string</td></tr><tr><td>integer (<code>1_000</code>, <code>0xff</code>, <code>0o7</code>, <code>0b1</code>)</td><td>number (64-bit)</td></tr><tr><td>float</td><td>number; <code>inf</code> is a float too big for a double (inf when read into a <code>float</code>), <code>nan</code> is null</td></tr><tr><td><code>true</code>, <code>false</code></td><td>bool</td></tr><tr><td>date and time</td><td>string, in RFC 3339 form: <code>"1979-05-27T07:32:00Z"</code>, <code>"1979-05-27T07:32:00"</code>, <code>"1979-05-27"</code>, <code>"07:32:00"</code></td></tr></tbody></table></div>
+<p>A document of unknown shape is a <code>json.Value</code>, read with <code>field</code>, <code>at</code> and the <code>*_or</code> defaults:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> toml
+
+<span class="k">fn</span> <span class="f">main</span>():
+    doc <span class="o">=</span> toml.<span class="f">parse</span>(<span class="s">"""[package]
+name = "demo"
+version = "0.1.0"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+tokio = "1"
+"""</span>).<span class="f">unwrap</span>()
+    <span class="f">print</span>(doc.<span class="f">field</span>(<span class="s">"package"</span>).<span class="f">field</span>(<span class="s">"name"</span>).<span class="f">str_or</span>(<span class="s">"?"</span>))
+    <span class="k">for</span> k <span class="k">in</span> doc.<span class="f">field</span>(<span class="s">"dependencies"</span>).<span class="f">fields</span>():
+        <span class="f">print</span>(k)
+    <span class="f">print</span>(doc.<span class="f">field</span>(<span class="s">"dependencies"</span>).<span class="f">field</span>(<span class="s">"serde"</span>).<span class="f">field</span>(<span class="s">"features"</span>).<span class="f">at</span>(<span class="n">0</span>).<span class="f">str_or</span>(<span class="s">""</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>demo
+serde
+tokio
+derive</code></pre></div>
+<h2 id="errors"><a class="anchor" href="#errors" aria-hidden="true">#</a>Errors</h2>
+<p>An error names the line and what is wrong there:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> toml
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> text <span class="k">in</span> [<span class="s">"a = 1\na = 2"</span>, <span class="s">"[t]\nx = 1\n[t]"</span>, <span class="s">"port = 08080"</span>, <span class="s">"s = \"open"</span>, <span class="s">"when = 2026-02-30"</span>]:
+        <span class="f">print</span>(toml.<span class="f">parse</span>(text))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Err("toml: line 2: key defined twice")
+Err("toml: line 3: table defined twice")
+Err("toml: line 1: leading zeros aren't allowed")
+Err("toml: line 1: unterminated string")
+Err("toml: line 1: date out of range")</code></pre></div>
+<h2 id="writing"><a class="anchor" href="#writing" aria-hidden="true">#</a>Writing</h2>
+<p><code>encode</code> and <code>dump</code> write a table's plain keys first, then its tables under <code>[headers]</code> and its arrays of tables under <code>[[headers]]</code>; other values (arrays, tables inside arrays) are written inline. TOML has no null, so a <code>None</code> field or a null is left out. Only a struct or a map can be a document: <code>toml.encode(5)</code> is an <code>Err</code>.</p>
+<h2 id="speed-and-memory"><a class="anchor" href="#speed-and-memory" aria-hidden="true">#</a>Speed and memory</h2>
+<p><code>bench/std</code> does the same work with Go's pelletier/go-toml v2 (the fastest Go TOML library) and Rust's <code>toml</code> crate with serde: a 9.7 MB Cargo.lock-like file of 40,000 packages parsed into a dynamic value, decoded into structs, and the structs encoded; and a 1.2 KB service config decoded into a struct 20,000 times.</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Go (go-toml v2)</th><th>Rust (toml 0.9)</th></tr></thead><tbody><tr><td>parse into a dynamic value</td><td><strong>378 MB/s</strong></td><td>170</td><td>216</td></tr><tr><td>decode into structs</td><td><strong>473 MB/s</strong></td><td>252</td><td>244</td></tr><tr><td>encode the structs</td><td><strong>398 MB/s</strong></td><td>205</td><td>315</td></tr><tr><td>decode a 1.2 KB config</td><td><strong>4.2 us</strong></td><td>9.8</td><td>7.6</td></tr><tr><td>peak RSS</td><td><strong>83 MB</strong></td><td>91</td><td>294</td></tr></tbody></table></div>
+<p>(best of 5 interleaved runs; Go's peak memory moves between 91 and 105 MB with its collector.)</p>
+<p>The parser is C in the runtime: one pass over the text into a compact tree in an arena (16 bytes a scalar, strings with no escapes point into the text), checking UTF-8 eight bytes at a time and skipping plain runs of strings the same way, then the JSON written to a string of exactly its size (measured first), which the json module turns into a struct or a Value. The arena's first 8 KB is on the stack, so a small config needs no allocation for it, and larger documents map their chunks and unmap them after. Writing reads the JSON from json.encode directly: one pass finds where each bracket closes, then each table is written in one walk (its plain keys, then the tables and arrays of tables it set aside).</p>
+</article>
+<div class="pn"><a class="prev" href="../std/url.html"><span>Previous</span>url</a><a class="next" href="../std/binary.html"><span>Next</span>binary</a></div>
+<footer>Source: <code>docs/std/toml.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#functions">Functions</a></li><li class="l2"><a href="#values">Values</a></li><li class="l2"><a href="#errors">Errors</a></li><li class="l2"><a href="#writing">Writing</a></li><li class="l2"><a href="#speed-and-memory">Speed and memory</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

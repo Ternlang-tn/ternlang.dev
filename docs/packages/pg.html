@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pg · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/packages/pg.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html" class="cur" aria-current="page">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="pg"><a class="anchor" href="#pg" aria-hidden="true">#</a>pg</h1>
+<p>The <code>pg</code> module is a PostgreSQL client for tasks: a pool of connections that any number of tasks share, parameters sent separately from the SQL (no injection), rows decoded into your structs through JSON, and transactions that belong to the task that started them. It speaks the PostgreSQL protocol directly (no libpq), logs in with SCRAM-SHA-256, and can use TLS.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+<span class="k">import</span> pg
+
+<span class="k">struct</span> <span class="t">User</span>:
+    id: <span class="t">int</span>
+    name: <span class="t">str</span>
+    email: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    db <span class="o">=</span> pg.<span class="f">pool</span>(<span class="s">"postgres://app:secret@localhost:5432/app"</span>, <span class="n">16</span>)
+    <span class="k">if</span> <span class="k">not</span> db.<span class="f">ok</span>():
+        <span class="f">print</span>(<span class="s">"can't connect:"</span>, pg.<span class="f">error</span>())
+        <span class="k">return</span>
+    db.<span class="f">exec</span>(<span class="s">"CREATE TABLE IF NOT EXISTS users (id serial PRIMARY KEY, name text, email text)"</span>, [])
+    db.<span class="f">exec</span>(<span class="s">"INSERT INTO users (name, email) VALUES ($1, $2)"</span>, [<span class="s">"Ada"</span>, <span class="s">"ada@example.com"</span>])
+    users: [<span class="t">User</span>] <span class="o">=</span> []
+    json.<span class="f">decode</span>(db.<span class="f">query_json</span>(<span class="s">"SELECT id, name, email FROM users ORDER BY id"</span>, []), <span class="o">&amp;</span>users)
+    <span class="k">for</span> u <span class="k">in</span> users:
+        <span class="f">print</span>(u.id, u.name)</code></pre></div>
+<h2 id="connecting"><a class="anchor" href="#connecting" aria-hidden="true">#</a>Connecting</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">pool</span>(url: <span class="t">str</span>, size: <span class="t">int</span>) <span class="t">Pool</span>
+<span class="k">fn</span> <span class="f">connect</span>(url: <span class="t">str</span>) <span class="t">Pool</span>            <span class="f">pool</span>(url, <span class="n">1</span>)
+<span class="k">fn</span> <span class="f">ok</span>(p: <span class="t">Pool</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">stats</span>(p: <span class="t">Pool</span>) <span class="t">PoolStats</span>
+<span class="k">fn</span> <span class="f">prune</span>(p: <span class="t">Pool</span>)
+<span class="k">fn</span> <span class="f">close</span>(p: <span class="t">Pool</span>)
+<span class="k">fn</span> <span class="f">error</span>() <span class="t">str</span></code></pre></div>
+<p>The URL is <code>postgres://user:password@host:port/database</code>, with <code>?sslmode=require</code> (TLS) or <code>?sslmode=verify-full</code> (TLS, and the server's certificate must match the host) if the program also does <code>import tls</code>. Characters like <code>@</code> in a password are written <code>%40</code>. <code>?application_name=NAME</code> names the connections in <code>pg_stat_activity</code> (default <code>tern</code>).</p>
+<p>A pool holds up to <code>size</code> connections. The first one opens right away, so <code>p.ok()</code> tells you whether the URL and password work (and <code>pg.error()</code> why not); the rest open when enough tasks need them at once. A task that finds every connection busy waits (only that task) until one is free, for up to <code>pool_timeout</code>; after that the statement fails and <code>pg.error()</code> says the pool was exhausted. A <code>Pool</code> value is a handle: copy it into as many tasks and closures as you like.</p>
+<p>Before a connection is handed out, the pool checks that it is still good: one the server closed (a restart, <code>pg_terminate_backend</code>, a proxy's idle timeout) is noticed and replaced before a statement is sent on it, and one that is too old or has idled too long is closed and reopened. Now and then, as connections come back, the pool closes the ones idle longer than <code>max_idle</code>, so it shrinks after a busy spell; <code>prune</code> does that right away. <code>close</code> closes every idle connection (the pool reopens them when needed).</p>
+<p>URL parameters for the pool (durations are <code>500ms</code>, <code>5s</code>, <code>30m</code>, <code>1h</code>, or seconds; <code>0</code> turns the limit off):</p>
+<div class="table"><table><thead><tr><th>parameter</th><th>default</th><th></th></tr></thead><tbody><tr><td><code>pool_timeout</code></td><td><code>30s</code></td><td>how long a statement waits for a free connection</td></tr><tr><td><code>max_lifetime</code></td><td><code>1h</code></td><td>a connection is replaced after this long (spread out by up to 9%, so they don't all reconnect at once)</td></tr><tr><td><code>max_idle</code></td><td><code>30m</code></td><td>a connection idle this long is closed</td></tr><tr><td><code>statement_cache</code></td><td><code>on</code></td><td><code>off</code>: don't keep prepared statements (for PgBouncer in transaction mode)</td></tr><tr><td><code>application_name</code></td><td><code>tern</code></td><td>the connections' name in <code>pg_stat_activity</code></td></tr></tbody></table></div>
+<p><code>p.stats()</code> returns what the pool is doing, for a health endpoint or a metric:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">PoolStats</span>:
+    size: <span class="t">int</span>          the most connections it opens
+    open: <span class="t">int</span>          connections open now
+    idle: <span class="t">int</span>          <span class="o">..</span>. of them <span class="k">not</span> <span class="k">in</span> use
+    in_use: <span class="t">int</span>        <span class="o">..</span>. running a statement, <span class="k">or</span> held by a task's transaction
+    waiting: <span class="t">int</span>       tasks waiting <span class="k">for</span> a connection now
+    waits: <span class="t">int</span>         times a task had to wait (every connection was <span class="k">in</span> use)
+    wait_ms: <span class="t">int</span>       <span class="o">..</span>. <span class="k">and</span> the milliseconds it waited, added up
+    timeouts: <span class="t">int</span>      waits that gave up after pool_timeout
+    opened: <span class="t">int</span>        connections opened, ever
+    closed: <span class="t">int</span>        <span class="o">..</span>. <span class="k">and</span> closed (broken, too old, idle too long, p.<span class="f">close</span>())</code></pre></div>
+<p>A statement that finds a free connection takes no lock: only waiting, opening, closing, and transactions touch the pool's shared counters.</p>
+<p>The client is written in Tern: <code>library/pg/wire.tn</code> speaks the PostgreSQL protocol (startup, SCRAM-SHA-256, TLS, the extended query protocol with prepared statements) over <code>net</code>, and the pool is <code>library/pg/pg.tn</code>. Only the row decoders that <code>fetch</code> uses are generated C, made by the compiler for each struct.</p>
+<h2 id="queries"><a class="anchor" href="#queries" aria-hidden="true">#</a>Queries</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">exec</span>(p: <span class="t">Pool</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">query</span>(p: <span class="t">Pool</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) [{<span class="t">str</span>: <span class="t">str</span>}]
+<span class="k">fn</span> <span class="f">query_json</span>(p: <span class="t">Pool</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">query_row_json</span>(p: <span class="t">Pool</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) <span class="t">str</span></code></pre></div>
+<p>Parameters are <code>$1</code>, <code>$2</code>, ... in the SQL and strings in <code>params</code>; PostgreSQL converts each to its column's type (<code>"42"</code> to an int, <code>"true"</code> to a bool), and <code>pg.NULL</code> is SQL <code>NULL</code>. Every statement is prepared the first time a connection runs it and reused after that, so a repeated query costs one round trip.</p>
+<ul><li><code>exec</code> returns the number of rows the statement changed (or returned, for a SELECT), or -1 if it failed.</li><li><code>query</code> returns the rows as maps with every value as text; NULL is <code>""</code>.</li><li><code>query_json</code> returns the rows as a JSON array with typed values: integers, floats and numerics as numbers, booleans as <code>true</code>/<code>false</code>, NULL as <code>null</code>, everything else as a string. <code>json.decode</code> then fills an array of structs, matching columns to fields by name (use <code>AS "fieldName"</code> for a field whose name has capitals, since PostgreSQL folds unquoted names to lowercase). A NULL leaves the field at its zero value.</li><li><code>query_row_json</code> returns just the first row as a JSON object, or <code>"null"</code> if there is none (then <code>json.decode</code> returns false).</li></ul>
+<p>When a statement fails, <code>exec</code> returns -1, the query functions return no rows, and <code>pg.error()</code> has the server's message with its SQLSTATE code, like <code>ERROR 23505: duplicate key value violates unique constraint "users_pkey" (Key (id)=(1) already exists.)</code>. After a success, <code>pg.error()</code> is <code>""</code>.</p>
+<h2 id="typed-rows-with-result"><a class="anchor" href="#typed-rows-with-result" aria-hidden="true">#</a>Typed rows with Result</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> fetch[<span class="t">T</span>](p: <span class="t">Pool</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) <span class="t">Result</span>[[<span class="t">T</span>], <span class="t">str</span>]
+<span class="k">fn</span> fetch_one[<span class="t">T</span>](p: <span class="t">Pool</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) <span class="t">Result</span>[<span class="t">Option</span>[<span class="t">T</span>], <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">run</span>(p: <span class="t">Pool</span>, sql: <span class="t">str</span>, params: [<span class="t">str</span>]) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]          rows affected
+<span class="k">fn</span> <span class="f">run_script</span>(p: <span class="t">Pool</span>, sql: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]                   several statements</code></pre></div>
+<p><code>fetch</code> decodes the rows straight into your struct type, with code the compiler writes for it (no JSON in between, so it's the fastest way to read rows). Columns are matched to fields by name; other columns are ignored, and a field without a column is zero (<code>None</code> for an <code>Option</code>). A <code>NULL</code> is <code>None</code> in an <code>Option</code> field and zero in any other. <code>int</code>, <code>float</code>, and <code>bool</code> fields read the column's text as a number or <code>t</code> / <code>f</code> (a <code>float</code> field also reads a <code>timestamptz</code>, <code>timestamp</code> or <code>date</code> as seconds since 1970, UTC), an enum field (one without payloads) reads a text or enum column by variant name, loosely (<code>in_progress</code> fills <code>InProgress</code>), a <code>str</code> field takes any column as text, <code>[int]</code>, <code>[float]</code>, <code>[bool]</code>, and <code>[str]</code> fields read PostgreSQL arrays (<code>int8[]</code>, <code>text[]</code>, ...; one dimension, no NULL elements), and a field of another type (a struct, a map) reads a <code>json</code> / <code>jsonb</code> column. Assigned with <code>?</code> to a variable of a known type, it needs no type argument; elsewhere, write it: <code>db.fetch[User](sql, params)</code>. <code>fetch_one</code> gives <code>None</code> when no row matches. Errors carry the server's message, or say which value didn't fit: <code>"pg: query failed: ERROR 42P01: relation \"users\" does not exist"</code>, <code>"pg: query failed: the value \"seven\" doesn't fit n: int"</code>.</p>
+<p>Arrays go the other way as one parameter, in PostgreSQL's text form:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">array_int</span>(xs: [<span class="t">int</span>]) <span class="t">str</span>        array_float, array_bool, array_str too</code></pre></div>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> pg
+
+<span class="k">struct</span> <span class="t">Post</span>:
+    id: <span class="t">int</span>
+    title: <span class="t">str</span>
+    tags: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    db <span class="o">=</span> pg.<span class="f">pool</span>(<span class="s">"postgres://app:secret@localhost/app"</span>, <span class="n">4</span>)
+    ids <span class="o">=</span> [<span class="n">3</span>, <span class="n">7</span>, <span class="n">9</span>]
+    posts <span class="o">=</span> db.fetch[<span class="t">Post</span>](<span class="s">"SELECT id, title, tags FROM posts WHERE id = ANY($1)"</span>, [pg.<span class="f">array_int</span>(ids)])
+    db.<span class="f">exec</span>(<span class="s">"UPDATE posts SET tags = $1 WHERE id = $2"</span>, [pg.<span class="f">array_str</span>([<span class="s">"tern"</span>, <span class="s">"sql"</span>]), <span class="s">"3"</span>])
+    db.<span class="f">exec</span>(<span class="s">"UPDATE posts SET title = $1 WHERE id = $2"</span>, [pg.<span class="t">NULL</span>, <span class="s">"9"</span>])      <span class="c"># pg.NULL: SQL NULL</span>
+    <span class="f">print</span>(posts)</code></pre></div>
+<p><code>run_script</code> runs a whole script (a schema file, a migration) in one round trip, with PostgreSQL's simple query protocol: the statements run in order, in one transaction unless the script has its own <code>BEGIN</code> / <code>COMMIT</code>, and the first error stops the rest. It takes no <code>$1</code> parameters. It returns the rows affected, added up. For versioned schema changes, see <a href="migrate.html">migrate</a>.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> pg
+
+<span class="k">struct</span> <span class="t">User</span>:
+    id: <span class="t">int</span>
+    name: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">team</span>(db: pg.<span class="t">Pool</span>, name: <span class="t">str</span>) <span class="t">Result</span>[[<span class="t">User</span>], <span class="t">str</span>]:
+    users: [<span class="t">User</span>] <span class="o">=</span> db.<span class="f">fetch</span>(<span class="s">"SELECT id, name FROM users WHERE team = $1 ORDER BY id"</span>, [name])?
+    <span class="k">return</span> <span class="t">Ok</span>(users)
+
+<span class="k">fn</span> <span class="f">rename</span>(db: pg.<span class="t">Pool</span>, id: <span class="t">int</span>, name: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">bool</span>, <span class="t">str</span>]:
+    n <span class="o">=</span> db.<span class="f">run</span>(<span class="s">"UPDATE users SET name = $1 WHERE id = $2"</span>, [name, <span class="t">str</span>(id)])?
+    <span class="k">return</span> <span class="t">Ok</span>(n <span class="o">==</span> <span class="n">1</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    db <span class="o">=</span> pg.<span class="f">pool</span>(<span class="s">"postgres://app:secret@localhost/app"</span>, <span class="n">8</span>)
+    <span class="k">match</span> <span class="f">team</span>(db, <span class="s">"core"</span>):
+        <span class="t">Ok</span>(users):
+            <span class="f">print</span>(<span class="f">len</span>(users), <span class="s">"users"</span>)
+        <span class="t">Err</span>(e):
+            <span class="f">print</span>(e)
+    u <span class="o">=</span> db.fetch_one[<span class="t">User</span>](<span class="s">"SELECT id, name FROM users WHERE id = $1"</span>, [<span class="s">"7"</span>])
+    <span class="k">if</span> u is <span class="t">Ok</span>(found):
+        <span class="f">print</span>(found.<span class="f">is_some</span>())</code></pre></div>
+<h2 id="describing-a-statement"><a class="anchor" href="#describing-a-statement" aria-hidden="true">#</a>Describing a statement</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">describe</span>(p: <span class="t">Pool</span>, sql: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Statement</span>, <span class="t">str</span>]</code></pre></div>
+<p>What the server knows about a statement without running it (a Parse and a Describe): the types of its parameters (<code>params</code>, like <code>["int8", "text"]</code>) and of its result columns (<code>columns</code>: <code>name</code>, <code>type_name</code> such as <code>"int8"</code>, <code>"text"</code>, <code>"_int4"</code> for <code>int4[]</code>, <code>type_oid</code>, <code>kind</code> (<code>"b"</code> base, <code>"e"</code> enum, <code>"d"</code> domain), <code>base_type</code> for a domain, <code>table</code>, and <code>not_null</code>, true for a table column declared <code>NOT NULL</code>). A mistake in the SQL is an <code>Err</code> with the server's message. <a href="sqlgen.html">sqlgen</a> uses it to generate typed functions from your queries.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> pg
+
+<span class="k">fn</span> <span class="f">main</span>():
+    db <span class="o">=</span> pg.<span class="f">pool</span>(<span class="s">"postgres://app:secret@localhost/app"</span>, <span class="n">4</span>)
+    <span class="k">match</span> db.<span class="f">describe</span>(<span class="s">"SELECT id, email FROM users WHERE id = $1"</span>):
+        <span class="t">Ok</span>(s):
+            <span class="f">print</span>(s.params)                                   <span class="c"># ["int8"]</span>
+            <span class="k">for</span> c <span class="k">in</span> s.columns:
+                <span class="f">print</span>(c.name, c.type_name, c.table, c.not_null)   <span class="c"># id int8 users true ...</span>
+        <span class="t">Err</span>(e):
+            <span class="f">print</span>(e)</code></pre></div>
+<p>Rows decode into structs with <code>Option</code> fields: a <code>NULL</code> column is <code>None</code>.</p>
+<h2 id="transactions"><a class="anchor" href="#transactions" aria-hidden="true">#</a>Transactions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">begin</span>(p: <span class="t">Pool</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">commit</span>(p: <span class="t">Pool</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">rollback</span>(p: <span class="t">Pool</span>) <span class="t">bool</span></code></pre></div>
+<p>A transaction belongs to the task that starts it. From <code>begin</code> (or any statement that leaves the connection inside a transaction, such as <code>exec("BEGIN", [])</code>) until <code>commit</code> or <code>rollback</code>, that task's statements all run on the same connection, and no other task can use it, even while the task waits on a channel or a socket in the middle. Other tasks keep using the rest of the pool.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> pg
+
+<span class="k">fn</span> <span class="f">transfer</span>(db: pg.<span class="t">Pool</span>, src: <span class="t">str</span>, dst: <span class="t">str</span>, amount: <span class="t">str</span>) <span class="t">bool</span>:
+    db.<span class="f">begin</span>()
+    a <span class="o">=</span> db.<span class="f">exec</span>(<span class="s">"UPDATE accounts SET balance = balance - $1 WHERE id = $2 AND balance &gt;= $1"</span>, [amount, src])
+    <span class="k">if</span> a <span class="o">!=</span> <span class="n">1</span>:
+        db.<span class="f">rollback</span>()
+        <span class="k">return</span> <span class="k">false</span>
+    db.<span class="f">exec</span>(<span class="s">"UPDATE accounts SET balance = balance + $1 WHERE id = $2"</span>, [amount, dst])
+    <span class="k">return</span> db.<span class="f">commit</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    db <span class="o">=</span> pg.<span class="f">pool</span>(<span class="s">"postgres://app:secret@localhost/app"</span>, <span class="n">8</span>)
+    <span class="f">print</span>(<span class="f">transfer</span>(db, <span class="s">"1"</span>, <span class="s">"2"</span>, <span class="s">"100"</span>))</code></pre></div>
+<h2 id="performance"><a class="anchor" href="#performance" aria-hidden="true">#</a>Performance</h2>
+<p>One client thread, 256 tasks sharing 16 connections, against PostgreSQL 17 on the same machine, TechEmpower-style (see <code>bench/std/results.md</code> for the method and machine load):</p>
+<div class="table"><table><thead><tr><th>requests/s</th><th>Tern pg</th><th>Rust tokio-postgres</th><th>Go pgx</th><th>Rust sqlx</th></tr></thead><tbody><tr><td>one query</td><td>165,732</td><td>153,343</td><td>131,983</td><td>50,958</td></tr><tr><td>20 queries</td><td>8,132</td><td>7,527</td><td>6,402</td><td>2,518</td></tr><tr><td>20 queries + 20 updates</td><td>3,424</td><td>3,069</td><td>2,917</td><td>1,234</td></tr><tr><td>client CPU per statement</td><td>6.2 us</td><td>6.7 us</td><td>7.9 us</td><td>19.8 us</td></tr><tr><td>100 rows into structs (<code>fetch</code>)</td><td>101,180</td><td>61,697</td><td>29,839</td><td>20,892</td></tr></tbody></table></div>
+<p><code>fetch</code> decodes rows with code made for the struct, and once a statement is prepared on a connection it asks for numbers and booleans in binary, so neither side formats or parses them as text (a <code>str</code> field still gets them as text).</p>
+<p>These numbers are from when the protocol was C in the runtime. Rewritten in Tern, it runs single statements with about 10% more instructions than that C did, still fewer than tokio-postgres (8.05 G against 8.55 G for the same run), and <code>fetch</code> with fewer than before (1.25 G against 2.88 G for tokio-postgres); see <code>bench/std/results.md</code>.</p>
+</article>
+<div class="pn"><a class="prev" href="../packages/sqlite.html"><span>Previous</span>sqlite</a><a class="next" href="../packages/redis.html"><span>Next</span>redis</a></div>
+<footer>Source: <code>docs/packages/pg.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#connecting">Connecting</a></li><li class="l2"><a href="#queries">Queries</a></li><li class="l2"><a href="#typed-rows-with-result">Typed rows with Result</a></li><li class="l2"><a href="#describing-a-statement">Describing a statement</a></li><li class="l2"><a href="#transactions">Transactions</a></li><li class="l2"><a href="#performance">Performance</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

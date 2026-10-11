@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>json · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/json.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html" class="cur" aria-current="page">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="json"><a class="anchor" href="#json" aria-hidden="true">#</a>json</h1>
+<p>The <code>json</code> module converts Tern values to JSON text and back. <code>json.encode</code> turns any struct, array, map, or basic value into compact JSON; <code>json.decode</code> fills a typed variable from JSON text and tells you whether it worked. This page covers exactly how each type maps to JSON, and what <code>decode</code> does with missing keys, unknown keys, <code>null</code>, and wrong types.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">User</span>:
+    name: <span class="t">str</span>
+    age: <span class="t">int</span>
+    tags: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    u <span class="o">=</span> <span class="t">User</span>(<span class="s">"ada"</span>, <span class="n">36</span>, [<span class="s">"admin"</span>])
+    text <span class="o">=</span> json.<span class="f">encode</span>(u)
+    <span class="f">print</span>(text)
+    back <span class="o">=</span> <span class="t">User</span>(<span class="s">""</span>, <span class="n">0</span>, [])
+    <span class="k">if</span> json.<span class="f">decode</span>(text, <span class="o">&amp;</span>back):
+        <span class="f">print</span>(back.name, back.age)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"name":"ada","age":36,"tags":["admin"]}
+ada 36</code></pre></div>
+<p>There is no reflection in Tern: the compiler writes a dedicated encoder and decoder for each type you use with <code>json</code>, so both are fast and type-checked at compile time.</p>
+<h2 id="how-types-map-to-json"><a class="anchor" href="#how-types-map-to-json" aria-hidden="true">#</a>How types map to JSON</h2>
+<div class="table"><table><thead><tr><th>Tern type</th><th>JSON</th></tr></thead><tbody><tr><td><code>int</code></td><td>a number without a fraction: <code>42</code></td></tr><tr><td><code>float</code></td><td>a number, always with a fraction or exponent: <code>2.0</code>, <code>0.1</code>, <code>1e+20</code>; NaN and infinity become <code>null</code></td></tr><tr><td><code>bool</code></td><td><code>true</code> / <code>false</code></td></tr><tr><td><code>str</code></td><td>a string. <code>"</code>, <code>\</code>, and control characters are escaped; other bytes (UTF-8 text such as <code>é</code>) are written as they are</td></tr><tr><td><code>[T]</code></td><td>an array</td></tr><tr><td><code>{str: T}</code></td><td>an object</td></tr><tr><td><code>{int: T}</code></td><td>an object whose keys are the numbers as strings: <code>{"1": ...}</code></td></tr><tr><td>a struct</td><td>an object with one key per field, in declaration order</td></tr><tr><td><code>Option[T]</code></td><td><code>null</code> for <code>None</code>, the value for <code>Some(v)</code>. Decoding, <code>null</code> or a missing key gives <code>None</code></td></tr><tr><td>an enum</td><td><code>"Name"</code> for a variant without fields; <code>{"Name": value}</code> or <code>{"Name": {fields}}</code> for one with</td></tr></tbody></table></div>
+<p>An enum is its variant's name when the variant has no fields, and an object holding the fields under the name when it has some: one field is the value itself, several are an object (the "externally tagged" form Rust's serde uses). Decoding also accepts the name in another case or spelling: <code>"banned"</code>, <code>"BANNED"</code>, and <code>"in_progress"</code> all name <code>InProgress</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">enum</span> <span class="t">Status</span>:
+    <span class="t">Active</span>
+    <span class="t">InProgress</span>
+    <span class="t">Banned</span>
+
+<span class="k">enum</span> <span class="t">Shape</span>:
+    <span class="t">Circle</span>(radius: <span class="t">float</span>)
+    <span class="t">Rect</span>(w: <span class="t">float</span>, h: <span class="t">float</span>)
+    <span class="t">Empty</span>
+
+<span class="k">struct</span> <span class="t">Account</span>:
+    name: <span class="t">str</span>
+    status: <span class="t">Status</span>
+    shapes: [<span class="t">Shape</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    a <span class="o">=</span> <span class="t">Account</span>(<span class="s">"ada"</span>, <span class="t">Status</span>.<span class="t">InProgress</span>, [<span class="t">Shape</span>.<span class="t">Circle</span>(<span class="n">1.5</span>), <span class="t">Shape</span>.<span class="t">Rect</span>(<span class="n">2.0</span>, <span class="n">3.0</span>), <span class="t">Shape</span>.<span class="t">Empty</span>])
+    <span class="f">print</span>(json.<span class="f">encode</span>(a))
+    s <span class="o">=</span> <span class="t">Status</span>.<span class="t">Active</span>
+    ok <span class="o">=</span> json.<span class="f">decode</span>(<span class="s">`"banned"`</span>, <span class="o">&amp;</span>s)
+    <span class="f">print</span>(ok, s)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"name":"ada","status":"InProgress","shapes":[{"Circle":1.5},{"Rect":{"w":2.0,"h":3.0}},"Empty"]}
+true Status.Banned</code></pre></div>
+<p>Functions, tuples, <code>ptr</code> values, and recursive enums can't be converted; using one (or a struct or array containing one) with <code>json</code> is a compile error:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Button</span>:
+    label: <span class="t">str</span>
+    on_click: <span class="k">fn</span>(<span class="t">int</span>) <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    b <span class="o">=</span> <span class="t">Button</span>(<span class="s">"go"</span>, <span class="k">fn</span>(n) <span class="s">"clicked"</span>)
+    <span class="f">print</span>(json.<span class="f">encode</span>(b))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>9: error: json.encode can't handle Button</code></pre></div>
+<p>A field that may be absent or <code>null</code> is an <code>Option</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Profile</span>:
+    name: <span class="t">str</span>
+    email: <span class="t">Option</span>[<span class="t">str</span>]
+    age: <span class="t">Option</span>[<span class="t">int</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    ps: [<span class="t">Profile</span>] <span class="o">=</span> []
+    ok <span class="o">=</span> json.<span class="f">decode</span>(<span class="s">`[{"name": "ada", "email": "ada@example.com"}, {"name": "bob", "email": null, "age": 41}]`</span>, <span class="o">&amp;</span>ps)
+    <span class="f">print</span>(ok, ps)
+    <span class="f">print</span>(json.<span class="f">encode</span>(ps[<span class="n">0</span>]))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true [Profile{name: "ada", email: Some("ada@example.com"), age: None}, Profile{name: "bob", email: None, age: Some(41)}]
+{"name":"ada","email":"ada@example.com","age":null}</code></pre></div>
+<h2 id="encode"><a class="anchor" href="#encode" aria-hidden="true">#</a>encode</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">encode</span>(value: <span class="t">T</span>) <span class="t">str</span></code></pre></div>
+<p>The JSON text of any value whose type is in the table above. The output is compact (no spaces or newlines) and always valid JSON. Floats use the shortest text that reads back as the same number, so a <code>float</code> round-trips exactly.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(json.<span class="f">encode</span>([<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]), json.<span class="f">encode</span>({<span class="s">"a"</span>: <span class="n">1.5</span>}), json.<span class="f">encode</span>({<span class="n">7</span>: <span class="k">true</span>}))
+    <span class="f">print</span>(json.<span class="f">encode</span>(<span class="s">"say \"hi\"\n"</span>), json.<span class="f">encode</span>(<span class="n">0.1</span> <span class="o">+</span> <span class="n">0.2</span>), json.<span class="f">encode</span>(<span class="n">1.0</span> <span class="o">/</span> <span class="n">0.0</span>))
+    empty: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="f">print</span>(json.<span class="f">encode</span>(empty), json.<span class="f">encode</span>([[<span class="n">1</span>], []]), json.<span class="f">encode</span>(<span class="s">"café"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[1,2,3] {"a":1.5} {"7":true}
+"say \"hi\"\n" 0.30000000000000004 null
+[] [[1],[]] "café"</code></pre></div>
+<p>For a single string, the builtin <a href="../builtins.html#json_quote"><code>json_quote</code></a> does the same as <code>json.encode</code> without the import.</p>
+<h2 id="decode"><a class="anchor" href="#decode" aria-hidden="true">#</a>decode</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">decode</span>(text: <span class="t">str</span>, out: <span class="k">mut</span> <span class="t">T</span>) <span class="t">bool</span></code></pre></div>
+<p>Parses <code>text</code> as JSON and stores it in <code>out</code>, which you pass with <code>&amp;</code>. Returns <code>true</code> on success. Decoding is <strong>all-or-nothing</strong>: if it returns <code>false</code>, <code>out</code> is exactly as it was, even if part of the text was valid. Whitespace around the value is allowed; anything else after it makes decoding fail.</p>
+<p>Into a struct, it follows these rules:</p>
+<ul><li><strong>Missing keys keep the current value.</strong> Fill <code>out</code> with defaults before decoding, and keys the JSON leaves out keep them. This is how you merge a partial update.</li><li><strong>Unknown keys are ignored</strong>, whatever their value (objects, arrays, anything valid).</li><li><strong><code>null</code> keeps the current value</strong>, like a missing key.</li><li><strong>Keys are matched exactly</strong>: <code>"Name"</code> does not fill <code>name</code>. If a key appears twice, the last one wins.</li><li><strong>A nested struct is merged the same way</strong>: <code>{"home": {"city": "Rome"}}</code> changes only <code>home.city</code>.</li></ul>
+<p>Arrays and maps are <strong>replaced</strong>, not merged: <code>"tags": ["c"]</code> makes <code>tags</code> exactly <code>["c"]</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Address</span>:
+    city: <span class="t">str</span>
+    zip: <span class="t">str</span>
+
+<span class="k">struct</span> <span class="t">Profile</span>:
+    name: <span class="t">str</span>
+    age: <span class="t">int</span>
+    home: <span class="t">Address</span>
+    tags: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    p <span class="o">=</span> <span class="t">Profile</span>(<span class="s">"ada"</span>, <span class="n">36</span>, <span class="t">Address</span>(<span class="s">"London"</span>, <span class="s">"N1"</span>), [<span class="s">"a"</span>, <span class="s">"b"</span>])
+    patch <span class="o">=</span> <span class="s">`{"age": 37, "home": {"city": "Rome"}, "tags": ["c"], "extra": [1, {"x": null}], "name": null}`</span>
+    <span class="f">print</span>(json.<span class="f">decode</span>(patch, <span class="o">&amp;</span>p))
+    <span class="f">print</span>(p)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true
+Profile{name: "ada", age: 37, home: Address{city: "Rome", zip: "N1"}, tags: ["c"]}</code></pre></div>
+<h3 id="type-mismatches"><a class="anchor" href="#type-mismatches" aria-hidden="true">#</a>Type mismatches</h3>
+<p>A value of the wrong type makes the whole decode fail:</p>
+<div class="table"><table><thead><tr><th>Field type</th><th>Accepts</th><th>Rejects</th></tr></thead><tbody><tr><td><code>int</code></td><td>whole numbers, including <code>4.0</code> and <code>1e2</code></td><td><code>4.5</code>, <code>"5"</code>, <code>true</code>, numbers beyond 64 bits</td></tr><tr><td><code>float</code></td><td>any number (<code>3</code> becomes <code>3.0</code>)</td><td><code>"3.5"</code>, <code>true</code></td></tr><tr><td><code>bool</code></td><td><code>true</code>, <code>false</code></td><td><code>1</code>, <code>"true"</code></td></tr><tr><td><code>str</code></td><td>strings (with <code>\n</code>, <code>\"</code>, <code>é</code>, and surrogate-pair escapes decoded)</td><td>numbers, <code>true</code></td></tr><tr><td><code>[T]</code></td><td>an array whose every element fits <code>T</code></td><td><code>null</code> elements, a lone value</td></tr><tr><td><code>{str: T}</code></td><td>an object</td><td>an array</td></tr><tr><td><code>{int: T}</code></td><td>an object whose keys are whole numbers as strings (<code>"12"</code>)</td><td>any other key</td></tr><tr><td>a struct</td><td>an object</td><td>an array, <code>null</code> at the top level</td></tr></tbody></table></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Item</span>:
+    name: <span class="t">str</span>
+    qty: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    it <span class="o">=</span> <span class="t">Item</span>(<span class="s">"pen"</span>, <span class="n">1</span>)
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">`{"qty": 4.0}`</span>, <span class="o">&amp;</span>it), it.qty)
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">`{"qty": 4.5}`</span>, <span class="o">&amp;</span>it), it.qty)
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">`{"qty": "5"}`</span>, <span class="o">&amp;</span>it), it.qty)
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">`{"name": "cup", "qty": 2} extra`</span>, <span class="o">&amp;</span>it), it.name)
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">`{"name": "cup",}`</span>, <span class="o">&amp;</span>it), json.<span class="f">decode</span>(<span class="s">"{'name': 'cup'}"</span>, <span class="o">&amp;</span>it))
+    xs <span class="o">=</span> [<span class="n">9</span>]
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">"[1, null]"</span>, <span class="o">&amp;</span>xs), xs)
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">"[1, 2.0, -3]"</span>, <span class="o">&amp;</span>xs), xs)
+    ids: {<span class="t">int</span>: <span class="t">str</span>} <span class="o">=</span> {}
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">`{"1": "a", "22": "b"}`</span>, <span class="o">&amp;</span>ids), ids)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true 4
+false 4
+false 4
+false pen
+false false
+false [9]
+true [1, 2, -3]
+true {1: "a", 22: "b"}</code></pre></div>
+<p>The parser is slightly more lenient than the JSON standard about numbers (it accepts <code>+5</code> and <code>007</code>), but not about structure: trailing commas, single quotes, comments, and unquoted keys are all rejected.</p>
+<h3 id="decoding-plain-values"><a class="anchor" href="#decoding-plain-values" aria-hidden="true">#</a>Decoding plain values</h3>
+<p><code>out</code> can be any JSON-compatible type, not just a struct:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">fn</span> <span class="f">main</span>():
+    scores: {<span class="t">str</span>: [<span class="t">int</span>]} <span class="o">=</span> {}
+    ok <span class="o">=</span> json.<span class="f">decode</span>(<span class="s">`{"ada": [90, 85], "bob": []}`</span>, <span class="o">&amp;</span>scores)
+    <span class="f">print</span>(ok, scores[<span class="s">"ada"</span>], <span class="f">len</span>(scores[<span class="s">"bob"</span>]))
+    n <span class="o">=</span> <span class="n">0</span>
+    s <span class="o">=</span> <span class="s">""</span>
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">" 42 "</span>, <span class="o">&amp;</span>n), n, json.<span class="f">decode</span>(<span class="s">"\"caf\\u00e9\""</span>, <span class="o">&amp;</span>s), s)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true [90, 85] 0
+true 42 true café</code></pre></div>
+<h2 id="schema"><a class="anchor" href="#schema" aria-hidden="true">#</a>schema</h2>
+<p><code>json.schema[T]()</code> is the <a href="https://json-schema.org">JSON Schema</a> (2020-12) of what <code>json.encode</code> writes for a type <code>T</code>, as a string. Like the encoder, it is generated while compiling, so it costs nothing at run time. Structs go under <code>$defs</code> and are referred to with <code>$ref</code> (so a struct can contain arrays of itself), and every field is <code>required</code>, because <code>json.encode</code> always writes all of them. The <code>openapi</code> package builds API descriptions from it.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Item</span>:
+    sku: <span class="t">str</span>
+    qty: <span class="t">int</span>
+
+<span class="k">struct</span> <span class="t">Order</span>:
+    id: <span class="t">int</span>
+    items: [<span class="t">Item</span>]
+    notes: {<span class="t">str</span>: <span class="t">str</span>}
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(json.schema[<span class="t">Item</span>]())
+    <span class="f">print</span>(json.schema[[<span class="t">int</span>]]())
+    <span class="f">print</span>(json.schema[<span class="t">Order</span>]().<span class="f">contains</span>(<span class="s">`"items":{"type":"array","items":{"$ref":"#/$defs/Item"}}`</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"$ref":"#/$defs/Item","$defs":{"Item":{"type":"object","properties":{"sku":{"type":"string"},"qty":{"type":"integer","format":"int64"}},"required":["sku","qty"]}}}
+{"type":"array","items":{"type":"integer","format":"int64"}}
+true</code></pre></div>
+<p>Enums and tuples have no JSON form, so <code>json.schema</code> refuses them, as <code>json.encode</code> does. A struct from another module is named with its module (<code>models.User</code>), and a generic one with its type arguments (<code>Pair_int_str</code>).</p>
+<h2 id="working-with-json-of-unknown-shape"><a class="anchor" href="#working-with-json-of-unknown-shape" aria-hidden="true">#</a>Working with JSON of unknown shape</h2>
+<p><code>decode</code> needs a type to fill. For JSON whose shape varies or isn't known ahead of time (a field that is sometimes a number and sometimes a string, a webhook with dozens of optional fields, a config you only read a few keys of), <code>json.parse(text)</code> gives a <code>json.Value</code>: an enum of <code>Null</code>, <code>Bool(b)</code>, <code>Num(x, text)</code>, <code>Str(s)</code>, <code>Arr(items)</code> and <code>Obj(keys, vals)</code>.</p>
+<p>Lookups never fail: <code>v.field(key)</code> and <code>v.at(i)</code> give <code>Null</code> when the key or element isn't there (or <code>v</code> isn't an object or array), so they chain, and <code>str_or</code>, <code>int_or</code>, <code>float_or</code>, <code>bool_or</code> end the chain with a default. <code>match</code> on the Value when you need to know its kind.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    v <span class="o">=</span> json.<span class="f">parse</span>(<span class="s">`{"event": "order.paid", "data": {"id": 9007199254740993, "items": [{"sku": "A1", "qty": 2}, {"sku": "B7"}]}}`</span>)?
+    <span class="f">print</span>(v.<span class="f">field</span>(<span class="s">"event"</span>).<span class="f">str_or</span>(<span class="s">""</span>), v.<span class="f">field</span>(<span class="s">"data"</span>).<span class="f">field</span>(<span class="s">"id"</span>).<span class="f">int_or</span>(<span class="n">0</span>))
+    <span class="k">for</span> it <span class="k">in</span> v.<span class="f">field</span>(<span class="s">"data"</span>).<span class="f">field</span>(<span class="s">"items"</span>).<span class="f">elems</span>():
+        <span class="f">print</span>(it.<span class="f">field</span>(<span class="s">"sku"</span>).<span class="f">str_or</span>(<span class="s">"?"</span>), it.<span class="f">field</span>(<span class="s">"qty"</span>).<span class="f">int_or</span>(<span class="n">1</span>))
+    <span class="f">print</span>(v.<span class="f">field</span>(<span class="s">"data"</span>).<span class="f">field</span>(<span class="s">"missing"</span>).<span class="f">at</span>(<span class="n">3</span>).<span class="f">str_or</span>(<span class="s">"default"</span>), v.<span class="f">field</span>(<span class="s">"data"</span>).<span class="f">fields</span>())
+    <span class="k">match</span> v.<span class="f">field</span>(<span class="s">"event"</span>):
+        <span class="t">Str</span>(s):
+            <span class="f">print</span>(<span class="s">"a string of"</span>, <span class="f">len</span>(s), <span class="s">"bytes"</span>)
+        _:
+            <span class="f">print</span>(<span class="s">"not a string"</span>)
+    <span class="f">print</span>(json.<span class="f">dump</span>(v.<span class="f">field</span>(<span class="s">"data"</span>).<span class="f">field</span>(<span class="s">"items"</span>).<span class="f">at</span>(<span class="n">1</span>)))
+    <span class="f">print</span>(json.<span class="f">parse</span>(<span class="s">`{"a" 1}`</span>).<span class="f">is_err</span>())
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="n">0</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>order.paid 9007199254740993
+A1 2
+B7 1
+default ["id", "items"]
+a string of 10 bytes
+{"sku":"B7"}
+true</code></pre></div>
+<ul><li><code>json.parse(text) Result[json.Value, str]</code>: the error says what and at which byte (<code>json: expected</code>:<code>after a key at byte 5</code>).</li><li><code>v.fields() [str]</code> (an object's keys, in order), <code>v.elems() [json.Value]</code>, <code>v.size() int</code>.</li><li><code>v.field(key)</code> scans the object's keys, which is fastest for the small objects most JSON has. For many lookups in an object with thousands of keys, index it once: <code>m = v.to_map()</code> gives a <code>{str: json.Value}</code> (a repeated key keeps its last value).</li><li><code>json.dump(v) str</code> writes a Value back as compact JSON. Numbers keep the text they were written with, so <code>int_or</code> reads integers past 2^53 exactly and <code>dump</code> doesn't reformat them.</li><li>Decoding into a struct with <code>json.decode</code> is faster and checks the shape for you; use a Value for the parts that really vary.</li></ul>
+<h2 id="a-complete-example"><a class="anchor" href="#a-complete-example" aria-hidden="true">#</a>A complete example</h2>
+<p>Loading a configuration file with defaults, validating it, and saving it back:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+<span class="k">import</span> fs
+
+<span class="k">struct</span> <span class="t">Server</span>:
+    host: <span class="t">str</span>
+    port: <span class="t">int</span>
+
+<span class="k">struct</span> <span class="t">Config</span>:
+    name: <span class="t">str</span>
+    workers: <span class="t">int</span>
+    debug: <span class="t">bool</span>
+    servers: [<span class="t">Server</span>]
+    limits: {<span class="t">str</span>: <span class="t">int</span>}
+
+<span class="k">fn</span> <span class="f">defaults</span>() <span class="t">Config</span>:
+    <span class="k">return</span> <span class="t">Config</span>(<span class="s">"app"</span>, <span class="n">4</span>, <span class="k">false</span>, [<span class="t">Server</span>(<span class="s">"localhost"</span>, <span class="n">8080</span>)], {<span class="s">"max_body_mb"</span>: <span class="n">16</span>})
+
+<span class="k">fn</span> <span class="f">load</span>(path: <span class="t">str</span>, cfg: <span class="k">mut</span> <span class="t">Config</span>) <span class="t">str</span>:
+    <span class="k">if</span> <span class="k">not</span> fs.<span class="f">exists</span>(path):
+        <span class="k">return</span> <span class="s">"no config file; using defaults"</span>
+    <span class="k">if</span> <span class="k">not</span> json.<span class="f">decode</span>(fs.<span class="f">read</span>(path), <span class="o">&amp;</span>cfg):
+        <span class="k">return</span> <span class="s">"config is not valid JSON for Config; using defaults"</span>
+    <span class="k">if</span> cfg.workers <span class="o">&lt;</span> <span class="n">1</span>:
+        cfg.workers <span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> <span class="s">"loaded "</span> <span class="o">+</span> path
+
+<span class="k">fn</span> <span class="f">main</span>():
+    path <span class="o">=</span> <span class="s">"/tmp/tern_json_config.json"</span>
+    fs.<span class="f">write</span>(path, <span class="s">`{"name": "shop", "workers": 0, "servers": [{"host": "10.0.0.2", "port": 9000}], "comment": "ignored"}`</span>)
+    cfg <span class="o">=</span> <span class="f">defaults</span>()
+    <span class="f">print</span>(<span class="f">load</span>(path, <span class="o">&amp;</span>cfg))
+    <span class="f">print</span>(cfg.name, cfg.workers, cfg.debug, cfg.servers[<span class="n">0</span>].host, cfg.limits)
+    cfg.debug <span class="o">=</span> <span class="k">true</span>
+    fs.<span class="f">write</span>(path, json.<span class="f">encode</span>(cfg))
+    <span class="f">print</span>(fs.<span class="f">read</span>(path))
+    fs.<span class="f">write</span>(path, <span class="s">`{"workers": "many"}`</span>)
+    bad <span class="o">=</span> <span class="f">defaults</span>()
+    <span class="f">print</span>(<span class="f">load</span>(path, <span class="o">&amp;</span>bad), bad.workers)
+    fs.<span class="f">remove</span>(path)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>loaded /tmp/tern_json_config.json
+shop 1 false 10.0.0.2 {"max_body_mb": 16}
+{"name":"shop","workers":1,"debug":true,"servers":[{"host":"10.0.0.2","port":9000}],"limits":{"max_body_mb":16}}
+config is not valid JSON for Config; using defaults 4</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../std/bitset.html"><span>Previous</span>bitset</a><a class="next" href="../std/re.html"><span>Next</span>re</a></div>
+<footer>Source: <code>docs/std/json.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#how-types-map-to-json">How types map to JSON</a></li><li class="l2"><a href="#encode">encode</a></li><li class="l2"><a href="#decode">decode</a></li><li class="l3"><a href="#type-mismatches">Type mismatches</a></li><li class="l3"><a href="#decoding-plain-values">Decoding plain values</a></li><li class="l2"><a href="#schema">schema</a></li><li class="l2"><a href="#working-with-json-of-unknown-shape">Working with JSON of unknown shape</a></li><li class="l2"><a href="#a-complete-example">A complete example</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

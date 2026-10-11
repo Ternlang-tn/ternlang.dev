@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3. Control flow · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/03-control-flow.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html" class="cur" aria-current="page">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="3-control-flow"><a class="anchor" href="#3-control-flow" aria-hidden="true">#</a>3. Control flow</h1>
+<p>This chapter shows how a Tern program makes decisions and repeats work: <code>if</code>/<code>elif</code>/<code>else</code>, <code>for</code> loops over ranges and collections, <code>while</code> loops, and <code>break</code>, <code>continue</code>, and <code>pass</code>. It also explains one rule that surprises Python programmers: a variable created inside a block ends with that block.</p>
+<h2 id="if-elif-else"><a class="anchor" href="#if-elif-else" aria-hidden="true">#</a>if, elif, else</h2>
+<p>Conditions don't need parentheses. Each branch ends with <code>:</code> and an indented block:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    temp <span class="o">=</span> <span class="n">31</span>
+    <span class="k">if</span> temp <span class="o">&gt;</span> <span class="n">30</span>:
+        <span class="f">print</span>(<span class="s">"hot"</span>)
+    <span class="k">elif</span> temp <span class="o">&gt;</span> <span class="n">15</span>:
+        <span class="f">print</span>(<span class="s">"mild"</span>)
+    <span class="k">else</span>:
+        <span class="f">print</span>(<span class="s">"cold"</span>)
+    <span class="k">if</span> temp <span class="o">%</span> <span class="n">2</span> <span class="o">==</span> <span class="n">1</span>: <span class="f">print</span>(<span class="s">"odd degrees"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>hot
+odd degrees</code></pre></div>
+<p>A block with a single statement may go on the same line as its <code>:</code>, as in the last line. Use this sparingly; most code reads better with the block on its own line.</p>
+<p>It is <code>elif</code>, never <code>else if</code>. The condition must be a <code>bool</code>: <code>if count:</code> is an error; write <code>if count &gt; 0:</code>.</p>
+<p>To choose between two values, use a conditional expression, as in Python: <code>label = "big" if x &gt; 2 else "small"</code>. Only the chosen side is evaluated. (There is no <code>c ? a : b</code>.) An <code>if</code> statement that assigns a variable does the same job for longer code, which brings us to scope.</p>
+<h2 id="where-variables-live"><a class="anchor" href="#where-variables-live" aria-hidden="true">#</a>Where variables live</h2>
+<p>A variable lives from its first assignment to the end of the block it was created in. So this does not compile:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    score <span class="o">=</span> <span class="n">72</span>
+    <span class="k">if</span> score <span class="o">&gt;=</span> <span class="n">50</span>:
+        result <span class="o">=</span> <span class="s">"pass"</span>
+    <span class="k">else</span>:
+        result <span class="o">=</span> <span class="s">"fail"</span>
+    <span class="f">print</span>(result)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>7: error: unknown variable `result`</code></pre></div>
+<p>Each <code>result</code> exists only inside its own branch. The fix is to create the variable before the <code>if</code>, with a starting value, and then assign to it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    score <span class="o">=</span> <span class="n">72</span>
+    result <span class="o">=</span> <span class="s">"fail"</span>
+    <span class="k">if</span> score <span class="o">&gt;=</span> <span class="n">50</span>:
+        result <span class="o">=</span> <span class="s">"pass"</span>
+    <span class="f">print</span>(result)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>pass</code></pre></div>
+<p>This rule makes it impossible to read a variable that was only set on some paths, which is a common bug in languages where it is allowed.</p>
+<h2 id="for-loops-over-ranges"><a class="anchor" href="#for-loops-over-ranges" aria-hidden="true">#</a>for loops over ranges</h2>
+<p><code>for i in a..b:</code> counts from <code>a</code> up to, but not including, <code>b</code>. There is no <code>range()</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">3</span>:
+        <span class="f">print</span>(<span class="s">"round"</span>, i)
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> n <span class="k">in</span> <span class="n">1</span><span class="o">..</span><span class="n">101</span>:
+        total <span class="o">+</span><span class="o">=</span> n
+    <span class="f">print</span>(<span class="s">"1 + 2 + ... + 100 ="</span>, total)
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">5</span><span class="o">..</span><span class="n">5</span>:
+        <span class="f">print</span>(<span class="s">"never printed"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>round 0
+round 1
+round 2
+1 + 2 + ... + 100 = 5050</code></pre></div>
+<p>A range whose start is not below its end runs zero times. There is no step value; to count down or skip numbers, use a <code>while</code> loop (below).</p>
+<p>Inside the loop, the loop variable is read-only: assigning <code>i = 5</code> is an error, because it would not do what it looks like (the next round would not continue from 5).</p>
+<h2 id="for-loops-over-collections"><a class="anchor" href="#for-loops-over-collections" aria-hidden="true">#</a>for loops over collections</h2>
+<p><code>for x in xs:</code> visits each element of an array, and <code>for i, x in xs:</code> also gives the index. Arrays get their own chapter (<a href="06-arrays-and-maps.html">chapter 6</a>), but loops over them are too useful to wait for:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    planets <span class="o">=</span> [<span class="s">"Mercury"</span>, <span class="s">"Venus"</span>, <span class="s">"Earth"</span>]
+    <span class="k">for</span> p <span class="k">in</span> planets:
+        <span class="f">print</span>(p)
+    <span class="k">for</span> i, p <span class="k">in</span> planets:
+        <span class="f">print</span>(i <span class="o">+</span> <span class="n">1</span>, p)
+    letters <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> ch <span class="k">in</span> <span class="s">"Earth"</span>:
+        letters <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="f">print</span>(letters, <span class="s">"letters"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Mercury
+Venus
+Earth
+1 Mercury
+2 Venus
+3 Earth
+5 letters</code></pre></div>
+<p>A <code>for</code> over a string visits it one byte at a time, as a one-byte <code>str</code>. Loops over maps (<code>for key, value in m:</code>) are covered with maps.</p>
+<h2 id="while-loops"><a class="anchor" href="#while-loops" aria-hidden="true">#</a>while loops</h2>
+<p><code>while</code> repeats as long as its condition is true. Use it when you don't know the number of rounds in advance, or when a range doesn't fit, such as counting down:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">27</span>
+    steps <span class="o">=</span> <span class="n">0</span>
+    <span class="k">while</span> n <span class="o">!=</span> <span class="n">1</span>:
+        <span class="k">if</span> n <span class="o">%</span> <span class="n">2</span> <span class="o">==</span> <span class="n">0</span>:
+            n <span class="o">=</span> n <span class="o">/</span> <span class="n">2</span>
+        <span class="k">else</span>:
+            n <span class="o">=</span> <span class="n">3</span> <span class="o">*</span> n <span class="o">+</span> <span class="n">1</span>
+        steps <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="f">print</span>(<span class="s">"27 reaches 1 after"</span>, steps, <span class="s">"steps"</span>)
+    i <span class="o">=</span> <span class="n">3</span>
+    <span class="k">while</span> i <span class="o">&gt;</span> <span class="n">0</span>:
+        <span class="f">print</span>(i)
+        i <span class="o">-</span><span class="o">=</span> <span class="n">1</span>
+    <span class="f">print</span>(<span class="s">"liftoff"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>27 reaches 1 after 111 steps
+3
+2
+1
+liftoff</code></pre></div>
+<p>There is no <code>do ... while</code> or <code>loop</code>. Write <code>while true:</code> and leave with <code>break</code>.</p>
+<h2 id="break-continue-and-pass"><a class="anchor" href="#break-continue-and-pass" aria-hidden="true">#</a>break, continue, and pass</h2>
+<p><code>break</code> leaves the innermost loop. <code>continue</code> skips to its next round. <code>pass</code> does nothing; it fills a block that must exist but has nothing to do:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    readings <span class="o">=</span> [<span class="n">12</span>, <span class="o">-</span><span class="n">1</span>, <span class="n">15</span>, <span class="n">99</span>, <span class="n">14</span>, <span class="n">13</span>]
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> r <span class="k">in</span> readings:
+        <span class="k">if</span> r <span class="o">&lt;</span> <span class="n">0</span>:
+            <span class="k">continue</span>            <span class="c"># a bad reading: skip it</span>
+        <span class="k">if</span> r <span class="o">==</span> <span class="n">99</span>:
+            <span class="k">break</span>               <span class="c"># 99 marks the end of the data</span>
+        total <span class="o">+</span><span class="o">=</span> r
+    <span class="f">print</span>(<span class="s">"total"</span>, total)
+    <span class="k">while</span> <span class="k">true</span>:
+        total <span class="o">-</span><span class="o">=</span> <span class="n">10</span>
+        <span class="k">if</span> total <span class="o">&lt;</span> <span class="n">0</span>:
+            <span class="k">break</span>
+    <span class="f">print</span>(<span class="s">"after"</span>, total)
+    <span class="k">if</span> total <span class="o">&gt;</span> <span class="n">100</span>:
+        <span class="k">pass</span>                    <span class="c"># nothing to do yet</span></code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>total 27
+after -3</code></pre></div>
+<h2 id="mistakes-from-other-languages"><a class="anchor" href="#mistakes-from-other-languages" aria-hidden="true">#</a>Mistakes from other languages</h2>
+<p>The compiler knows the usual alternatives and points you to the Tern way:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(<span class="n">3</span>):
+        <span class="f">print</span>(i)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: unknown function `range`
+2: hint: there is no range(): write `for i in 0..n:` (or `for i in a..b:`; the end is exclusive)</code></pre></div>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    x <span class="o">=</span> <span class="n">3</span>
+    label <span class="o">=</span> x <span class="o">&gt;</span> <span class="n">2</span> ? <span class="s">"big"</span> : <span class="s">"small"</span>
+    <span class="f">print</span>(label)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: expected end of line, found 'big'
+3: hint: there is no `c ? a : b`; write `a if c else b`</code></pre></div>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Write FizzBuzz for 1 to 15: print <code>Fizz</code> for multiples of 3, <code>Buzz</code> for multiples of 5, <code>FizzBuzz</code> for multiples of both, and the number otherwise. Then change the program to stop at the first number above 10 that is a multiple of 3, using <code>break</code>.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">1</span><span class="o">..</span><span class="n">16</span>:
+        <span class="k">if</span> i <span class="o">%</span> <span class="n">15</span> <span class="o">==</span> <span class="n">0</span>:
+            <span class="f">print</span>(<span class="s">"FizzBuzz"</span>)
+        <span class="k">elif</span> i <span class="o">%</span> <span class="n">3</span> <span class="o">==</span> <span class="n">0</span>:
+            <span class="f">print</span>(<span class="s">"Fizz"</span>)
+        <span class="k">elif</span> i <span class="o">%</span> <span class="n">5</span> <span class="o">==</span> <span class="n">0</span>:
+            <span class="f">print</span>(<span class="s">"Buzz"</span>)
+        <span class="k">else</span>:
+            <span class="f">print</span>(i)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz</code></pre></div>
+<p>For the second part, add <code>if i &gt; 10 and i % 3 == 0: break</code> at the top of the loop body.</p>
+<p>Next: <a href="04-functions.html">4. Functions</a>. Reference: <a href="../reference.html#5-control-flow">§5 Control flow</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/02-values-and-types.html"><span>Previous</span>2. Values and types</a><a class="next" href="../tour/04-functions.html"><span>Next</span>4. Functions</a></div>
+<footer>Source: <code>docs/tour/03-control-flow.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#if-elif-else">if, elif, else</a></li><li class="l2"><a href="#where-variables-live">Where variables live</a></li><li class="l2"><a href="#for-loops-over-ranges">for loops over ranges</a></li><li class="l2"><a href="#for-loops-over-collections">for loops over collections</a></li><li class="l2"><a href="#while-loops">while loops</a></li><li class="l2"><a href="#break-continue-and-pass">break, continue, and pass</a></li><li class="l2"><a href="#mistakes-from-other-languages">Mistakes from other languages</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

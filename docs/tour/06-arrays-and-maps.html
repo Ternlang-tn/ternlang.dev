@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6. Arrays and maps · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/06-arrays-and-maps.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html" class="cur" aria-current="page">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="6-arrays-and-maps"><a class="anchor" href="#6-arrays-and-maps" aria-hidden="true">#</a>6. Arrays and maps</h1>
+<p>Most programs work with collections. Tern has two: arrays (<code>[T]</code>, an ordered list of values of one type) and maps (<code>{K: V}</code>, a table from keys to values). This chapter shows how to build, read, change, loop over, and search both, and the one rule about changing a collection while you loop over it.</p>
+<h2 id="arrays"><a class="anchor" href="#arrays" aria-hidden="true">#</a>Arrays</h2>
+<p>An array literal is a list in square brackets. All elements have the same type, and the array's type is written <code>[int]</code>, <code>[str]</code>, <code>[Point]</code>, and so on:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    scores <span class="o">=</span> [<span class="n">72</span>, <span class="n">95</span>, <span class="n">88</span>]
+    scores.<span class="f">push</span>(<span class="n">61</span>)                 <span class="c"># add to the end</span>
+    <span class="f">print</span>(scores, <span class="f">len</span>(scores))
+    <span class="f">print</span>(scores[<span class="n">0</span>], scores[<span class="f">len</span>(scores) <span class="o">-</span> <span class="n">1</span>])
+    scores[<span class="n">1</span>] <span class="o">=</span> <span class="n">97</span>                  <span class="c"># replace an element</span>
+    last <span class="o">=</span> scores.<span class="f">pop</span>()             <span class="c"># remove and return the last element</span>
+    <span class="f">print</span>(last, scores)
+    <span class="f">print</span>(<span class="n">88</span> <span class="k">in</span> scores, <span class="n">50</span> <span class="k">in</span> scores)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[72, 95, 88, 61] 4
+72 61
+61 [72, 97, 88]
+true false</code></pre></div>
+<ul><li>Indexes start at 0. There are no negative indexes; the last element is <code>xs[len(xs) - 1]</code>.</li><li>Reading or writing outside the array stops the program with a runtime error such as <code>index 3 out of bounds (length 3)</code>. So does <code>pop()</code> on an empty array.</li><li><code>x in xs</code> tells you whether the array contains <code>x</code>.</li><li>It is <code>push</code>, not <code>append</code>, and <code>len(xs)</code>, not <code>xs.length</code>. The compiler's hints remind you.</li></ul>
+<h2 id="empty-arrays-and-repeated-values"><a class="anchor" href="#empty-arrays-and-repeated-values" aria-hidden="true">#</a>Empty arrays and repeated values</h2>
+<p>An empty array needs a type, either written out or taken from its first use:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    names: [<span class="t">str</span>] <span class="o">=</span> []
+    names.<span class="f">push</span>(<span class="s">"ada"</span>)
+    later <span class="o">=</span> []
+    later.<span class="f">push</span>(<span class="n">2.5</span>)                 <span class="c"># now `later` is a [float]</span>
+    zeros <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">5</span>
+    board <span class="o">=</span> [[<span class="s">"."</span>] <span class="o">*</span> <span class="n">3</span>] <span class="o">*</span> <span class="n">2</span>         <span class="c"># 2 rows of 3</span>
+    board[<span class="n">0</span>][<span class="n">1</span>] <span class="o">=</span> <span class="s">"X"</span>
+    <span class="f">print</span>(names, later, zeros)
+    <span class="f">print</span>(board)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["ada"] [2.5] [0, 0, 0, 0, 0]
+[[".", "X", "."], [".", ".", "."]]</code></pre></div>
+<p><code>[value] * n</code> makes an array of <code>n</code> copies of a value. For the 2D <code>board</code>, each row is its own copy, so writing <code>board[0][1]</code> changes only the first row. (In Python, <code>[[0] * 3] * 2</code> shares one row between both, a classic bug. In Tern, values are never shared.)</p>
+<p>If the compiler can't tell what an empty array will hold, it asks:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    todo <span class="o">=</span> []
+    <span class="f">print</span>(<span class="f">len</span>(todo))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: can't tell what `todo` holds; add a type, e.g. `todo: [int] = []`</code></pre></div>
+<h2 id="slices"><a class="anchor" href="#slices" aria-hidden="true">#</a>Slices</h2>
+<p><code>xs[a..b]</code> is a new array of the elements from index <code>a</code> up to, not including, <code>b</code>. Leave out either end to go to the start or the end:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    days <span class="o">=</span> [<span class="s">"mon"</span>, <span class="s">"tue"</span>, <span class="s">"wed"</span>, <span class="s">"thu"</span>, <span class="s">"fri"</span>]
+    <span class="f">print</span>(days[<span class="n">1</span><span class="o">..</span><span class="n">3</span>], days[<span class="o">..</span><span class="n">2</span>], days[<span class="n">3</span><span class="o">..</span>])
+    rest <span class="o">=</span> days[<span class="n">1</span><span class="o">..</span>]
+    rest[<span class="n">0</span>] <span class="o">=</span> <span class="s">"TUE"</span>
+    <span class="f">print</span>(days[<span class="n">1</span>], rest[<span class="n">0</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["tue", "wed"] ["mon", "tue"] ["thu", "fri"]
+tue TUE</code></pre></div>
+<p>A slice is a copy: changing <code>rest</code> does not change <code>days</code>.</p>
+<h2 id="looping-and-changing"><a class="anchor" href="#looping-and-changing" aria-hidden="true">#</a>Looping and changing</h2>
+<p>You already know <code>for x in xs:</code> and <code>for i, x in xs:</code>. While a loop runs over an array, the array can't be changed, because it is unclear what the loop should see:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    prices <span class="o">=</span> [<span class="n">10</span>, <span class="n">20</span>, <span class="n">30</span>]
+    <span class="k">for</span> p <span class="k">in</span> prices:
+        <span class="k">if</span> p <span class="o">&gt;</span> <span class="n">15</span>:
+            prices.<span class="f">push</span>(p <span class="o">*</span> <span class="n">2</span>)
+    <span class="f">print</span>(prices)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>5: error: can't modify `prices` while looping over it; loop over indices instead: `for i in 0..len(prices):`
+5: hint: or build a new array: `out: [T] = []`, push into `out` in the loop, then `prices = out`</code></pre></div>
+<p>The two usual fixes are exactly what the error says. To change elements in place, loop over the indexes. To add or drop elements, build a new array:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    prices <span class="o">=</span> [<span class="n">10</span>, <span class="n">20</span>, <span class="n">30</span>]
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(prices):
+        prices[i] <span class="o">=</span> prices[i] <span class="o">*</span> <span class="n">2</span>        <span class="c"># in place</span>
+    <span class="f">print</span>(prices)
+    cheap: [<span class="t">int</span>] <span class="o">=</span> []
+    <span class="k">for</span> p <span class="k">in</span> prices:
+        <span class="k">if</span> p <span class="o">&lt;</span> <span class="n">50</span>:
+            cheap.<span class="f">push</span>(p)                <span class="c"># a new array</span>
+    <span class="f">print</span>(cheap)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[20, 40, 60]
+[20, 40]</code></pre></div>
+<h2 id="sorting-filtering-and-mapping"><a class="anchor" href="#sorting-filtering-and-mapping" aria-hidden="true">#</a>Sorting, filtering, and mapping</h2>
+<p>Arrays have three functions that take another function as an argument. You will learn to write such functions yourself in <a href="10-closures.html">chapter 10</a>; for now, read <code>fn(x) x * 2</code> as "a function that, given <code>x</code>, returns <code>x * 2</code>":</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    temps <span class="o">=</span> [<span class="n">21</span>, <span class="n">14</span>, <span class="n">30</span>, <span class="n">18</span>, <span class="n">25</span>]
+    <span class="f">print</span>(temps.<span class="f">sort_by</span>(<span class="k">fn</span>(t) t))         <span class="c"># ascending</span>
+    <span class="f">print</span>(temps.<span class="f">sort_by</span>(<span class="k">fn</span>(t) <span class="o">-</span>t))        <span class="c"># descending</span>
+    <span class="f">print</span>(temps.<span class="f">filter</span>(<span class="k">fn</span>(t) t <span class="o">&gt;=</span> <span class="n">20</span>))    <span class="c"># keep some</span>
+    <span class="f">print</span>(temps.<span class="f">map</span>(<span class="k">fn</span>(t) t <span class="o">*</span> <span class="n">9</span> <span class="o">/</span> <span class="n">5</span> <span class="o">+</span> <span class="n">32</span>))  <span class="c"># transform each</span>
+    <span class="f">print</span>(temps)                          <span class="c"># unchanged</span></code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[14, 18, 21, 25, 30]
+[30, 25, 21, 18, 14]
+[21, 30, 25]
+[69, 57, 86, 64, 77]
+[21, 14, 30, 18, 25]</code></pre></div>
+<p>All three return new arrays and leave the original alone. <code>sort_by</code> sorts by a key that is an <code>int</code>, <code>float</code>, or <code>str</code>, and it is stable (equal keys keep their order). For the plain cases there are shortcuts: <code>temps.sorted()</code> is <code>temps.sort_by(fn(t) t)</code>, <code>temps.reversed()</code> is a reversed copy, and <code>sum(temps)</code> adds them up (<code>119</code> here).</p>
+<h2 id="maps"><a class="anchor" href="#maps" aria-hidden="true">#</a>Maps</h2>
+<p>A map stores values under keys. Keys are <code>int</code> or <code>str</code>, and a map remembers the order in which keys were first inserted:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    stock <span class="o">=</span> {<span class="s">"apples"</span>: <span class="n">12</span>, <span class="s">"pears"</span>: <span class="n">4</span>}
+    stock[<span class="s">"plums"</span>] <span class="o">=</span> <span class="n">20</span>                   <span class="c"># insert</span>
+    stock[<span class="s">"pears"</span>] <span class="o">+</span><span class="o">=</span> <span class="n">6</span>                   <span class="c"># update</span>
+    <span class="f">print</span>(stock)
+    <span class="f">print</span>(stock[<span class="s">"apples"</span>], <span class="f">len</span>(stock))
+    <span class="f">print</span>(<span class="s">"kiwis"</span> <span class="k">in</span> stock, stock.<span class="f">get</span>(<span class="s">"kiwis"</span>, <span class="n">0</span>))
+    stock.<span class="f">remove</span>(<span class="s">"apples"</span>)
+    <span class="f">print</span>(stock.<span class="f">keys</span>(), stock.<span class="f">values</span>())
+    <span class="k">for</span> fruit, n <span class="k">in</span> stock:
+        <span class="f">print</span>(fruit, n)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"apples": 12, "pears": 10, "plums": 20}
+12 3
+false 0
+["pears", "plums"] [10, 20]
+pears 10
+plums 20</code></pre></div>
+<p>Reading a key that isn't there with <code>m[k]</code> is a runtime error (<code>key not found</code>). When a key might be missing, check with <code>k in m</code>, or use <code>m.get(k, default)</code>, which returns the default instead. For "not in", write <code>not (k in m)</code>, with the parentheses.</p>
+<p>An empty map needs a type too: <code>counts: {str: int} = {}</code>.</p>
+<h2 id="counting-and-grouping"><a class="anchor" href="#counting-and-grouping" aria-hidden="true">#</a>Counting and grouping</h2>
+<p>Two patterns come up constantly. Counting uses <code>get</code> with a default of <code>0</code>; grouping creates a list the first time a key is seen:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    words <span class="o">=</span> <span class="s">"the cat and the dog and the bird"</span>.<span class="f">split</span>(<span class="s">" "</span>)
+    counts: {<span class="t">str</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">for</span> w <span class="k">in</span> words:
+        counts[w] <span class="o">=</span> counts.<span class="f">get</span>(w, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+    <span class="f">print</span>(counts)
+    by_length: {<span class="t">int</span>: [<span class="t">str</span>]} <span class="o">=</span> {}
+    <span class="k">for</span> w <span class="k">in</span> words:
+        n <span class="o">=</span> <span class="f">len</span>(w)
+        <span class="k">if</span> <span class="k">not</span> (n <span class="k">in</span> by_length):
+            by_length[n] <span class="o">=</span> []
+        <span class="k">if</span> <span class="k">not</span> (w <span class="k">in</span> by_length[n]):
+            by_length[n].<span class="f">push</span>(w)
+    <span class="f">print</span>(by_length)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"the": 3, "cat": 1, "and": 2, "dog": 1, "bird": 1}
+{3: ["the", "cat", "and", "dog"], 4: ["bird"]}</code></pre></div>
+<p><code>by_length[n].push(w)</code> changes the array stored in the map in place, just as <code>hero.inventory.push(...)</code> changed an array inside a struct in the last chapter.</p>
+<p>A map can't be changed while you loop over it either. To update every value, loop over a copy of its keys: <code>for k in m.keys(): m[k] = 0</code>.</p>
+<h2 id="arrays-of-structs"><a class="anchor" href="#arrays-of-structs" aria-hidden="true">#</a>Arrays of structs</h2>
+<p>Collections of structs are the bread and butter of real programs:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Task</span>:
+    title: <span class="t">str</span>
+    hours: <span class="t">int</span>
+    done: <span class="t">bool</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    tasks <span class="o">=</span> [<span class="t">Task</span>(<span class="s">"write tour"</span>, <span class="n">8</span>, <span class="k">false</span>), <span class="t">Task</span>(<span class="s">"fix bug"</span>, <span class="n">2</span>, <span class="k">true</span>), <span class="t">Task</span>(<span class="s">"review"</span>, <span class="n">3</span>, <span class="k">false</span>)]
+    tasks[<span class="n">0</span>].hours <span class="o">-</span><span class="o">=</span> <span class="n">1</span>
+    left <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> t <span class="k">in</span> tasks:
+        <span class="k">if</span> <span class="k">not</span> t.done:
+            left <span class="o">+</span><span class="o">=</span> t.hours
+    <span class="f">print</span>(left, <span class="s">"hours left"</span>)
+    <span class="k">for</span> t <span class="k">in</span> tasks.<span class="f">sort_by</span>(<span class="k">fn</span>(t) t.hours):
+        <span class="f">print</span>(t.hours, t.title)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>10 hours left
+2 fix bug
+3 review
+7 write tour</code></pre></div>
+<p><code>tasks[0].hours -= 1</code> changes the element in the array. Note that <code>t = tasks[0]</code> followed by <code>t.hours -= 1</code> would change only <code>t</code>, a copy. <a href="09-values-and-mut.html">Chapter 9</a> is all about this.</p>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Given a list of <code>(name, department)</code> pairs written as two parallel arrays, <code>names = ["ana", "ben", "cy", "dee", "eli"]</code> and <code>depts = ["eng", "ops", "eng", "sales", "ops"]</code>, build a map from department to the list of names in it, then print each department with its head count, sorted by department name.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    names <span class="o">=</span> [<span class="s">"ana"</span>, <span class="s">"ben"</span>, <span class="s">"cy"</span>, <span class="s">"dee"</span>, <span class="s">"eli"</span>]
+    depts <span class="o">=</span> [<span class="s">"eng"</span>, <span class="s">"ops"</span>, <span class="s">"eng"</span>, <span class="s">"sales"</span>, <span class="s">"ops"</span>]
+    teams: {<span class="t">str</span>: [<span class="t">str</span>]} <span class="o">=</span> {}
+    <span class="k">for</span> i, d <span class="k">in</span> depts:
+        <span class="k">if</span> <span class="k">not</span> (d <span class="k">in</span> teams):
+            teams[d] <span class="o">=</span> []
+        teams[d].<span class="f">push</span>(names[i])
+    <span class="k">for</span> d <span class="k">in</span> teams.<span class="f">keys</span>().<span class="f">sort_by</span>(<span class="k">fn</span>(k) k):
+        <span class="f">print</span>(d, <span class="f">len</span>(teams[d]), teams[d])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>eng 2 ["ana", "cy"]
+ops 2 ["ben", "eli"]
+sales 1 ["dee"]</code></pre></div>
+<p>Next: <a href="07-strings.html">7. Strings</a>. Reference: <a href="../reference.html#8-arrays-t">§8 Arrays</a>, <a href="../reference.html#11-maps-k-v">§11 Maps</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/05-structs.html"><span>Previous</span>5. Structs</a><a class="next" href="../tour/07-strings.html"><span>Next</span>7. Strings</a></div>
+<footer>Source: <code>docs/tour/06-arrays-and-maps.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#arrays">Arrays</a></li><li class="l2"><a href="#empty-arrays-and-repeated-values">Empty arrays and repeated values</a></li><li class="l2"><a href="#slices">Slices</a></li><li class="l2"><a href="#looping-and-changing">Looping and changing</a></li><li class="l2"><a href="#sorting-filtering-and-mapping">Sorting, filtering, and mapping</a></li><li class="l2"><a href="#maps">Maps</a></li><li class="l2"><a href="#counting-and-grouping">Counting and grouping</a></li><li class="l2"><a href="#arrays-of-structs">Arrays of structs</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -261,3 +261,4 @@ code.plain { background: none; padding: 0; color: inherit; }
 .guide li { margin-bottom: 6px; }
 .guide .eyebrow a { color: inherit; }
 .guide .stats { margin-top: 8px; }
+.soon .block { max-width: 34rem; margin: 0 auto 24px !important; text-align: left; }

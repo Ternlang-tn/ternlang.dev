@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>time · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/time.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html" class="cur" aria-current="page">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="time"><a class="anchor" href="#time" aria-hidden="true">#</a>time</h1>
+<p>The <code>time</code> module reads the clocks, pauses the program, and turns times into text and back: RFC 3339 timestamps, strftime-style layouts, calendar fields in UTC or the local time zone, and durations like <code>"1h30m"</code>. A time is a <code>float</code> of seconds since the Unix epoch, the value <code>time.now()</code> returns, so times compare, subtract and store as plain numbers.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+
+<span class="k">fn</span> <span class="f">main</span>():
+    start <span class="o">=</span> time.<span class="f">now_ms</span>()
+    time.<span class="f">sleep</span>(<span class="n">20</span>)
+    elapsed <span class="o">=</span> time.<span class="f">now_ms</span>() <span class="o">-</span> start
+    <span class="f">print</span>(elapsed <span class="o">&gt;=</span> <span class="n">20</span>, elapsed <span class="o">&lt;</span> <span class="n">1000</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true true</code></pre></div>
+<h2 id="now"><a class="anchor" href="#now" aria-hidden="true">#</a>now</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">now</span>() <span class="t">float</span></code></pre></div>
+<p>The current time in <strong>seconds</strong> since the Unix epoch (1970-01-01 00:00:00 UTC), with a fraction for the sub-second part (to about a microsecond at today's dates).</p>
+<h2 id="now_ms"><a class="anchor" href="#now_ms" aria-hidden="true">#</a>now_ms</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">now_ms</span>() <span class="t">int</span></code></pre></div>
+<p>The current time in <strong>milliseconds</strong> since the Unix epoch, as a whole number. It is the same clock as <code>now</code>, so <code>time.now_ms() / 1000</code> equals <code>int(time.now())</code> (give or take the moment between the two calls). Use <code>now_ms</code> for timestamps you store or compare, since <code>int</code> arithmetic is exact.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> time.<span class="f">now</span>()
+    ms <span class="o">=</span> time.<span class="f">now_ms</span>()
+    <span class="f">print</span>(s <span class="o">&gt;</span> <span class="n">1_700_000_000.0</span>, ms <span class="o">&gt;</span> <span class="n">1_700_000_000_000</span>)
+    <span class="f">print</span>(ms <span class="o">/</span> <span class="n">1000</span> <span class="o">-</span> <span class="t">int</span>(s) <span class="o">&lt;=</span> <span class="n">1</span>)
+    day <span class="o">=</span> ms <span class="o">/</span> <span class="n">86_400_000</span>                     <span class="c"># whole days since 1970-01-01</span>
+    <span class="f">print</span>(day <span class="o">&gt;</span> <span class="n">19_000</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true true
+true
+true</code></pre></div>
+<p>Both read the wall clock (<code>CLOCK_REALTIME</code>). If the system clock is changed (by NTP or by hand), the next reading jumps with it, so a duration measured across that change can be wrong or even negative. For timing code that is almost never an issue, but don't rely on two readings being in order.</p>
+<h2 id="sleep"><a class="anchor" href="#sleep" aria-hidden="true">#</a>sleep</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sleep</span>(ms: <span class="t">int</span>)</code></pre></div>
+<p>Pauses the current thread for at least <code>ms</code> <strong>milliseconds</strong> (the operating system may wake it a little later). <code>sleep(0)</code> and negative values return at once. Inside a <code>parallel</code> block only the task that calls it waits; the others keep running.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">3</span>:
+        <span class="f">print</span>(<span class="s">"tick"</span>, i)
+        time.<span class="f">sleep</span>(<span class="n">10</span>)
+    time.<span class="f">sleep</span>(<span class="n">0</span>)
+    time.<span class="f">sleep</span>(<span class="o">-</span><span class="n">5</span>)
+    <span class="f">print</span>(<span class="s">"done"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>tick 0
+tick 1
+tick 2
+done</code></pre></div>
+<h2 id="monotonic-clock"><a class="anchor" href="#monotonic-clock" aria-hidden="true">#</a>Monotonic clock</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">mono_ns</span>() <span class="t">int</span>
+<span class="k">fn</span> <span class="f">mono_ms</span>() <span class="t">int</span></code></pre></div>
+<p>A clock that only moves forward, for measuring how long something took: unlike <code>now</code>, it doesn't jump when the system clock is set. Its zero point is arbitrary (usually boot).</p>
+<h2 id="formatting-and-parsing"><a class="anchor" href="#formatting-and-parsing" aria-hidden="true">#</a>Formatting and parsing</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">rfc3339</span>(t: <span class="t">float</span>) <span class="t">str</span>             <span class="s">"2026-09-28T06:45:12Z"</span>, with <span class="s">".345"</span> when t has milliseconds
+<span class="k">fn</span> <span class="f">rfc3339_local</span>(t: <span class="t">float</span>) <span class="t">str</span>       <span class="s">"2026-09-28T08:45:12+02:00"</span> (the system's time zone)
+<span class="k">fn</span> <span class="f">parse_rfc3339</span>(s: <span class="t">str</span>) <span class="t">float</span>
+<span class="k">fn</span> <span class="f">format</span>(t: <span class="t">float</span>, layout: <span class="t">str</span>) <span class="t">str</span>          <span class="t">UTC</span>
+<span class="k">fn</span> <span class="f">format_local</span>(t: <span class="t">float</span>, layout: <span class="t">str</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">parse</span>(s: <span class="t">str</span>, layout: <span class="t">str</span>) <span class="t">float</span>           the fields are read as <span class="t">UTC</span>
+<span class="k">fn</span> <span class="f">parse_local</span>(s: <span class="t">str</span>, layout: <span class="t">str</span>) <span class="t">float</span>
+<span class="k">fn</span> <span class="f">error</span>() <span class="t">str</span></code></pre></div>
+<p>RFC 3339 is the timestamp format of JSON APIs and logs. <code>parse_rfc3339</code> accepts <code>T</code> or a space between date and time, any fraction of a second, and <code>Z</code> or a <code>+hh:mm</code> offset (an offset is required: a time without one is ambiguous). Layouts are C's strftime / strptime ones (<code>%Y %m %d %H %M %S %j %A %B %Z</code>, ...) plus <code>%L</code> for milliseconds and <code>%f</code> for microseconds. A parse that fails returns <code>0.0</code> and <code>time.error()</code> says why; after a success <code>time.error()</code> is <code>""</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+
+<span class="k">fn</span> <span class="f">main</span>():
+    t <span class="o">=</span> time.<span class="f">parse_rfc3339</span>(<span class="s">"2026-02-28T23:30:00.250-05:00"</span>)
+    <span class="f">print</span>(time.<span class="f">rfc3339</span>(t))
+    <span class="f">print</span>(time.<span class="f">format</span>(t, <span class="s">"%d %B %Y, %H:%M:%S.%L UTC"</span>))
+    <span class="f">print</span>(time.<span class="f">parse</span>(<span class="s">"28/09/2026 06:45"</span>, <span class="s">"%d/%m/%Y %H:%M"</span>) <span class="o">==</span> time.<span class="f">parse_rfc3339</span>(<span class="s">"2026-09-28T06:45:00Z"</span>))
+    bad <span class="o">=</span> time.<span class="f">parse_rfc3339</span>(<span class="s">"2026-09-28 06:45:00"</span>)
+    <span class="f">print</span>(bad, time.<span class="f">error</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2026-03-01T04:30:00.250Z
+01 March 2026, 04:30:00.250 UTC
+true
+0.0 not an RFC 3339 time: no time zone (Z or +hh:mm)</code></pre></div>
+<h2 id="calendar-fields-and-time-zones"><a class="anchor" href="#calendar-fields-and-time-zones" aria-hidden="true">#</a>Calendar fields and time zones</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">utc</span>(t: <span class="t">float</span>) <span class="t">Date</span>
+<span class="k">fn</span> <span class="f">local</span>(t: <span class="t">float</span>) <span class="t">Date</span>
+<span class="k">fn</span> <span class="f">date</span>(year: <span class="t">int</span>, month: <span class="t">int</span>, day: <span class="t">int</span>, hour: <span class="t">int</span>, minute: <span class="t">int</span>, second: <span class="t">int</span>) <span class="t">float</span>
+<span class="k">fn</span> <span class="f">offset</span>(t: <span class="t">float</span>) <span class="t">int</span></code></pre></div>
+<p><code>Date</code> has the fields <code>year</code>, <code>month</code> (1-12), <code>day</code>, <code>hour</code>, <code>minute</code>, <code>second</code>, <code>nano</code> (nanoseconds), <code>weekday</code> (0 is Sunday), <code>yday</code> (1-366) and <code>offset</code> (seconds east of UTC). <code>local</code> uses the system's time zone (the <code>TZ</code> environment variable, or the machine's setting), with daylight saving time. <code>date</code> builds a UTC time from fields; values out of range carry over, so month 13 is January of the next year and day 0 is the last day of the previous month, which makes calendar arithmetic simple:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+
+<span class="k">fn</span> <span class="f">days_in_month</span>(year: <span class="t">int</span>, month: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">return</span> time.<span class="f">utc</span>(time.<span class="f">date</span>(year, month <span class="o">+</span> <span class="n">1</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>)).day
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">days_in_month</span>(<span class="n">2024</span>, <span class="n">2</span>), <span class="f">days_in_month</span>(<span class="n">2026</span>, <span class="n">2</span>), <span class="f">days_in_month</span>(<span class="n">2026</span>, <span class="n">12</span>))
+    d <span class="o">=</span> time.<span class="f">utc</span>(time.<span class="f">date</span>(<span class="n">2026</span>, <span class="n">9</span>, <span class="n">28</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>))
+    <span class="f">print</span>(d.weekday, d.yday)
+    next_week <span class="o">=</span> time.<span class="f">date</span>(<span class="n">2026</span>, <span class="n">9</span>, <span class="n">28</span> <span class="o">+</span> <span class="n">7</span>, <span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>)
+    <span class="f">print</span>(time.<span class="f">rfc3339</span>(next_week))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>29 28 31
+1 271
+2026-10-05T00:00:00Z</code></pre></div>
+<h2 id="durations"><a class="anchor" href="#durations" aria-hidden="true">#</a>Durations</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">duration</span>(seconds: <span class="t">float</span>) <span class="t">str</span>      <span class="s">"1h2m3.5s"</span>, <span class="s">"250ms"</span>, <span class="s">"12us"</span>
+<span class="k">fn</span> <span class="f">parse_duration</span>(s: <span class="t">str</span>) <span class="t">float</span>      <span class="s">"1h30m"</span>, <span class="s">"2.5s"</span>, <span class="s">"300ms"</span>, <span class="s">"-1m"</span>, <span class="s">"7d"</span> <span class="o">-&gt;</span> seconds</code></pre></div>
+<p>The format Go uses (units <code>h</code>, <code>m</code>, <code>s</code>, <code>ms</code>, <code>us</code>, <code>ns</code>), plus days <code>d</code> (24h) and weeks <code>w</code> (7d), so a lookback like <code>7d</code> or <code>2w</code> can be written directly. <code>parse_duration</code> returns <code>0.0</code> and sets <code>time.error()</code> for text that isn't a duration (a bare number needs a unit).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+
+<span class="k">fn</span> <span class="f">main</span>():
+    start <span class="o">=</span> time.<span class="f">mono_ns</span>()
+    time.<span class="f">sleep</span>(<span class="n">15</span>)
+    took <span class="o">=</span> <span class="t">float</span>(time.<span class="f">mono_ns</span>() <span class="o">-</span> start) <span class="o">/</span> 1e9
+    <span class="f">print</span>(took <span class="o">&gt;=</span> <span class="n">0.015</span>)
+    <span class="f">print</span>(time.<span class="f">duration</span>(<span class="n">3723.5</span>), time.<span class="f">duration</span>(<span class="n">0.25</span>))
+    <span class="f">print</span>(time.<span class="f">parse_duration</span>(<span class="s">"1h30m"</span>), time.<span class="f">parse_duration</span>(<span class="s">"300ms"</span>), time.<span class="f">parse_duration</span>(<span class="s">"7d"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true
+1h2m3.5s 250ms
+5400.0 0.3 604800.0</code></pre></div>
+<h2 id="with-result"><a class="anchor" href="#with-result" aria-hidden="true">#</a>With Result</h2>
+<p><code>try_parse_rfc3339(s)</code>, <code>try_parse(s, layout)</code> and <code>try_parse_duration(s)</code> return <code>Result[float, str]</code>: <code>t = time.try_parse_rfc3339(s)?</code>. The error reads like <code>"time: not an RFC 3339 time: yesterday"</code>.</p>
+<h2 id="a-complete-example"><a class="anchor" href="#a-complete-example" aria-hidden="true">#</a>A complete example</h2>
+<p>Timing a function over several runs and reporting the best and average times:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> time
+<span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">count_primes</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+    sieve <span class="o">=</span> [<span class="k">true</span>] <span class="o">*</span> (n <span class="o">+</span> <span class="n">1</span>)
+    count <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">2</span><span class="o">..</span>n <span class="o">+</span> <span class="n">1</span>:
+        <span class="k">if</span> sieve[i]:
+            count <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+            j <span class="o">=</span> i <span class="o">*</span> i
+            <span class="k">while</span> j <span class="o">&lt;=</span> n:
+                sieve[j] <span class="o">=</span> <span class="k">false</span>
+                j <span class="o">+</span><span class="o">=</span> i
+    <span class="k">return</span> count
+
+<span class="k">fn</span> <span class="f">main</span>():
+    runs <span class="o">=</span> <span class="n">5</span>
+    best <span class="o">=</span> <span class="n">1_000_000</span>
+    total <span class="o">=</span> <span class="n">0</span>
+    result <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> r <span class="k">in</span> <span class="n">0</span><span class="o">..</span>runs:
+        t0 <span class="o">=</span> time.<span class="f">now</span>()
+        result <span class="o">=</span> <span class="f">count_primes</span>(<span class="n">200_000</span>)
+        ms <span class="o">=</span> <span class="t">int</span>((time.<span class="f">now</span>() <span class="o">-</span> t0) <span class="o">*</span> <span class="n">1000.0</span>)
+        total <span class="o">+</span><span class="o">=</span> ms
+        best <span class="o">=</span> <span class="f">min</span>(best, ms)
+    <span class="f">print</span>(<span class="s">"primes below 200,000:"</span>, result)
+    <span class="f">print</span>(<span class="s">f"best {best} ms, average {fmt.fixed(float(total) / float(runs), 1)} ms"</span>)</code></pre></div>
+<p>Its output depends on the machine, for example:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>primes below 200,000: 17984
+best 1 ms, average 1.2 ms</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../std/random.html"><span>Previous</span>random</a><a class="next" href="../std/os.html"><span>Next</span>os</a></div>
+<footer>Source: <code>docs/std/time.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#now">now</a></li><li class="l2"><a href="#now_ms">now_ms</a></li><li class="l2"><a href="#sleep">sleep</a></li><li class="l2"><a href="#monotonic-clock">Monotonic clock</a></li><li class="l2"><a href="#formatting-and-parsing">Formatting and parsing</a></li><li class="l2"><a href="#calendar-fields-and-time-zones">Calendar fields and time zones</a></li><li class="l2"><a href="#durations">Durations</a></li><li class="l2"><a href="#with-result">With Result</a></li><li class="l2"><a href="#a-complete-example">A complete example</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

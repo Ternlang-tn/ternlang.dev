@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coming from Python, Go, Rust, or JavaScript · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/coming-from.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html" class="cur" aria-current="page">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="coming-from-python-go-rust-or-javascript"><a class="anchor" href="#coming-from-python-go-rust-or-javascript" aria-hidden="true">#</a>Coming from Python, Go, Rust, or JavaScript</h1>
+<p>This guide translates what you already know into Tern. There is one section per language. Each shows common code side by side with its Tern version, lists what carries over and what is different, and ends with the mistakes people from that language make most often, with the compiler's actual error message and hint. Read the section for the language you know best; the <a href="../reference.html">language reference</a> has the complete rules.</p>
+<h2 id="tern-in-one-paragraph"><a class="anchor" href="#tern-in-one-paragraph" aria-hidden="true">#</a>Tern in one paragraph</h2>
+<p>Tern reads like Python but is statically typed and compiled to native code. <strong>Every value is a copy</strong>: assigning or passing an array, map, or struct never creates a second name for the same data (copies are lazy, so this is cheap). There are no references, pointers, <code>None</code>/<code>null</code>, classes, exceptions, or generics. A function can change its caller's variable only if its parameter is declared <code>mut</code> and the caller writes <code>&amp;</code> at the call site. Because nothing is shared, the compiler can check <code>parallel</code> code for data races before it runs.</p>
+<div class="table"><table><thead><tr><th>You are used to</th><th>In Tern</th></tr></thead><tbody><tr><td>classes and methods</td><td>a <code>struct</code> plus functions that take it first; <code>p.area()</code> calls <code>area(p)</code></td></tr><tr><td><code>None</code>, <code>nil</code>, <code>null</code>, <code>Option</code></td><td><code>Option[T]</code>: <code>Some(x)</code> or <code>None</code>; test with <code>if o is Some(x):</code></td></tr><tr><td>exceptions, <code>error</code>, <code>Result</code></td><td>return a <code>Result[T, E]</code> (<code>Ok(v)</code> / <code>Err(e)</code>); <code>r?</code> passes an Err up</td></tr><tr><td>iterators, comprehensions, streams</td><td><code>xs.map(...)</code>, <code>xs.filter(...)</code>, <code>xs.sort_by(...)</code>, and loops</td></tr><tr><td>references, pointers, borrowing</td><td>values, plus <code>mut</code> parameters and <code>&amp;</code> at the call site</td></tr><tr><td>threads, goroutines, async, <code>Promise.all</code></td><td><code>parallel:</code> blocks and <code>parallel for</code></td></tr><tr><td>generics, templates, <code>any</code></td><td><code>fn first[T](xs: [T]) T</code>, <code>struct Pair[A, B]</code>, constraints <code>T: Ord</code></td></tr><tr><td><code>"%.2f"</code>, <code>{:.2}</code>, <code>toFixed(2)</code></td><td><code>f"{fmt.fixed(x, 2)}"</code> and the rest of the <code>fmt</code> module</td></tr></tbody></table></div>
+<h2 id="coming-from-python"><a class="anchor" href="#coming-from-python" aria-hidden="true">#</a>Coming from Python</h2>
+<h3 id="side-by-side"><a class="anchor" href="#side-by-side" aria-hidden="true">#</a>Side by side</h3>
+<p>A class becomes a struct plus functions. Where Python would give a field a default, write a constructor function. Method-call syntax still works: <code>acct.deposit(50)</code> calls <code>deposit(&amp;acct, 50)</code> when the first parameter is <code>mut</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>class Account:
+    def __init__(self, owner, balance=0):
+        self.owner = owner
+        self.balance = balance
+
+    def deposit(self, amount):
+        self.balance += amount
+
+acct = Account("ada")
+acct.deposit(50)
+print(acct.owner, acct.balance)</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Account</span>:
+    owner: <span class="t">str</span>
+    balance: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">new_account</span>(owner: <span class="t">str</span>) <span class="t">Account</span>:
+    <span class="k">return</span> <span class="t">Account</span>(owner, <span class="n">0</span>)
+
+<span class="k">fn</span> <span class="f">deposit</span>(a: <span class="k">mut</span> <span class="t">Account</span>, amount: <span class="t">int</span>):
+    a.balance <span class="o">+</span><span class="o">=</span> amount
+
+<span class="k">fn</span> <span class="f">main</span>():
+    acct <span class="o">=</span> <span class="f">new_account</span>(<span class="s">"ada"</span>)
+    acct.<span class="f">deposit</span>(<span class="n">50</span>)
+    <span class="f">print</span>(acct.owner, acct.balance)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>ada 50</code></pre></div>
+<p>A function that returns <code>None</code> when it finds nothing returns a sentinel, or fills a <code>mut</code> parameter and returns whether it found something. An exception becomes a returned status.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>def find_price(prices, name):
+    return prices.get(name)          # None if missing
+
+def parse_qty(s):
+    n = int(s)                       # raises ValueError
+    if n &lt;= 0:
+        raise ValueError("must be positive")
+    return n</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Qty</span>:
+    ok: <span class="t">bool</span>
+    value: <span class="t">int</span>
+    error: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">find_price</span>(prices: {<span class="t">str</span>: <span class="t">int</span>}, name: <span class="t">str</span>, price: <span class="k">mut</span> <span class="t">int</span>) <span class="t">bool</span>:
+    <span class="k">if</span> <span class="k">not</span> (name <span class="k">in</span> prices):
+        <span class="k">return</span> <span class="k">false</span>
+    price <span class="o">=</span> prices[name]
+    <span class="k">return</span> <span class="k">true</span>
+
+<span class="k">fn</span> <span class="f">parse_qty</span>(s: <span class="t">str</span>) <span class="t">Qty</span>:
+    n <span class="o">=</span> s.<span class="f">trim</span>().<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+    <span class="k">if</span> n <span class="o">&lt;=</span> <span class="n">0</span>:
+        <span class="k">return</span> <span class="t">Qty</span>(<span class="k">false</span>, <span class="n">0</span>, <span class="s">f"not a positive number: {s}"</span>)
+    <span class="k">return</span> <span class="t">Qty</span>(<span class="k">true</span>, n, <span class="s">""</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    prices <span class="o">=</span> {<span class="s">"tea"</span>: <span class="n">300</span>, <span class="s">"cake"</span>: <span class="n">450</span>}
+    p <span class="o">=</span> <span class="n">0</span>
+    <span class="k">if</span> <span class="f">find_price</span>(prices, <span class="s">"cake"</span>, <span class="o">&amp;</span>p):
+        <span class="f">print</span>(<span class="s">"cake costs"</span>, p)
+    <span class="k">if</span> <span class="k">not</span> <span class="f">find_price</span>(prices, <span class="s">"soup"</span>, <span class="o">&amp;</span>p):
+        <span class="f">print</span>(<span class="s">"no soup"</span>)
+    <span class="k">for</span> s <span class="k">in</span> [<span class="s">"3"</span>, <span class="s">"-1"</span>, <span class="s">"lots"</span>]:
+        q <span class="o">=</span> <span class="f">parse_qty</span>(s)
+        <span class="k">if</span> q.ok:
+            <span class="f">print</span>(<span class="s">"qty"</span>, q.value)
+        <span class="k">else</span>:
+            <span class="f">print</span>(<span class="s">"error:"</span>, q.error)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>cake costs 450
+no soup
+qty 3
+error: not a positive number: -1
+error: not a positive number: lots</code></pre></div>
+<p>Comprehensions become <code>map</code> and <code>filter</code>, which take a lambda written <code>fn(x) expression</code>. <code>sorted(key=...)</code> becomes <code>sort_by</code>, which returns a new array (plain <code>sorted(xs)</code> is <code>xs.sorted()</code>). <code>sum</code> takes an array, not a generator: map first.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>words = ["pear", "fig", "banana", "kiwi"]
+long_upper = [w.upper() for w in words if len(w) &gt; 3]
+by_length = sorted(words, key=len)
+total = sum(len(w) for w in words)</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    words <span class="o">=</span> [<span class="s">"pear"</span>, <span class="s">"fig"</span>, <span class="s">"banana"</span>, <span class="s">"kiwi"</span>]
+    long_upper <span class="o">=</span> words.<span class="f">filter</span>(<span class="k">fn</span>(w) <span class="f">len</span>(w) <span class="o">&gt;</span> <span class="n">3</span>).<span class="f">map</span>(<span class="k">fn</span>(w) w.<span class="f">upper</span>())
+    by_length <span class="o">=</span> words.<span class="f">sort_by</span>(<span class="k">fn</span>(w) <span class="f">len</span>(w))
+    total <span class="o">=</span> <span class="f">sum</span>(words.<span class="f">map</span>(<span class="k">fn</span>(w) <span class="f">len</span>(w)))
+    <span class="f">print</span>(long_upper, by_length, total)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["PEAR", "BANANA", "KIWI"] ["fig", "pear", "kiwi", "banana"] 17</code></pre></div>
+<p>Python's <code>multiprocessing</code> or <code>concurrent.futures</code> becomes a <code>parallel</code> block, which runs on real threads with no pickling and no GIL:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>from concurrent.futures import ThreadPoolExecutor
+with ThreadPoolExecutor() as ex:
+    a, b = ex.map(count_primes, [50_000, 60_000])</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">count_primes</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+    count <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">2</span><span class="o">..</span>n:
+        d <span class="o">=</span> <span class="n">2</span>
+        prime <span class="o">=</span> <span class="k">true</span>
+        <span class="k">while</span> d <span class="o">*</span> d <span class="o">&lt;=</span> i:
+            <span class="k">if</span> i <span class="o">%</span> d <span class="o">==</span> <span class="n">0</span>:
+                prime <span class="o">=</span> <span class="k">false</span>
+                <span class="k">break</span>
+            d <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        <span class="k">if</span> prime:
+            count <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> count
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">parallel</span>:
+        a <span class="o">=</span> <span class="f">count_primes</span>(<span class="n">50_000</span>)
+        b <span class="o">=</span> <span class="f">count_primes</span>(<span class="n">60_000</span>)
+    <span class="f">print</span>(a, b)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>5133 6057</code></pre></div>
+<p>String formatting: f-strings work, but without format specs. Use the <code>fmt</code> module for decimals and padding.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    price <span class="o">=</span> <span class="n">3.14159</span>
+    n <span class="o">=</span> <span class="n">7</span>
+    <span class="f">print</span>(<span class="s">f"price {fmt.fixed(price, 2)}, item #{fmt.zero_pad(n, 3)}, {fmt.thousands(1234567)} sold"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>price 3.14, item #007, 1,234,567 sold</code></pre></div>
+<h3 id="what-carries-over"><a class="anchor" href="#what-carries-over" aria-hidden="true">#</a>What carries over</h3>
+<ul><li>Indentation for blocks, <code>:</code> to open them, <code>#</code> comments, <code>if</code>/<code>elif</code>/<code>else</code>, <code>while</code>, <code>for x in xs:</code>, <code>break</code>, <code>continue</code>, <code>pass</code>.</li><li><code>and</code>, <code>or</code>, <code>not</code>, <code>in</code>; f-strings; slices like <code>s[1..]</code>, <code>xs[..2]</code> (with <code>..</code>, not <code>:</code>).</li><li>String methods under slightly different names: <code>split</code>, <code>join</code> (called on the separator, as in Python), <code>replace</code>, <code>find</code>, <code>upper</code>, <code>lower</code>, <code>trim</code> (for <code>strip</code>), <code>starts_with</code>, <code>ends_with</code>.</li><li>Dicts and lists as built-in <code>{K: V}</code> maps and <code>[T]</code> arrays. Maps keep insertion order.</li></ul>
+<h3 id="whats-different"><a class="anchor" href="#whats-different" aria-hidden="true">#</a>What's different</h3>
+<ul><li><strong>Types are required</strong> on parameters and return values, and a variable's type can't change. <code>1 + 2.0</code> is an error: convert with <code>float(1)</code>.</li><li><strong>Assignment copies.</strong> <code>b = a</code> then <code>b.push(4)</code> leaves <code>a</code> unchanged. In Python both names would see the change. There is no <code>copy.deepcopy</code>, because you never need it.</li><li><strong>Parameters are read-only.</strong> A Python function can quietly append to the list you pass it; a Tern function can't, unless the parameter is <code>mut</code> and you pass <code>&amp;xs</code>. The <code>&amp;</code> at the call site tells the reader which arguments may change.</li><li><code>True</code>/<code>False</code>/<code>None</code> are <code>true</code>/<code>false</code>/(nothing). There is no <code>range()</code>: write <code>0..n</code>.</li><li><code>/</code> on ints is integer division (Python's <code>//</code>). There is no <code>**</code>: use <code>math.pow</code>.</li><li>Negative indexes like <code>xs[-1]</code> compile but fail at run time: write <code>xs[len(xs) - 1]</code>.</li><li>There are no global variables. Put settings in a struct and pass it, or write a function that returns the constant.</li><li>Duck typing doesn't exist: a function takes specific types. For code that works on many types, write a generic function: <code>fn first[T](xs: [T]) T</code>.</li></ul>
+<h3 id="common-mistakes"><a class="anchor" href="#common-mistakes" aria-hidden="true">#</a>Common mistakes</h3>
+<p>Calling Python's list methods:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    names <span class="o">=</span> [<span class="s">"ada"</span>, <span class="s">"bob"</span>]
+    names.<span class="f">append</span>(<span class="s">"cy"</span>)
+    <span class="f">print</span>(names)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: unknown function `append`
+3: hint: arrays grow with `xs.push(value)`</code></pre></div>
+<p>Returning <code>None</code>:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">find_user</span>(names: [<span class="t">str</span>], want: <span class="t">str</span>) <span class="t">int</span>:
+    <span class="k">for</span> i, n <span class="k">in</span> names:
+        <span class="k">if</span> n <span class="o">==</span> want:
+            <span class="k">return</span> i
+    <span class="k">return</span> <span class="t">None</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">find_user</span>([<span class="s">"ada"</span>], <span class="s">"ada"</span>))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>5: error: `None` makes an Option, but int is expected here</code></pre></div>
+<p>Say that the result may be missing: return an <code>Option[int]</code>, and the caller unwraps it.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">find_user</span>(names: [<span class="t">str</span>], want: <span class="t">str</span>) <span class="t">Option</span>[<span class="t">int</span>]:
+    <span class="k">for</span> i, n <span class="k">in</span> names:
+        <span class="k">if</span> n <span class="o">==</span> want:
+            <span class="k">return</span> <span class="t">Some</span>(i)
+    <span class="k">return</span> <span class="t">None</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">find_user</span>([<span class="s">"ada"</span>], <span class="s">"ada"</span>), <span class="f">find_user</span>([<span class="s">"ada"</span>], <span class="s">"bob"</span>).<span class="f">unwrap_or</span>(<span class="o">-</span><span class="n">1</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Some(0) -1</code></pre></div>
+<p>Writing a class:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code>class <span class="t">Point</span>:
+    x: <span class="t">int</span>
+    y: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="s">"hi"</span>)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>1: error: expected `fn`, `struct`, `enum`, `type`, `const`, or `extern` at the top level
+1: hint: there are no classes: declare data with `struct Name:` (fields only) and write functions that take it first; `p.f()` calls `f(p)`</code></pre></div>
+<p>A format spec in an f-string:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    price <span class="o">=</span> <span class="n">3.5</span>
+    <span class="f">print</span>(<span class="s">f"{price:.2f}"</span>)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: can't read `price:.2f` inside the f-string
+3: hint: f-strings have no format specs: `import fmt`, then `{fmt.fixed(x, 2)}` (2 decimals), `fmt.zero_pad(n, 3)`, `fmt.pad_left(s, width, " ")`</code></pre></div>
+<p>A list comprehension:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    ys <span class="o">=</span> [x <span class="o">*</span> <span class="n">2</span> <span class="k">for</span> x <span class="k">in</span> xs]
+    <span class="f">print</span>(ys)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: expected `,`, found 'for'
+3: hint: there are no comprehensions: `xs.map(fn(x) ...)` and `xs.filter(fn(x) ...)`, or a loop with `push`</code></pre></div>
+<p>Adding a number to a string:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">3</span>
+    <span class="f">print</span>(<span class="s">"n = "</span> <span class="o">+</span> n)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: `+` with mismatched types str and int (use float()/int() to convert)
+3: hint: convert with `str(n)` ("n=" + str(n)) or use an f-string: f"n={n}"</code></pre></div>
+<p>Changing a list that was passed in:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">add_tag</span>(tags: [<span class="t">str</span>], t: <span class="t">str</span>):
+    tags.<span class="f">push</span>(t)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    tags <span class="o">=</span> [<span class="s">"new"</span>]
+    <span class="f">add_tag</span>(tags, <span class="s">"sale"</span>)
+    <span class="f">print</span>(tags)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: can't modify parameter `tags`: parameters are read-only unless declared `mut`
+2: hint: to change only a local copy, copy it first (`tags2 = tags`) and change `tags2`; to change the caller's value, declare `tags: mut T` and call with `f(&amp;x)` or `x.f()`</code></pre></div>
+<p>The fix is <code>fn add_tag(tags: mut [str], t: str)</code> called as <code>add_tag(&amp;tags, "sale")</code>, or <code>tags.add_tag("sale")</code>.</p>
+<h2 id="coming-from-go"><a class="anchor" href="#coming-from-go" aria-hidden="true">#</a>Coming from Go</h2>
+<h3 id="side-by-side-1"><a class="anchor" href="#side-by-side-1" aria-hidden="true">#</a>Side by side</h3>
+<p>Go is the closest in spirit: structs plus functions, explicit error returns, one binary. Methods on a struct become functions that take it first, and a pointer receiver becomes a <code>mut</code> parameter.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>type Counter struct {
+    name string
+    hits int
+}
+
+func (c *Counter) Hit() { c.hits++ }
+
+func main() {
+    c := Counter{name: "home"}
+    c.Hit()
+    c.Hit()
+    fmt.Println(c.name, c.hits)
+}</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Counter</span>:
+    name: <span class="t">str</span>
+    hits: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">hit</span>(c: <span class="k">mut</span> <span class="t">Counter</span>):
+    c.hits <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    c <span class="o">=</span> <span class="t">Counter</span>(name<span class="o">=</span><span class="s">"home"</span>, hits<span class="o">=</span><span class="n">0</span>)
+    c.<span class="f">hit</span>()
+    c.<span class="f">hit</span>()
+    <span class="f">print</span>(c.name, c.hits)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>home 2</code></pre></div>
+<p>Go's <code>(value, error)</code> and <code>(value, ok)</code> returns become a struct, a <code>mut</code> parameter plus a <code>bool</code>, or an enum. There is no <code>nil</code>: a result is always present.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>func lookup(m map[string]int, k string) (int, bool) {
+    v, ok := m[k]
+    return v, ok
+}
+
+func parsePort(s string) (int, error) {
+    n, err := strconv.Atoi(s)
+    if err != nil || n &lt; 1 || n &gt; 65535 {
+        return 0, fmt.Errorf("bad port %q", s)
+    }
+    return n, nil
+}</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">PortResult</span>:
+    <span class="t">Port</span>(n: <span class="t">int</span>)
+    <span class="t">Bad</span>(msg: <span class="t">str</span>)
+
+<span class="k">fn</span> <span class="f">parse_port</span>(s: <span class="t">str</span>) <span class="t">PortResult</span>:
+    n <span class="o">=</span> s.<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+    <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">1</span> <span class="k">or</span> n <span class="o">&gt;</span> <span class="n">65535</span>:
+        <span class="k">return</span> <span class="t">PortResult</span>.<span class="t">Bad</span>(<span class="s">f"bad port \"{s}\""</span>)
+    <span class="k">return</span> <span class="t">PortResult</span>.<span class="t">Port</span>(n)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    m <span class="o">=</span> {<span class="s">"a"</span>: <span class="n">1</span>}
+    v <span class="o">=</span> m.<span class="f">get</span>(<span class="s">"b"</span>, <span class="n">0</span>)                       <span class="c"># Go's zero value when missing</span>
+    <span class="f">print</span>(v, <span class="s">"b"</span> <span class="k">in</span> m)                      <span class="c"># and the `ok`</span>
+    <span class="k">for</span> s <span class="k">in</span> [<span class="s">"8080"</span>, <span class="s">"http"</span>]:
+        <span class="k">match</span> <span class="f">parse_port</span>(s):
+            <span class="t">Port</span>(n):
+                <span class="f">print</span>(<span class="s">"listening on"</span>, n)
+            <span class="t">Bad</span>(msg):
+                <span class="f">print</span>(<span class="s">"error:"</span>, msg)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>0 false
+listening on 8080
+error: bad port "http"</code></pre></div>
+<p>Goroutines with a <code>sync.WaitGroup</code> become a <code>parallel:</code> block, which waits for its tasks at the end. Each task writes its own variable, so there is nothing to lock.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>var wg sync.WaitGroup
+var left, right int
+wg.Add(2)
+go func() { defer wg.Done(); left = sum(data[:half]) }()
+go func() { defer wg.Done(); right = sum(data[half:]) }()
+wg.Wait()</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sum</span>(xs: [<span class="t">int</span>], lo: <span class="t">int</span>, hi: <span class="t">int</span>) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> lo<span class="o">..</span>hi:
+        t <span class="o">+</span><span class="o">=</span> xs[i]
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    data: [<span class="t">int</span>] <span class="o">=</span> []
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">1000</span>:
+        data.<span class="f">push</span>(i)
+    half <span class="o">=</span> <span class="f">len</span>(data) <span class="o">/</span> <span class="n">2</span>
+    <span class="k">parallel</span>:
+        left <span class="o">=</span> <span class="f">sum</span>(data, <span class="n">0</span>, half)
+        right <span class="o">=</span> <span class="f">sum</span>(data, half, <span class="f">len</span>(data))
+    <span class="f">print</span>(left <span class="o">+</span> right)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>499500</code></pre></div>
+<p><code>for i := 0; i &lt; n; i++</code> becomes <code>for i in 0..n:</code>, and <code>for i, x := range xs</code> becomes <code>for i, x in xs:</code>. <code>fmt.Sprintf("%05d %.2f", n, x)</code> becomes <code>f"{fmt.zero_pad(n, 5)} {fmt.fixed(x, 2)}"</code>.</p>
+<h3 id="what-carries-over-1"><a class="anchor" href="#what-carries-over-1" aria-hidden="true">#</a>What carries over</h3>
+<ul><li>Structs, functions, and composition instead of inheritance. No classes, no exceptions.</li><li>Explicit error handling by return value, and a small standard library you import by name.</li><li>One native binary. <code>http.serve</code> is built in, with a thread per core and an event loop.</li><li>Packages are directories of files that share a namespace, and names are private by a naming rule (Go: lowercase; Tern: a leading <code>_</code>).</li><li>A data race is a bug, and the tools catch it: Go at run time with <code>-race</code> (sometimes); Tern at compile time (always).</li></ul>
+<h3 id="whats-different-1"><a class="anchor" href="#whats-different-1" aria-hidden="true">#</a>What's different</h3>
+<ul><li><strong>No pointers.</strong> <code>&amp;x</code> exists only as an argument to a <code>mut</code> parameter. A struct can't point at another struct; linked data uses indexes into an array.</li><li><strong>Slices don't share memory.</strong> In Go, <code>b := a[1:3]</code> and <code>b = a</code> share the backing array. In Tern, every slice and assignment is a copy (made lazily, so it's cheap).</li><li><strong>No zero values by default.</strong> A struct is built with all its fields, and a missing map key is a runtime error unless you use <code>m.get(k, default)</code> or check <code>k in m</code>.</li><li>Goroutines are tasks: <code>h = task.spawn(fn() work(x))</code>, then <code>h.join()</code> (<code>import task</code>); channels are <code>ch: chan[int] = task.channel(8)</code>. <code>errgroup</code> is <code>task.try_all(fs)</code> (the first <code>Err</code> cancels the rest) and its <code>SetLimit</code> is <code>task.try_all_limit(fs, n)</code>; a <code>WaitGroup</code> over plain results is <code>task.all(fs)</code>. <code>parallel:</code> blocks are fork-join for computation.</li><li>No <code>interface</code>. For behavior that varies, pass a function value: <code>fn(int) str</code>.</li><li>Generics are type parameters, as in Go 1.18+: <code>fn first[T](xs: [T]) T</code>, <code>struct Pair[A, B]</code>.</li><li><code>x++</code> is <code>x += 1</code>, <code>&amp;&amp;</code> is <code>and</code>, <code>:=</code> is <code>=</code>.</li></ul>
+<h3 id="common-mistakes-1"><a class="anchor" href="#common-mistakes-1" aria-hidden="true">#</a>Common mistakes</h3>
+<p>Declaring with <code>:=</code>:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    n :<span class="o">=</span> <span class="n">5</span>
+    <span class="f">print</span>(n)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: expected a name, found '='
+2: hint: variables are created with `=`: `x = 5`</code></pre></div>
+<p>Starting a goroutine:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>]
+    go <span class="f">print</span>(xs)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: expected end of line, found 'print'
+3: hint: for concurrency, use a `parallel:` block (each line is a task) or `parallel for i in 0..n:`</code></pre></div>
+<p>Returning two values works as in Go, with a tuple type:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">divide</span>(a: <span class="t">int</span>, b: <span class="t">int</span>) (<span class="t">int</span>, <span class="t">bool</span>):
+    <span class="k">if</span> b <span class="o">==</span> <span class="n">0</span>:
+        <span class="k">return</span> <span class="n">0</span>, <span class="k">false</span>
+    <span class="k">return</span> a <span class="o">/</span> b, <span class="k">true</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    q, ok <span class="o">=</span> <span class="f">divide</span>(<span class="n">7</span>, <span class="n">2</span>)
+    <span class="f">print</span>(q, ok)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 true</code></pre></div>
+<p>Adding to a shared total from a parallel loop (a race Go would compile):</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">100</span>:
+        total <span class="o">+</span><span class="o">=</span> i
+    <span class="f">print</span>(total)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: iterations of `parallel for` run at the same time, so writing `total` from every iteration would race; store per-iteration results in an array indexed by `i`, or combine results after the loop</code></pre></div>
+<p>Two tasks writing one variable:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">parallel</span>:
+        total <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        total <span class="o">+</span><span class="o">=</span> <span class="n">2</span>
+    <span class="f">print</span>(total)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>5: error: data race on `total`: the task on line 4 writes it while the task on line 5 writes it at the same time. Give each task its own variable and combine them after the block</code></pre></div>
+<p><code>&amp;&amp;</code> and <code>nil</code>:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    x <span class="o">=</span> <span class="n">3</span>
+    <span class="k">if</span> x <span class="o">&gt;</span> <span class="n">2</span> <span class="o">&amp;</span><span class="o">&amp;</span> x <span class="o">&lt;</span> <span class="n">5</span>:
+        <span class="f">print</span>(x)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: expected `:`, found '&amp;&amp;'
+3: hint: write `and`</code></pre></div>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    x <span class="o">=</span> nil
+    <span class="f">print</span>(x)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: unknown variable `nil`
+2: hint: there is no nil: a value that may be missing is an Option (`Some(x)` or `None`)</code></pre></div>
+<h2 id="coming-from-rust"><a class="anchor" href="#coming-from-rust" aria-hidden="true">#</a>Coming from Rust</h2>
+<h3 id="side-by-side-2"><a class="anchor" href="#side-by-side-2" aria-hidden="true">#</a>Side by side</h3>
+<p>A struct with an <code>impl</code> block becomes a struct plus functions. <code>&amp;mut self</code> becomes a <code>mut</code> parameter, and <code>&amp;self</code> a plain one. There are no lifetimes because nothing is borrowed: read-only parameters are passed without copying, and the compiler proves it's safe.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>struct Stack { items: Vec&lt;i64&gt; }
+
+impl Stack {
+    fn push(&amp;mut self, x: i64) { self.items.push(x); }
+    fn peek(&amp;self) -&gt; Option&lt;i64&gt; { self.items.last().copied() }
+}</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Stack</span>:
+    items: [<span class="t">int</span>]
+
+<span class="k">fn</span> <span class="f">push</span>(s: <span class="k">mut</span> <span class="t">Stack</span>, x: <span class="t">int</span>):
+    s.items.<span class="f">push</span>(x)                        <span class="c"># the builtin push: s.items is an array</span>
+
+<span class="k">fn</span> <span class="f">peek</span>(s: <span class="t">Stack</span>, out: <span class="k">mut</span> <span class="t">int</span>) <span class="t">bool</span>:
+    <span class="k">if</span> <span class="f">len</span>(s.items) <span class="o">==</span> <span class="n">0</span>:
+        <span class="k">return</span> <span class="k">false</span>
+    out <span class="o">=</span> s.items[<span class="f">len</span>(s.items) <span class="o">-</span> <span class="n">1</span>]
+    <span class="k">return</span> <span class="k">true</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="t">Stack</span>([])
+    s.<span class="f">push</span>(<span class="n">4</span>)
+    s.<span class="f">push</span>(<span class="n">9</span>)
+    top <span class="o">=</span> <span class="n">0</span>
+    <span class="k">if</span> s.<span class="f">peek</span>(<span class="o">&amp;</span>top):
+        <span class="f">print</span>(<span class="s">"top"</span>, top)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>top 9</code></pre></div>
+<p>(<code>push</code> is also a builtin; a call picks yours when its first argument is a <code>Stack</code>. See <a href="../reference.html#20-builtin-names">builtin names</a>.)</p>
+<p><code>Option[T]</code> and <code>Result[T, E]</code> are built in (<code>Some</code>, <code>None</code>, <code>Ok</code>, <code>Err</code>), and <code>?</code> returns early as in Rust. <code>if let Some(v) = x</code> is written <code>if x is Some(v):</code>. <code>match</code> works as in Rust: it must cover every variant, and it binds payloads by position.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>enum Shape { Circle(f64), Rect(f64, f64) }
+
+fn area(s: &amp;Shape) -&gt; f64 {
+    match s {
+        Shape::Circle(r) =&gt; std::f64::consts::PI * r * r,
+        Shape::Rect(w, h) =&gt; w * h,
+    }
+}
+
+fn parse(s: &amp;str) -&gt; Result&lt;i64, String&gt; {
+    s.parse::&lt;i64&gt;().map_err(|_| format!("not a number: {s}"))
+}</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">enum</span> <span class="t">Shape</span>:
+    <span class="t">Circle</span>(r: <span class="t">float</span>)
+    <span class="t">Rect</span>(w: <span class="t">float</span>, h: <span class="t">float</span>)
+
+<span class="k">enum</span> <span class="t">Parsed</span>:
+    <span class="t">Good</span>(v: <span class="t">int</span>)
+    <span class="t">Bad</span>(msg: <span class="t">str</span>)
+
+<span class="k">fn</span> <span class="f">area</span>(s: <span class="t">Shape</span>) <span class="t">float</span>:
+    <span class="k">match</span> s:
+        <span class="t">Circle</span>(r):
+            <span class="k">return</span> math.<span class="f">pi</span>() <span class="o">*</span> r <span class="o">*</span> r
+        <span class="t">Rect</span>(w, h):
+            <span class="k">return</span> w <span class="o">*</span> h
+
+<span class="k">fn</span> <span class="f">parse</span>(s: <span class="t">str</span>) <span class="t">Parsed</span>:
+    v <span class="o">=</span> s.<span class="f">to_int</span>(<span class="n">0</span>)
+    <span class="k">if</span> v <span class="o">==</span> <span class="n">0</span> <span class="k">and</span> s <span class="o">!=</span> <span class="s">"0"</span>:
+        <span class="k">return</span> <span class="t">Parsed</span>.<span class="t">Bad</span>(<span class="s">f"not a number: {s}"</span>)
+    <span class="k">return</span> <span class="t">Parsed</span>.<span class="t">Good</span>(v)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">area</span>(<span class="t">Shape</span>.<span class="t">Rect</span>(<span class="n">2.0</span>, <span class="n">3.0</span>)))
+    <span class="k">for</span> s <span class="k">in</span> [<span class="s">"42"</span>, <span class="s">"x"</span>]:
+        <span class="k">match</span> <span class="f">parse</span>(s):
+            <span class="t">Good</span>(v):
+                <span class="f">print</span>(<span class="s">"got"</span>, v)
+            <span class="t">Bad</span>(msg):
+                <span class="f">print</span>(msg)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>6.0
+got 42
+not a number: x</code></pre></div>
+<p>Iterator chains become <code>map</code>, <code>filter</code>, and <code>sort_by</code> on arrays. They return new arrays right away; there is no lazy iterator and no <code>collect()</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>let names: Vec&lt;String&gt; = users.iter()
+    .filter(|u| u.active)
+    .map(|u| u.name.to_uppercase())
+    .collect();</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">User</span>:
+    name: <span class="t">str</span>
+    active: <span class="t">bool</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    users <span class="o">=</span> [<span class="t">User</span>(<span class="s">"ada"</span>, <span class="k">true</span>), <span class="t">User</span>(<span class="s">"bob"</span>, <span class="k">false</span>), <span class="t">User</span>(<span class="s">"cy"</span>, <span class="k">true</span>)]
+    names <span class="o">=</span> users.<span class="f">filter</span>(<span class="k">fn</span>(u) u.active).<span class="f">map</span>(<span class="k">fn</span>(u) u.name.<span class="f">upper</span>())
+    <span class="f">print</span>(names)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["ADA", "CY"]</code></pre></div>
+<p>Rayon's <code>par_iter</code> becomes <code>parallel for</code>, and <code>rayon::join</code> becomes <code>parallel:</code>. The race check is the same idea as Rust's <code>Send</code>/<code>Sync</code> rules, applied to plain variables: iteration <code>i</code> may write <code>out[i]</code>, and nothing else shared.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>let out: Vec&lt;i64&gt; = xs.par_iter().map(|x| x * x).collect();</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>, <span class="n">4</span>, <span class="n">5</span>]
+    out <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="f">len</span>(xs)
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(xs):
+        out[i] <span class="o">=</span> xs[i] <span class="o">*</span> xs[i]
+    <span class="f">print</span>(out)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[1, 4, 9, 16, 25]</code></pre></div>
+<p><code>format!("{:&gt;8.2}", x)</code> becomes <code>fmt.pad_left(fmt.fixed(x, 2), 8, " ")</code>.</p>
+<h3 id="what-carries-over-2"><a class="anchor" href="#what-carries-over-2" aria-hidden="true">#</a>What carries over</h3>
+<ul><li>The safety guarantees you rely on: no null, no dangling references, no use after move, no data races, no aliased mutation. Tern checks them at compile time too.</li><li>Enums with payloads, exhaustive <code>match</code>, and recursive enums (without <code>Box</code>).</li><li>Values freed deterministically by reference counting, with no garbage collector.</li><li><code>take</code> parameters are Rust's move: the caller can't use the value afterwards.</li><li>Performance in the same range for most code (see the benchmarks in the README).</li></ul>
+<h3 id="whats-different-2"><a class="anchor" href="#whats-different-2" aria-hidden="true">#</a>What's different</h3>
+<ul><li><strong>No references or lifetimes.</strong> <code>&amp;mut T</code> in a parameter type becomes <code>mut T</code>; <code>&amp;T</code> is just <code>T</code> (read-only, and passed without a copy). You write <code>&amp;</code> only at the call site.</li><li><strong>Mutation is exclusive per call, not per scope.</strong> The rule is simply that a <code>&amp;x</code> argument can't overlap any other argument of the same call.</li><li><strong>Copies are implicit and lazy.</strong> <code>b = a</code> is like a cheap <code>clone()</code> that copies only if one side is later changed. There is no <code>clone()</code> to call.</li><li><strong>No traits or generics.</strong> Builtins like <code>map</code>, <code>sort_by</code>, and <code>json.encode</code> work on every type, but your own functions take one concrete type each.</li><li><strong><code>?</code> works as in Rust</strong> on <code>Option</code> and <code>Result</code> (no <code>From</code> conversion of error types). There's no <code>panic!</code> to call: runtime errors (an index out of range, a missing map key, <code>unwrap()</code> on None) end the program, or answer 500 inside a web handler, and can't be caught.</li><li>One integer type (<code>int</code>, 64-bit, wrapping) and one float type (<code>float</code>, 64-bit).</li></ul>
+<h3 id="common-mistakes-2"><a class="anchor" href="#common-mistakes-2" aria-hidden="true">#</a>Common mistakes</h3>
+<p><code>let</code> bindings:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    let x <span class="o">=</span> <span class="n">5</span>
+    <span class="f">print</span>(x)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: expected end of line, found 'x'
+2: hint: variables are created by assigning: `x = 5` (no let/var/const)</code></pre></div>
+<p>Generic types in signatures:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">first</span>(xs: <span class="t">Vec</span><span class="o">&lt;</span><span class="t">int</span><span class="o">&gt;</span>) <span class="t">int</span>:
+    <span class="k">return</span> xs[<span class="n">0</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">first</span>([<span class="n">1</span>]))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>1: error: expected `,`, found '&lt;'
+1: hint: array types are `[int]`, map types `{str: int}`, tuple types `(int, str)`, and a generic type's arguments go in `[ ]` (`Pair[int, str]`, `Option[int]`); there is no set type</code></pre></div>
+<p>Writing <code>&amp;mut</code> in the parameter type:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">bump</span>(n: <span class="o">&amp;</span><span class="k">mut</span> <span class="t">int</span>):
+    n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    x <span class="o">=</span> <span class="n">1</span>
+    <span class="f">bump</span>(<span class="o">&amp;</span>x)
+    <span class="f">print</span>(x)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>1: error: expected a name, found '&amp;'
+1: hint: parameters are written `name: type`, e.g. `fn f(a: int, b: str)`</code></pre></div>
+<p>Forgetting the <code>&amp;</code> at the call site (Rust would say "expected <code>&amp;mut</code>"):</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">bump</span>(n: <span class="k">mut</span> <span class="t">int</span>):
+    n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    x <span class="o">=</span> <span class="n">1</span>
+    <span class="f">bump</span>(x)
+    <span class="f">print</span>(x)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>6: error: argument 1 of `bump` is `mut`: write `&amp;x` so the change is visible here</code></pre></div>
+<p>Closures written with <code>|x|</code>:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    ys <span class="o">=</span> xs.<span class="f">map</span>(|x| x <span class="o">*</span> <span class="n">2</span>)
+    <span class="f">print</span>(ys)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: unexpected '|'
+3: hint: lambdas are written `fn(x) x + 1` (one expression)</code></pre></div>
+<p>Iterator adapters:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    ys <span class="o">=</span> xs.<span class="f">iter</span>().<span class="f">map</span>(<span class="k">fn</span>(x: <span class="t">int</span>) x <span class="o">*</span> <span class="n">2</span>).<span class="f">collect</span>()
+    <span class="f">print</span>(ys)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: unknown function `iter`
+3: hint: loop directly: `for x in xs:` (or `for i, x in xs:`)
+3: error: unknown function `collect`
+3: hint: `split`, `map`, and `filter` already return arrays; there are no iterators to collect</code></pre></div>
+<p>Passing the same value twice (the borrow checker's "cannot borrow as mutable more than once"):</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Account</span>:
+    balance: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">transfer</span>(a: <span class="k">mut</span> <span class="t">Account</span>, b: <span class="k">mut</span> <span class="t">Account</span>, n: <span class="t">int</span>):
+    a.balance <span class="o">-</span><span class="o">=</span> n
+    b.balance <span class="o">+</span><span class="o">=</span> n
+
+<span class="k">fn</span> <span class="f">main</span>():
+    acct <span class="o">=</span> <span class="t">Account</span>(<span class="n">10</span>)
+    <span class="f">transfer</span>(<span class="o">&amp;</span>acct, <span class="o">&amp;</span>acct, <span class="n">5</span>)
+    <span class="f">print</span>(acct)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>10: error: `transfer` would see the same value twice: `&amp;acct` can be changed, but `acct` is also passed (argument 2)</code></pre></div>
+<h2 id="coming-from-javascript"><a class="anchor" href="#coming-from-javascript" aria-hidden="true">#</a>Coming from JavaScript</h2>
+<h3 id="side-by-side-3"><a class="anchor" href="#side-by-side-3" aria-hidden="true">#</a>Side by side</h3>
+<p>Objects and classes become structs, which are declared once with typed fields. Every field must be given when building one.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>class Cart {
+  constructor(owner) { this.owner = owner; this.items = []; }
+  add(name, cents) { this.items.push({ name, cents }); }
+  total() { return this.items.reduce((t, i) =&gt; t + i.cents, 0); }
+}
+const cart = new Cart("ada");
+cart.add("tea", 350);
+console.log(`${cart.owner}: $${(cart.total() / 100).toFixed(2)}`);</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">struct</span> <span class="t">Item</span>:
+    name: <span class="t">str</span>
+    cents: <span class="t">int</span>
+
+<span class="k">struct</span> <span class="t">Cart</span>:
+    owner: <span class="t">str</span>
+    items: [<span class="t">Item</span>]
+
+<span class="k">fn</span> <span class="f">add</span>(c: <span class="k">mut</span> <span class="t">Cart</span>, name: <span class="t">str</span>, cents: <span class="t">int</span>):
+    c.items.<span class="f">push</span>(<span class="t">Item</span>(name, cents))
+
+<span class="k">fn</span> <span class="f">total</span>(c: <span class="t">Cart</span>) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> c.items:
+        t <span class="o">+</span><span class="o">=</span> i.cents
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    cart <span class="o">=</span> <span class="t">Cart</span>(<span class="s">"ada"</span>, [])
+    cart.<span class="f">add</span>(<span class="s">"tea"</span>, <span class="n">350</span>)
+    cart.<span class="f">add</span>(<span class="s">"cake"</span>, <span class="n">425</span>)
+    <span class="f">print</span>(<span class="s">f"{cart.owner}: ${fmt.cents(cart.total())}"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>ada: $7.75</code></pre></div>
+<p><code>reduce</code> has no builtin: it is a loop. <code>map</code>, <code>filter</code>, and a sort with a key work much as in JavaScript, except that <code>sort_by</code> returns a new array and takes a key function instead of a comparator.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>const adults = people.filter(p =&gt; p.age &gt;= 18).map(p =&gt; p.name);
+const byAge = [...people].sort((a, b) =&gt; a.age - b.age);</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Person</span>:
+    name: <span class="t">str</span>
+    age: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    people <span class="o">=</span> [<span class="t">Person</span>(<span class="s">"ada"</span>, <span class="n">36</span>), <span class="t">Person</span>(<span class="s">"kid"</span>, <span class="n">9</span>), <span class="t">Person</span>(<span class="s">"bob"</span>, <span class="n">25</span>)]
+    adults <span class="o">=</span> people.<span class="f">filter</span>(<span class="k">fn</span>(p) p.age <span class="o">&gt;=</span> <span class="n">18</span>).<span class="f">map</span>(<span class="k">fn</span>(p) p.name)
+    by_age <span class="o">=</span> people.<span class="f">sort_by</span>(<span class="k">fn</span>(p) p.age)
+    <span class="f">print</span>(adults, by_age.<span class="f">map</span>(<span class="k">fn</span>(p) p.name))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["ada", "bob"] ["kid", "bob", "ada"]</code></pre></div>
+<p><code>null</code> and <code>undefined</code> become an enum (or a sentinel), and <code>try</code>/<code>catch</code> becomes a returned status. <code>JSON.parse</code> becomes <code>json.decode</code>, which fills a typed value and returns <code>false</code> on bad input instead of throwing.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>let settings;
+try {
+  settings = JSON.parse(text);
+} catch (e) {
+  settings = { theme: "light", fontSize: 14 };
+}</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Settings</span>:
+    theme: <span class="t">str</span>
+    font_size: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    settings <span class="o">=</span> <span class="t">Settings</span>(<span class="s">"light"</span>, <span class="n">14</span>)
+    <span class="k">if</span> <span class="k">not</span> json.<span class="f">decode</span>(<span class="s">`{"theme": "dark"}`</span>, <span class="o">&amp;</span>settings):
+        <span class="f">print</span>(<span class="s">"bad settings, using defaults"</span>)
+    <span class="f">print</span>(settings)
+    other <span class="o">=</span> <span class="t">Settings</span>(<span class="s">"light"</span>, <span class="n">14</span>)
+    <span class="f">print</span>(json.<span class="f">decode</span>(<span class="s">"{oops"</span>, <span class="o">&amp;</span>other), other)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Settings{theme: "dark", font_size: 14}
+false Settings{theme: "light", font_size: 14}</code></pre></div>
+<p>Objects are shared by reference in JavaScript; Tern values are not. Here the JavaScript function changes the caller's object, and the Tern one can't unless it asks for <code>mut</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>function rename(user) { user.name = user.name.toUpperCase(); return user; }
+const a = { name: "ada" };
+const b = rename(a);        // a.name is now "ADA" too</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">User</span>:
+    name: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">renamed</span>(u: <span class="t">User</span>) <span class="t">User</span>:
+    v <span class="o">=</span> u                                   <span class="c"># a copy</span>
+    v.name <span class="o">=</span> v.name.<span class="f">upper</span>()
+    <span class="k">return</span> v
+
+<span class="k">fn</span> <span class="f">main</span>():
+    a <span class="o">=</span> <span class="t">User</span>(<span class="s">"ada"</span>)
+    b <span class="o">=</span> <span class="f">renamed</span>(a)
+    <span class="f">print</span>(a.name, b.name)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>ada ADA</code></pre></div>
+<p><code>Promise.all</code> over CPU work becomes a <code>parallel:</code> block. Unlike <code>async</code>, the tasks really run at the same time on different cores (JavaScript would need Web Workers):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>const [a, b] = await Promise.all([slowSquare(3), slowSquare(4)]);</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">slow_square</span>(n: <span class="t">int</span>) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span>n:
+        t <span class="o">+</span><span class="o">=</span> n
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">parallel</span>:
+        a <span class="o">=</span> <span class="f">slow_square</span>(<span class="n">3</span>)
+        b <span class="o">=</span> <span class="f">slow_square</span>(<span class="n">4</span>)
+    <span class="f">print</span>(a, b)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>9 16</code></pre></div>
+<p>Template literals become f-strings: <code>`${a} + ${b}`</code> is <code>f"{a} + {b}"</code>. <code>toFixed(2)</code> is <code>fmt.fixed(x, 2)</code>, and <code>padStart(5, "0")</code> is <code>fmt.pad_left(s, 5, "0")</code>.</p>
+<h3 id="what-carries-over-3"><a class="anchor" href="#what-carries-over-3" aria-hidden="true">#</a>What carries over</h3>
+<ul><li><code>map</code> and <code>filter</code> with short lambdas: <code>x =&gt; x * 2</code> is <code>fn(x) x * 2</code>.</li><li>Functions as values, closures, and callbacks stored in struct fields.</li><li>JSON everywhere: <code>json.encode</code> and <code>json.decode</code> work on any struct, array, or map.</li><li>A web server in a few lines, with a handler that takes a request and returns a response.</li><li><code>===</code> semantics for <code>==</code> on numbers, strings, and bools: no coercion, ever.</li></ul>
+<h3 id="whats-different-3"><a class="anchor" href="#whats-different-3" aria-hidden="true">#</a>What's different</h3>
+<ul><li><strong>Static types.</strong> Every parameter has a type, and a variable keeps its type. Numbers are either <code>int</code> or <code>float</code>, and they don't mix: <code>1 + 2.0</code> is an error.</li><li><strong>Values, not references.</strong> Assigning an object or array copies it, and <code>==</code> on structs or arrays is an error rather than a reference comparison.</li><li><strong>No <code>null</code> or <code>undefined</code>.</strong> Every variable starts with a value, and every struct field must be given when the struct is built.</li><li><strong>No event loop or <code>async</code>.</strong> Code runs top to bottom; a <code>parallel</code> block runs tasks on multiple cores and waits for all of them.</li><li><strong>Generics</strong> use square brackets: <code>fn first[T](xs: [T]) T</code> instead of <code>function first&lt;T&gt;(xs: T[]): T</code>.</li><li>Double-quoted strings only. <code>len(xs)</code> instead of <code>xs.length</code>.</li></ul>
+<h3 id="common-mistakes-3"><a class="anchor" href="#common-mistakes-3" aria-hidden="true">#</a>Common mistakes</h3>
+<p><code>const</code> and <code>let</code>:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    const name <span class="o">=</span> <span class="s">"ada"</span>
+    <span class="f">print</span>(name)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: `const` goes at the top level of a file; inside a function, write `x = 5`</code></pre></div>
+<p><code>.length</code>:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    <span class="f">print</span>(xs.length)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: [int] has no field `length`
+3: hint: use `len(x)`</code></pre></div>
+<p>Single-quoted strings:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    name <span class="o">=</span> 'ada'
+    <span class="f">print</span>(name)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: unexpected character "'"
+2: hint: strings use double quotes: "text" (or `text`, raw, when it holds double quotes)</code></pre></div>
+<p>Arrow functions:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    ys <span class="o">=</span> xs.<span class="f">map</span>(x <span class="o">=</span><span class="o">&gt;</span> x <span class="o">*</span> <span class="n">2</span>)
+    <span class="f">print</span>(ys)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: unexpected '&gt;'
+3: hint: match arms are `Pattern:` followed by an indented block (or `Pattern: stmt` on one line); lambdas are `fn(x) x + 1`</code></pre></div>
+<p><code>console.log</code>:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    console.<span class="f">log</span>(<span class="s">"hi"</span>)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: unknown variable `console`
+2: hint: use `print(...)`
+2: error: unknown function `log`
+2: hint: use `print(...)` (`math.log` is the logarithm)</code></pre></div>
+<p>The ternary operator:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    x <span class="o">=</span> <span class="n">7</span>
+    label <span class="o">=</span> x <span class="o">&gt;</span> <span class="n">5</span> ? <span class="s">"big"</span> : <span class="s">"small"</span>
+    <span class="f">print</span>(label)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: expected end of line, found 'big'
+3: hint: there is no `c ? a : b`; write `a if c else b`</code></pre></div>
+<p>Comparing arrays with <code>==</code> compares their elements (JavaScript's <code>===</code> would compare identities; Tern has none):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    a <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>]
+    b <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>]
+    <span class="f">print</span>(a <span class="o">==</span> b, {<span class="s">"k"</span>: a} <span class="o">==</span> {<span class="s">"k"</span>: [<span class="n">1</span>, <span class="n">3</span>]})</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true false</code></pre></div>
+<p>Leaving out a field, as you might with an object literal:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">User</span>:
+    name: <span class="t">str</span>
+    age: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    u <span class="o">=</span> <span class="t">User</span>(name<span class="o">=</span><span class="s">"ada"</span>)
+    <span class="f">print</span>(u)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>6: error: missing field `age` in User</code></pre></div>
+<h2 id="next-steps"><a class="anchor" href="#next-steps" aria-hidden="true">#</a>Next steps</h2>
+<ul><li>The <a href="../tour/01-getting-started.html">tour</a> walks through the language in order.</li><li><a href="../tour/09-values-and-mut.html">Values, mut, and &amp;</a> explains the part that is new to everyone.</li><li>The <a href="cookbook.html">cookbook</a> has short programs for everyday tasks.</li></ul>
+</article>
+<div class="pn"><a class="prev" href="../tour/13-next-steps.html"><span>Previous</span>13. Where to go next</a><a class="next" href="../guides/web-apps.html"><span>Next</span>Building web apps</a></div>
+<footer>Source: <code>docs/guides/coming-from.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#tern-in-one-paragraph">Tern in one paragraph</a></li><li class="l2"><a href="#coming-from-python">Coming from Python</a></li><li class="l3"><a href="#side-by-side">Side by side</a></li><li class="l3"><a href="#what-carries-over">What carries over</a></li><li class="l3"><a href="#whats-different">What's different</a></li><li class="l3"><a href="#common-mistakes">Common mistakes</a></li><li class="l2"><a href="#coming-from-go">Coming from Go</a></li><li class="l3"><a href="#side-by-side-1">Side by side</a></li><li class="l3"><a href="#what-carries-over-1">What carries over</a></li><li class="l3"><a href="#whats-different-1">What's different</a></li><li class="l3"><a href="#common-mistakes-1">Common mistakes</a></li><li class="l2"><a href="#coming-from-rust">Coming from Rust</a></li><li class="l3"><a href="#side-by-side-2">Side by side</a></li><li class="l3"><a href="#what-carries-over-2">What carries over</a></li><li class="l3"><a href="#whats-different-2">What's different</a></li><li class="l3"><a href="#common-mistakes-2">Common mistakes</a></li><li class="l2"><a href="#coming-from-javascript">Coming from JavaScript</a></li><li class="l3"><a href="#side-by-side-3">Side by side</a></li><li class="l3"><a href="#what-carries-over-3">What carries over</a></li><li class="l3"><a href="#whats-different-3">What's different</a></li><li class="l3"><a href="#common-mistakes-3">Common mistakes</a></li><li class="l2"><a href="#next-steps">Next steps</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -29,6 +29,7 @@
     <a class="opt" href="#agents">For agents</a>
     <a href="#benchmarks">Benchmarks</a>
     <a href="#built">Built with Tern</a>
+    <a href="docs/">Docs</a>
     <a href="ts/">ternTS</a>
   </nav>
   <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
@@ -37,12 +38,12 @@
 <main class="home-main">
 <section class="hero wrap">
   <div class="hero-text">
-    <p class="eyebrow">In development &middot; opening up soon</p>
+    <p class="eyebrow">Early release &middot; macOS and Linux</p>
     <h1>The language for agent&#8209;written code.</h1>
     <p class="lead">Agents write more of our code every month. Tern is a compiled language built for them: syntax models already know, errors that say exactly what to write instead, and checks that catch the bugs agents make. What they write compiles to native code that outruns Rust and Go.</p>
     <div class="cta">
-      <a class="btn primary" href="#benchmarks">See the benchmarks</a>
-      <a class="btn" href="ts/">Try ternTS in your browser</a>
+      <a class="btn primary" href="#install">Install Tern</a>
+      <a class="btn" href="#benchmarks">See the benchmarks</a>
     </div>
   </div>
   <figure class="hero-code">
@@ -374,20 +375,23 @@ RETURNING id;</pre></div>
   </div>
 </section>
 
-<section class="wrap soon">
+<section class="wrap soon" id="install">
   <img src="tern.svg" alt="" width="88" height="64">
-  <h2>Tern isn&rsquo;t public yet.</h2>
-  <p class="lead">We&rsquo;re opening it up soon: the compiler, the standard library, the docs and a package index. In the meantime, ternTS runs in your browser today.</p>
+  <h2>Install Tern.</h2>
+  <p class="lead">One command on macOS or Linux (arm64 and x86_64). Tern compiles through C, so you&rsquo;ll also need clang: <code>xcode-select --install</code> on a Mac.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new hello &amp;&amp; cd hello
+echo "to be or not to be" | tern run main.tn</code></pre></div>
   <div class="cta">
-    <a class="btn primary" href="ts/">Try ternTS</a>
-    <a class="btn" href="https://github.com/Ternlang-tn">Follow on GitHub</a>
+    <a class="btn primary" href="docs/tour/01-getting-started.html">Start the tour</a>
+    <a class="btn" href="docs/">Read the docs</a>
   </div>
 </section>
 </main>
 
 <footer class="foot wrap">
-  <div><img src="tern.svg" alt="" width="33" height="24"> Tern is in development. The language will change, and so will these numbers.</div>
-  <div class="links"><a href="#benchmarks">Benchmarks</a><a href="ts/">ternTS</a><a href="https://stackgrep.com">StackGrep</a><a href="https://skimmerdb.com">SkimmerDB</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+  <div><img src="tern.svg" alt="" width="33" height="24"> Tern is an early release. The language will change, and so will these numbers.</div>
+  <div class="links"><a href="docs/">Docs</a><a href="#benchmarks">Benchmarks</a><a href="ts/">ternTS</a><a href="https://stackgrep.com">StackGrep</a><a href="https://skimmerdb.com">SkimmerDB</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
 </footer>
 <script src="home.js"></script>
 </body>

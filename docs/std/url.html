@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>url · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/url.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html" class="cur" aria-current="page">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="url"><a class="anchor" href="#url" aria-hidden="true">#</a>url</h1>
+<p>The <code>url</code> module parses, builds and resolves URLs and escapes their parts, by the rules of Go's <code>net/url</code> (RFC 3986). A <code>Url</code> is its text, written the way <code>format</code> writes it, plus where each part is: you read the parts with methods (<code>u.host()</code>, <code>u.path()</code>), decoded where that applies (the path, user and fragment), and change them with setters. The query stays as written until you ask for its pairs.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> url
+
+<span class="k">fn</span> <span class="f">main</span>():
+    u <span class="o">=</span> url.<span class="f">parse</span>(<span class="s">"https://ada@example.com:8443/docs/a%20b?q=tern&amp;tag=x&amp;tag=y#intro"</span>).<span class="f">unwrap</span>()
+    <span class="f">print</span>(u.<span class="f">scheme</span>(), u.<span class="f">user</span>(), u.<span class="f">host</span>(), u.<span class="f">port</span>(), u.<span class="f">path</span>(), u.<span class="f">raw_query</span>(), u.<span class="f">fragment</span>())
+    q <span class="o">=</span> u.<span class="f">query</span>()
+    <span class="f">print</span>(q.<span class="f">get</span>(<span class="s">"q"</span>), q.<span class="f">get_all</span>(<span class="s">"tag"</span>), q.<span class="f">has</span>(<span class="s">"page"</span>))
+    <span class="f">print</span>(url.<span class="f">format</span>(u))
+    <span class="f">print</span>(url.<span class="f">join</span>(<span class="s">"https://example.com/docs/guide/"</span>, <span class="s">"../api?v=2"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>https ada example.com 8443 /docs/a b q=tern&amp;tag=x&amp;tag=y intro
+tern ["x", "y"] false
+https://ada@example.com:8443/docs/a%20b?q=tern&amp;tag=x&amp;tag=y#intro
+Ok("https://example.com/docs/api?v=2")</code></pre></div>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">parse</span>(text: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Url</span>, <span class="t">str</span>]          a <span class="t">URL</span>, absolute <span class="k">or</span> relative
+<span class="k">fn</span> <span class="f">format</span>(u: <span class="t">Url</span>) <span class="t">str</span>                         u as text, escaped where needed
+<span class="k">fn</span> <span class="f">build</span>(p: <span class="t">Parts</span>) <span class="t">Url</span>                        a <span class="t">Url</span> <span class="k">from</span> its parts (escaping them)
+<span class="k">fn</span> <span class="f">parts</span>(u: <span class="t">Url</span>) <span class="t">Parts</span>                        every part, decoded, to change <span class="k">and</span> build again
+<span class="k">fn</span> <span class="f">set_path</span>(u: <span class="k">mut</span> <span class="t">Url</span>, path: <span class="t">str</span>)            <span class="k">and</span> set_scheme, set_user, set_password, set_host,
+                                              set_port (<span class="t">int</span>), set_raw_query, set_fragment
+<span class="k">fn</span> <span class="f">resolve</span>(base: <span class="t">Url</span>, ref: <span class="t">Url</span>) <span class="t">Url</span>           ref resolved against base (<span class="t">RFC</span> <span class="n">3986</span> section <span class="n">5</span>)
+<span class="k">fn</span> <span class="f">join</span>(base: <span class="t">str</span>, ref: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>] the same <span class="k">for</span> text: a link found on a page
+<span class="k">fn</span> <span class="f">host_port</span>(u: <span class="t">Url</span>) <span class="t">str</span>                      <span class="s">"example.com:8443"</span>, <span class="s">"[::1]:80"</span>, <span class="s">"example.com"</span>
+<span class="k">fn</span> <span class="f">request_uri</span>(u: <span class="t">Url</span>) <span class="t">str</span>                    an <span class="t">HTTP</span> request line's target: <span class="s">"/docs/a%20b?q=tern"</span>
+<span class="k">fn</span> <span class="f">escaped_path</span>(u: <span class="t">Url</span>) <span class="t">str</span>                   the path as the text has it
+<span class="k">fn</span> <span class="f">escaped_fragment</span>(u: <span class="t">Url</span>) <span class="t">str</span>               the fragment as the text has it
+<span class="k">fn</span> <span class="f">query</span>(u: <span class="t">Url</span>) <span class="t">Query</span>                        the query's pairs (badly escaped ones are skipped)
+
+<span class="k">fn</span> <span class="f">parse_query</span>(raw: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Query</span>, <span class="t">str</span>]   <span class="s">"a=1&amp;b=x+y"</span> as pairs
+<span class="k">fn</span> <span class="f">new_query</span>() <span class="t">Query</span>
+<span class="k">fn</span> <span class="f">get</span>(q: <span class="t">Query</span>, key: <span class="t">str</span>) <span class="t">str</span>                the first value (<span class="s">""</span> <span class="k">if</span> absent)
+<span class="k">fn</span> <span class="f">get_all</span>(q: <span class="t">Query</span>, key: <span class="t">str</span>) [<span class="t">str</span>]          every value, <span class="k">in</span> order
+<span class="k">fn</span> <span class="f">has</span>(q: <span class="t">Query</span>, key: <span class="t">str</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">add</span>(q: <span class="k">mut</span> <span class="t">Query</span>, key: <span class="t">str</span>, value: <span class="t">str</span>)    another pair
+<span class="k">fn</span> <span class="f">set</span>(q: <span class="k">mut</span> <span class="t">Query</span>, key: <span class="t">str</span>, value: <span class="t">str</span>)    the only pair with this key
+<span class="k">fn</span> <span class="f">remove</span>(q: <span class="k">mut</span> <span class="t">Query</span>, key: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">encode_query</span>(q: <span class="t">Query</span>) <span class="t">str</span>                 the pairs as a query, <span class="k">in</span> order
+<span class="k">fn</span> <span class="f">query_string</span>(pairs: {<span class="t">str</span>: <span class="t">str</span>}) <span class="t">str</span>        a map as a query, keys sorted
+
+<span class="k">fn</span> <span class="f">query_escape</span>(s: <span class="t">str</span>) <span class="t">str</span>                   <span class="k">for</span> a query key <span class="k">or</span> value: space is <span class="s">"+"</span>
+<span class="k">fn</span> <span class="f">query_unescape</span>(s: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">path_escape</span>(s: <span class="t">str</span>) <span class="t">str</span>                    <span class="k">for</span> one path segment: <span class="s">"/"</span> is escaped too
+<span class="k">fn</span> <span class="f">path_unescape</span>(s: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]</code></pre></div>
+<h2 id="the-parts"><a class="anchor" href="#the-parts" aria-hidden="true">#</a>The parts</h2>
+<div class="table"><table><thead><tr><th>Method</th><th><code>https://ada:pw@example.com:8443/a%20b?q=1#top</code></th></tr></thead><tbody><tr><td><code>u.scheme()</code></td><td><code>"https"</code> (lower case when parsed)</td></tr><tr><td><code>u.user()</code>, <code>u.password()</code></td><td><code>"ada"</code>, <code>"pw"</code> (decoded)</td></tr><tr><td><code>u.host()</code></td><td><code>"example.com"</code> (an IPv6 address without its brackets: <code>"::1"</code>)</td></tr><tr><td><code>u.port()</code></td><td><code>8443</code> (<code>0</code> when the URL has none)</td></tr><tr><td><code>u.path()</code></td><td><code>"/a b"</code> (decoded); <code>u.escaped_path()</code> is <code>"/a%20b"</code></td></tr><tr><td><code>u.raw_query()</code></td><td><code>"q=1"</code> (as written; <code>u.query()</code> decodes it)</td></tr><tr><td><code>u.fragment()</code></td><td><code>"top"</code> (decoded)</td></tr><tr><td><code>u.opaque()</code></td><td>what follows <code>scheme:</code> when it is neither <code>//</code> nor a path: <code>mailto:ada@x.org</code> has <code>"ada@x.org"</code></td></tr></tbody></table></div>
+<p><code>u.raw_path()</code> and <code>u.raw_fragment()</code> give those parts as the text has them when that isn't how escaping the decoded part would write them (<code>/a%2Fb</code> decodes to <code>/a/b</code>, but must stay <code>%2F</code>), else <code>""</code>; <code>u.force_query()</code> and <code>u.omit_host()</code> tell a lone <code>?</code> and <code>scheme:/path</code> without <code>//</code>. <code>format(parse(s))</code> is <code>s</code> for any URL Go's <code>url.Parse</code> accepts, apart from these: a port above 65535, a <code>:</code> in a host outside brackets, and text before a <code>[</code> in the host are errors here; a scheme comes out in lower case, an empty or zero port (<code>x:/</code>, <code>x:0</code>), user (<code>@x</code>) or password (<code>u:@x</code>) is dropped, a port loses its leading zeros, and what must be escaped is (<code>/a b</code> becomes <code>/a%20b</code>).</p>
+<p>To change a part, call its setter; <code>format</code> escapes what needs it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> url
+
+<span class="k">fn</span> <span class="f">main</span>():
+    u <span class="o">=</span> url.<span class="f">parse</span>(<span class="s">"https://api.example.com"</span>).<span class="f">unwrap</span>()
+    u.<span class="f">set_path</span>(<span class="s">"/v1/search results"</span>)
+    q <span class="o">=</span> url.<span class="f">new_query</span>()
+    q.<span class="f">add</span>(<span class="s">"q"</span>, <span class="s">"tern &amp; go"</span>)
+    q.<span class="f">add</span>(<span class="s">"page"</span>, <span class="s">"2"</span>)
+    u.<span class="f">set_raw_query</span>(url.<span class="f">encode_query</span>(q))
+    <span class="f">print</span>(url.<span class="f">format</span>(u))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>https://api.example.com/v1/search%20results?q=tern+%26+go&amp;page=2</code></pre></div>
+<p>Each setter writes the text again. To change several parts at once, or to make a URL with no text to start from, fill in a <code>url.Parts</code> (fields <code>scheme opaque user password host port path raw_path raw_query force_query fragment raw_fragment omit_host</code>) and <code>build</code> it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> url
+
+<span class="k">fn</span> <span class="f">main</span>():
+    p <span class="o">=</span> url.<span class="f">parse</span>(<span class="s">"http://example.com/a?x=1"</span>).<span class="f">unwrap</span>().<span class="f">parts</span>()
+    p.scheme <span class="o">=</span> <span class="s">"https"</span>
+    p.port <span class="o">=</span> <span class="n">8443</span>
+    p.path <span class="o">=</span> <span class="s">"/b c"</span>
+    <span class="f">print</span>(url.<span class="f">format</span>(url.<span class="f">build</span>(p)))
+    <span class="f">print</span>(url.<span class="f">format</span>(url.<span class="f">build</span>(url.<span class="t">Parts</span>(<span class="s">"http"</span>, <span class="s">""</span>, <span class="s">""</span>, <span class="s">""</span>, <span class="s">"::1"</span>, <span class="n">8080</span>, <span class="s">"/"</span>, <span class="s">""</span>, <span class="s">""</span>, <span class="k">false</span>, <span class="s">""</span>, <span class="s">""</span>, <span class="k">false</span>))))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>https://example.com:8443/b%20c?x=1
+http://[::1]:8080/</code></pre></div>
+<p>Print a Url with <code>url.format(u)</code> (or <code>u.parts()</code>): <code>print(u)</code> shows its text and positions.</p>
+<h2 id="errors"><a class="anchor" href="#errors" aria-hidden="true">#</a>Errors</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> url
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> s <span class="k">in</span> [<span class="s">"http://x/%zz"</span>, <span class="s">"http://x:99999/"</span>, <span class="s">"http://[::1"</span>, <span class="s">"http://x\ny"</span>, <span class="s">"1http://x"</span>]:
+        <span class="f">print</span>(url.<span class="f">parse</span>(s))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Err("url: invalid escape "%zz" in "http://x/%zz"")
+Err("url: invalid port "99999" in "http://x:99999/"")
+Err("url: missing "]" in host in "http://[::1"")
+Err("url: invalid control character in "http://x\ny"")
+Err("url: first path segment cannot contain a colon in "1http://x"")</code></pre></div>
+<h2 id="resolving-links"><a class="anchor" href="#resolving-links" aria-hidden="true">#</a>Resolving links</h2>
+<p><code>resolve</code> and <code>join</code> follow RFC 3986 section 5, including its dot segments:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> url
+
+<span class="k">fn</span> <span class="f">main</span>():
+    base <span class="o">=</span> <span class="s">"http://a/b/c/d;p?q"</span>
+    <span class="k">for</span> r <span class="k">in</span> [<span class="s">"g"</span>, <span class="s">"../g"</span>, <span class="s">"../../../g"</span>, <span class="s">"?y"</span>, <span class="s">"#s"</span>, <span class="s">"//g"</span>, <span class="s">"g;x=1/../y"</span>]:
+        <span class="f">print</span>(r, url.<span class="f">join</span>(base, r).<span class="f">unwrap_or</span>(<span class="s">""</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>g http://a/b/c/g
+../g http://a/b/g
+../../../g http://a/g
+?y http://a/b/c/d;p?y
+#s http://a/b/c/d;p?q#s
+//g http://g
+g;x=1/../y http://a/b/c/y</code></pre></div>
+<h2 id="queries"><a class="anchor" href="#queries" aria-hidden="true">#</a>Queries</h2>
+<p>A <code>Query</code> keeps its pairs in the order given (<code>q.keys</code>, <code>q.vals</code>), and a key may repeat. <code>parse_query</code> is an <code>Err</code> for a bad escape or a <code>;</code> (once a separator, and servers still disagree on it), while <code>u.query()</code> skips such pairs, as a server reading a request would:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> url
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(url.<span class="f">parse_query</span>(<span class="s">"tag=a&amp;tag=b&amp;name=Ada+Lovelace&amp;empty="</span>))
+    <span class="f">print</span>(url.<span class="f">parse_query</span>(<span class="s">"a=1;b=2"</span>))
+    <span class="f">print</span>(url.<span class="f">query_string</span>({<span class="s">"q"</span>: <span class="s">"a&amp;b"</span>, <span class="s">"lang"</span>: <span class="s">"en"</span>}))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Ok(url.Query{keys: ["tag", "tag", "name", "empty"], vals: ["a", "b", "Ada Lovelace", ""]})
+Err("url: invalid ";" in query (use "&amp;" between pairs)")
+lang=en&amp;q=a%26b</code></pre></div>
+<h2 id="speed-and-memory"><a class="anchor" href="#speed-and-memory" aria-hidden="true">#</a>Speed and memory</h2>
+<p><code>bench/std</code> does the same work with Go's <code>net/url</code> and Rust's <code>url</code> crate (WHATWG URLs, which also normalizes) on a million generated URLs with paths, queries, some escapes, ports, user info and fragments. For <code>parse</code> each program also reads the host, path, query and port.</p>
+<div class="table"><table><thead><tr><th>ns per URL</th><th>Tern</th><th>Go</th><th>Rust</th></tr></thead><tbody><tr><td><code>parse</code></td><td><strong>195</strong></td><td>320</td><td>238</td></tr><tr><td><code>format</code></td><td><strong>4</strong></td><td>162</td><td>26</td></tr><tr><td><code>resolve</code> + <code>format</code></td><td><strong>94</strong></td><td>534</td><td>124</td></tr><tr><td><code>query()</code>, every pair</td><td><strong>93</strong></td><td>189</td><td>110</td></tr><tr><td><code>query_escape</code> + unescape</td><td><strong>90</strong></td><td>200</td><td>271</td></tr><tr><td>peak memory (1M parsed)</td><td><strong>238 MB</strong></td><td>529 MB</td><td>496 MB</td></tr></tbody></table></div>
+<p>(<code>format</code> is a string Tern already has, shared; Rust's <code>to_string</code> copies its text.)</p>
+<p>A <code>Url</code> is its text and five ints of positions, like Rust's. Parsing a URL already written the way <code>format</code> writes it (the scheme in lower case, nothing that must be escaped or dropped) finds the positions in one pass in C and keeps the string it was given, so a parsed URL costs 48 bytes over its text and <code>format</code> hands back that text. Any other URL is parsed part by part and written once. Resolving a link with no scheme or host joins the base's text up to its path, the merged path (C, in one pass), and the link's query and fragment. Escaping is C with a table per kind of part; a part with nothing to change comes back without a copy. The answers agree with Go's on 200,000 random URL-like strings, for every part, <code>format</code>, <code>resolve</code>, both escapes and unescapes, and <code>parse_query</code>, except for the differences listed above.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/term.html"><span>Previous</span>term</a><a class="next" href="../std/toml.html"><span>Next</span>toml</a></div>
+<footer>Source: <code>docs/std/url.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#functions">Functions</a></li><li class="l2"><a href="#the-parts">The parts</a></li><li class="l2"><a href="#errors">Errors</a></li><li class="l2"><a href="#resolving-links">Resolving links</a></li><li class="l2"><a href="#queries">Queries</a></li><li class="l2"><a href="#speed-and-memory">Speed and memory</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

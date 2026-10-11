@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5. Structs · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/05-structs.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html" class="cur" aria-current="page">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="5-structs"><a class="anchor" href="#5-structs" aria-hidden="true">#</a>5. Structs</h1>
+<p>A struct groups related values under one name. This chapter shows how to define structs, build them, read and change their fields, nest them, and give them "methods" by writing ordinary functions. Tern has no classes, <code>self</code>, or inheritance; structs plus functions cover the same ground with less machinery.</p>
+<h2 id="defining-and-building-a-struct"><a class="anchor" href="#defining-and-building-a-struct" aria-hidden="true">#</a>Defining and building a struct</h2>
+<p>A struct lists its fields and their types. Fields of the same type can share a line:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Book</span>:
+    title: <span class="t">str</span>
+    author: <span class="t">str</span>
+    year: <span class="t">int</span>
+    rating: <span class="t">float</span>
+
+<span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    b <span class="o">=</span> <span class="t">Book</span>(<span class="s">"Dune"</span>, <span class="s">"Frank Herbert"</span>, <span class="n">1965</span>, <span class="n">4.5</span>)
+    c <span class="o">=</span> <span class="t">Book</span>(title<span class="o">=</span><span class="s">"Emma"</span>, author<span class="o">=</span><span class="s">"Jane Austen"</span>, rating<span class="o">=</span><span class="n">4.0</span>, year<span class="o">=</span><span class="n">1815</span>)
+    <span class="f">print</span>(b.title, <span class="s">"by"</span>, b.author)
+    <span class="f">print</span>(c.year, c.rating)
+    <span class="f">print</span>(<span class="t">Point</span>(<span class="n">3</span>, <span class="o">-</span><span class="n">1</span>))
+    <span class="f">print</span>(b)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Dune by Frank Herbert
+1815 4.0
+Point{x: 3, y: -1}
+Book{title: "Dune", author: "Frank Herbert", year: 1965, rating: 4.5}</code></pre></div>
+<p>You build a struct by calling its name like a function. Give the fields in order, or name them (<code>title="Emma"</code>) in any order. Named arguments exist only for this: they make long constructor calls readable, and they don't break when someone reorders the fields.</p>
+<p><code>print</code> shows a whole struct as <code>Name{field: value, ...}</code>, which is handy while debugging.</p>
+<h2 id="every-field-is-required"><a class="anchor" href="#every-field-is-required" aria-hidden="true">#</a>Every field is required</h2>
+<p>A struct has no default field values, and every field must be given:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    p <span class="o">=</span> <span class="t">Point</span>(<span class="n">1</span>)
+    <span class="f">print</span>(p.z)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>5: error: missing field `y` in Point
+6: error: Point has no field `z`</code></pre></div>
+<p>When you want defaults, write a function that builds the struct. By convention it is named <code>new_something</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Settings</span>:
+    volume: <span class="t">int</span>
+    muted: <span class="t">bool</span>
+    theme: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">new_settings</span>() <span class="t">Settings</span>:
+    <span class="k">return</span> <span class="t">Settings</span>(volume<span class="o">=</span><span class="n">50</span>, muted<span class="o">=</span><span class="k">false</span>, theme<span class="o">=</span><span class="s">"light"</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="f">new_settings</span>()
+    s.theme <span class="o">=</span> <span class="s">"dark"</span>
+    <span class="f">print</span>(s)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Settings{volume: 50, muted: false, theme: "dark"}</code></pre></div>
+<h2 id="changing-fields"><a class="anchor" href="#changing-fields" aria-hidden="true">#</a>Changing fields</h2>
+<p>Fields of a struct in a variable can be assigned directly, including fields of nested structs and arrays inside the struct:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">int</span>
+
+<span class="k">struct</span> <span class="t">Player</span>:
+    name: <span class="t">str</span>
+    pos: <span class="t">Point</span>
+    inventory: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    hero <span class="o">=</span> <span class="t">Player</span>(<span class="s">"Robin"</span>, <span class="t">Point</span>(<span class="n">0</span>, <span class="n">0</span>), [])
+    hero.pos.x <span class="o">+</span><span class="o">=</span> <span class="n">3</span>
+    hero.pos.y <span class="o">=</span> <span class="o">-</span><span class="n">2</span>
+    hero.inventory.<span class="f">push</span>(<span class="s">"rope"</span>)
+    hero.inventory.<span class="f">push</span>(<span class="s">"lamp"</span>)
+    <span class="f">print</span>(hero.name, <span class="s">"is at"</span>, hero.pos.x, hero.pos.y)
+    <span class="f">print</span>(hero.inventory)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Robin is at 3 -2
+["rope", "lamp"]</code></pre></div>
+<h2 id="methods-are-functions"><a class="anchor" href="#methods-are-functions" aria-hidden="true">#</a>Methods are functions</h2>
+<p>To give a struct behavior, write a function that takes it as the first parameter. Thanks to method-call syntax (<a href="04-functions.html#method-call-syntax">chapter 4</a>), you can call it with a dot:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Rect</span>:
+    w, h: <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">area</span>(r: <span class="t">Rect</span>) <span class="t">float</span>:
+    <span class="k">return</span> r.w <span class="o">*</span> r.h
+
+<span class="k">fn</span> <span class="f">is_square</span>(r: <span class="t">Rect</span>) <span class="t">bool</span>:
+    <span class="k">return</span> r.w <span class="o">==</span> r.h
+
+<span class="k">fn</span> <span class="f">scaled</span>(r: <span class="t">Rect</span>, k: <span class="t">float</span>) <span class="t">Rect</span>:
+    <span class="k">return</span> <span class="t">Rect</span>(r.w <span class="o">*</span> k, r.h <span class="o">*</span> k)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    r <span class="o">=</span> <span class="t">Rect</span>(<span class="n">2.0</span>, <span class="n">3.0</span>)
+    <span class="f">print</span>(r.<span class="f">area</span>(), r.<span class="f">is_square</span>())
+    big <span class="o">=</span> r.<span class="f">scaled</span>(<span class="n">10.0</span>)
+    <span class="f">print</span>(big, big.<span class="f">area</span>())
+    <span class="f">print</span>(<span class="f">area</span>(r))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>6.0 false
+Rect{w: 20.0, h: 30.0} 600.0
+6.0</code></pre></div>
+<p><code>r.area()</code> and <code>area(r)</code> are the same call. There is no special "inside the struct" scope: a method is just a function, so it can live in any file and anyone can add one.</p>
+<p>Notice that <code>scaled</code> returns a new <code>Rect</code> instead of changing <code>r</code>. That is the natural style in Tern, because parameters are read-only. When a function should change the struct in place, mark the parameter <code>mut</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Counter</span>:
+    name: <span class="t">str</span>
+    count: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">tick</span>(c: <span class="k">mut</span> <span class="t">Counter</span>):
+    c.count <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">reset</span>(c: <span class="k">mut</span> <span class="t">Counter</span>):
+    c.count <span class="o">=</span> <span class="n">0</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    visits <span class="o">=</span> <span class="t">Counter</span>(<span class="s">"visits"</span>, <span class="n">0</span>)
+    visits.<span class="f">tick</span>()
+    visits.<span class="f">tick</span>()
+    visits.<span class="f">tick</span>()
+    <span class="f">print</span>(visits.count)
+    <span class="f">reset</span>(<span class="o">&amp;</span>visits)
+    <span class="f">print</span>(visits.count)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3
+0</code></pre></div>
+<p>With a <code>mut</code> first parameter, <code>visits.tick()</code> is shorthand for <code>tick(&amp;visits)</code>. The <code>&amp;</code> says "this call may change <code>visits</code>"; with method syntax the dot plays that role.</p>
+<h2 id="mistakes-from-other-languages"><a class="anchor" href="#mistakes-from-other-languages" aria-hidden="true">#</a>Mistakes from other languages</h2>
+<p>Structs hold data only. Writing a class, or a method with <code>self</code> inside the struct, gets a hint pointing you to plain functions:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Rect</span>:
+    w, h: <span class="t">float</span>
+    <span class="k">fn</span> <span class="f">area</span>(self) <span class="t">float</span>:
+        <span class="k">return</span> self.w <span class="o">*</span> self.h
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="t">Rect</span>(<span class="n">1.0</span>, <span class="n">2.0</span>))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: expected a name, found 'fn'
+3: hint: there is no `self`: take the struct as a normal parameter, `fn area(r: Rect) float:`</code></pre></div>
+<p><code>==</code> compares two structs field by field (and the arrays and maps inside them element by element), so two points with the same coordinates are equal. When "equal" means something else, such as "the same id", write a function that says so:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">int</span>
+
+<span class="k">struct</span> <span class="t">User</span>:
+    id: <span class="t">int</span>
+    name: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">same_user</span>(a: <span class="t">User</span>, b: <span class="t">User</span>) <span class="t">bool</span>:
+    <span class="k">return</span> a.id <span class="o">==</span> b.id
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="t">Point</span>(<span class="n">1</span>, <span class="n">2</span>) <span class="o">==</span> <span class="t">Point</span>(<span class="n">1</span>, <span class="n">2</span>), <span class="t">Point</span>(<span class="n">1</span>, <span class="n">2</span>) <span class="o">==</span> <span class="t">Point</span>(<span class="n">2</span>, <span class="n">1</span>))
+    <span class="f">print</span>(<span class="t">User</span>(<span class="n">7</span>, <span class="s">"ada"</span>).<span class="f">same_user</span>(<span class="t">User</span>(<span class="n">7</span>, <span class="s">"Ada L."</span>)))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true false
+true</code></pre></div>
+<p>A struct can also be a map key: <code>seen: {Point: bool} = {}</code>.</p>
+<h2 id="structs-that-contain-structs"><a class="anchor" href="#structs-that-contain-structs" aria-hidden="true">#</a>Structs that contain structs</h2>
+<p>A struct can contain other structs, arrays of structs, and even an array of its own type, which is how you make a tree:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Folder</span>:
+    name: <span class="t">str</span>
+    children: [<span class="t">Folder</span>]
+
+<span class="k">fn</span> <span class="f">count</span>(f: <span class="t">Folder</span>) <span class="t">int</span>:
+    n <span class="o">=</span> <span class="n">1</span>
+    <span class="k">for</span> c <span class="k">in</span> f.children:
+        n <span class="o">+</span><span class="o">=</span> <span class="f">count</span>(c)
+    <span class="k">return</span> n
+
+<span class="k">fn</span> <span class="f">main</span>():
+    docs <span class="o">=</span> <span class="t">Folder</span>(<span class="s">"docs"</span>, [<span class="t">Folder</span>(<span class="s">"tour"</span>, []), <span class="t">Folder</span>(<span class="s">"guides"</span>, [])])
+    root <span class="o">=</span> <span class="t">Folder</span>(<span class="s">"root"</span>, [docs, <span class="t">Folder</span>(<span class="s">"src"</span>, [])])
+    <span class="f">print</span>(<span class="f">count</span>(root), <span class="s">"folders"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>5 folders</code></pre></div>
+<p>A struct can't contain itself directly (a <code>Folder</code> field inside <code>Folder</code> would be infinitely large). For graphs where nodes point at each other, keep the nodes in an array and store indexes, as shown in the <a href="../reference.html#21-idioms">reference</a>.</p>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Define <code>struct Temperature</code> with a <code>celsius: float</code> field. Write <code>to_fahrenheit(t: Temperature) float</code> (<code>c * 9 / 5 + 32</code>) and <code>warmer(t: Temperature, by: float) Temperature</code>, which returns a new value. Then make a <code>mut</code> version, <code>warm(t: mut Temperature, by: float)</code>, and call both styles from <code>main</code>.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Temperature</span>:
+    celsius: <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">to_fahrenheit</span>(t: <span class="t">Temperature</span>) <span class="t">float</span>:
+    <span class="k">return</span> t.celsius <span class="o">*</span> <span class="n">9.0</span> <span class="o">/</span> <span class="n">5.0</span> <span class="o">+</span> <span class="n">32.0</span>
+
+<span class="k">fn</span> <span class="f">warmer</span>(t: <span class="t">Temperature</span>, by: <span class="t">float</span>) <span class="t">Temperature</span>:
+    <span class="k">return</span> <span class="t">Temperature</span>(t.celsius <span class="o">+</span> by)
+
+<span class="k">fn</span> <span class="f">warm</span>(t: <span class="k">mut</span> <span class="t">Temperature</span>, by: <span class="t">float</span>):
+    t.celsius <span class="o">+</span><span class="o">=</span> by
+
+<span class="k">fn</span> <span class="f">main</span>():
+    today <span class="o">=</span> <span class="t">Temperature</span>(<span class="n">20.0</span>)
+    tomorrow <span class="o">=</span> today.<span class="f">warmer</span>(<span class="n">5.0</span>)
+    <span class="f">print</span>(today.<span class="f">to_fahrenheit</span>(), tomorrow.<span class="f">to_fahrenheit</span>())
+    today.<span class="f">warm</span>(<span class="n">10.0</span>)
+    <span class="f">print</span>(today.celsius, today.<span class="f">to_fahrenheit</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>68.0 77.0
+30.0 86.0</code></pre></div>
+<p>Next: <a href="06-arrays-and-maps.html">6. Arrays and maps</a>. Reference: <a href="../reference.html#7-structs">§7 Structs</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/04-functions.html"><span>Previous</span>4. Functions</a><a class="next" href="../tour/06-arrays-and-maps.html"><span>Next</span>6. Arrays and maps</a></div>
+<footer>Source: <code>docs/tour/05-structs.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#defining-and-building-a-struct">Defining and building a struct</a></li><li class="l2"><a href="#every-field-is-required">Every field is required</a></li><li class="l2"><a href="#changing-fields">Changing fields</a></li><li class="l2"><a href="#methods-are-functions">Methods are functions</a></li><li class="l2"><a href="#mistakes-from-other-languages">Mistakes from other languages</a></li><li class="l2"><a href="#structs-that-contain-structs">Structs that contain structs</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

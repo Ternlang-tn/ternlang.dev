@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>12. Modules and packages · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/12-modules.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html" class="cur" aria-current="page">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="12-modules-and-packages"><a class="anchor" href="#12-modules-and-packages" aria-hidden="true">#</a>12. Modules and packages</h1>
+<p>Real programs outgrow one file. This chapter shows how Tern splits a program into modules (one file each) and packages (a directory of files), how <code>import</code> finds them, how to use the names they define, and how to keep helper functions private with a leading <code>_</code>. There is no package manager and no configuration file: the directory layout is the whole story.</p>
+<h2 id="using-a-module"><a class="anchor" href="#using-a-module" aria-hidden="true">#</a>Using a module</h2>
+<p>You have already used modules from the standard library. <code>import name</code> makes a module available, and its functions and types are then written <code>name.thing</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+<span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    r <span class="o">=</span> <span class="n">2.5</span>
+    area <span class="o">=</span> math.<span class="f">pi</span>() <span class="o">*</span> r <span class="o">*</span> r
+    <span class="f">print</span>(fmt.<span class="f">fixed</span>(area, <span class="n">2</span>), math.<span class="f">sqrt</span>(<span class="n">2.0</span>), math.<span class="f">floor</span>(<span class="n">3.7</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>19.63 1.4142135623730951 3.0</code></pre></div>
+<p><code>from name import a, b</code> brings specific names in so you can use them without the prefix. The module name is not in scope then, unless you also import it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">from</span> math <span class="k">import</span> pi, floor
+<span class="k">from</span> fmt <span class="k">import</span> fixed
+<span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">fixed</span>(<span class="f">pi</span>(), <span class="n">3</span>), <span class="f">floor</span>(<span class="n">9.99</span>), fmt.<span class="f">thousands</span>(<span class="n">1234567</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3.142 9.0 1,234,567</code></pre></div>
+<p>Asking for a name the module doesn't have is caught at compile time:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(math.<span class="f">sqroot</span>(<span class="n">2.0</span>))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: module `math` has no `sqroot`</code></pre></div>
+<p>The <a href="../std/index.html">standard library overview</a> lists every module and function.</p>
+<h2 id="your-own-modules"><a class="anchor" href="#your-own-modules" aria-hidden="true">#</a>Your own modules</h2>
+<p>Every <code>.tn</code> file is a module, named after the file. Put <code>money.tn</code> next to your main file, and <code>import money</code> finds it. A module contains the same things as any Tern file (imports, structs, enums, functions), but no <code>fn main()</code>: the program starts in the file you run.</p>
+<p>Here is a small program in three parts. First, <code>money.tn</code>, a module that handles prices in cents so that amounts never suffer from floating-point rounding:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># money.tn</span>
+<span class="k">import</span> fmt
+
+<span class="k">struct</span> <span class="t">Price</span>:
+    cents: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">from_cents</span>(cents: <span class="t">int</span>) <span class="t">Price</span>:
+    <span class="k">return</span> <span class="t">Price</span>(cents)
+
+<span class="k">fn</span> <span class="f">add</span>(a: <span class="t">Price</span>, b: <span class="t">Price</span>) <span class="t">Price</span>:
+    <span class="k">return</span> <span class="t">Price</span>(a.cents <span class="o">+</span> b.cents)
+
+<span class="k">fn</span> <span class="f">times</span>(p: <span class="t">Price</span>, n: <span class="t">int</span>) <span class="t">Price</span>:
+    <span class="k">return</span> <span class="t">Price</span>(p.cents <span class="o">*</span> n)
+
+<span class="k">fn</span> <span class="f">show</span>(p: <span class="t">Price</span>) <span class="t">str</span>:
+    <span class="k">return</span> <span class="s">"$"</span> <span class="o">+</span> fmt.<span class="f">cents</span>(p.cents)</code></pre></div>
+<p>Other files refer to its type as <code>money.Price</code> and to its functions as <code>money.from_cents</code>, and so on. Modules can import other modules, including standard ones, as <code>money.tn</code> imports <code>fmt</code>.</p>
+<h2 id="packages-a-directory-is-one-module"><a class="anchor" href="#packages-a-directory-is-one-module" aria-hidden="true">#</a>Packages: a directory is one module</h2>
+<p>When a module grows too big for one file, make it a directory. All the <code>.tn</code> files in a directory together form one package, imported by the directory's name. Files in the same package share one namespace: they see each other's structs and functions without importing anything.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>shop/
+    main.tn
+    money.tn
+    inventory/
+        item.tn
+        stock.tn</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># inventory/item.tn</span>
+<span class="k">import</span> money
+
+<span class="k">struct</span> <span class="t">Item</span>:
+    name: <span class="t">str</span>
+    price: money.<span class="t">Price</span>
+    qty: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">new_item</span>(name: <span class="t">str</span>, cents: <span class="t">int</span>, qty: <span class="t">int</span>) <span class="t">Item</span>:
+    <span class="k">return</span> <span class="t">Item</span>(<span class="f">_tidy</span>(name), money.<span class="f">from_cents</span>(cents), qty)
+
+<span class="k">fn</span> <span class="f">_tidy</span>(name: <span class="t">str</span>) <span class="t">str</span>:            <span class="c"># private: only this package can call it</span>
+    <span class="k">return</span> name.<span class="f">trim</span>().<span class="f">lower</span>()</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># inventory/stock.tn</span>
+<span class="k">import</span> money
+
+<span class="k">struct</span> <span class="t">Stock</span>:
+    items: [<span class="t">Item</span>]                   <span class="c"># Item comes from item.tn: same package, no import</span>
+
+<span class="k">fn</span> <span class="f">empty</span>() <span class="t">Stock</span>:
+    <span class="k">return</span> <span class="t">Stock</span>([])
+
+<span class="k">fn</span> <span class="f">add_item</span>(s: <span class="k">mut</span> <span class="t">Stock</span>, it: <span class="t">Item</span>):
+    s.items.<span class="f">push</span>(it)
+
+<span class="k">fn</span> <span class="f">value</span>(s: <span class="t">Stock</span>) money.<span class="t">Price</span>:
+    total <span class="o">=</span> money.<span class="f">from_cents</span>(<span class="n">0</span>)
+    <span class="k">for</span> it <span class="k">in</span> s.items:
+        total <span class="o">=</span> total.<span class="f">add</span>(it.price.<span class="f">times</span>(it.qty))
+    <span class="k">return</span> total</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># main.tn</span>
+<span class="k">import</span> inventory
+<span class="k">from</span> money <span class="k">import</span> <span class="t">Price</span>, show
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> inventory.<span class="f">empty</span>()
+    s.<span class="f">add_item</span>(inventory.<span class="f">new_item</span>(<span class="s">"  Lamp "</span>, <span class="n">2500</span>, <span class="n">3</span>))
+    s.<span class="f">add_item</span>(inventory.<span class="f">new_item</span>(<span class="s">"Rope"</span>, <span class="n">899</span>, <span class="n">10</span>))
+    total: <span class="t">Price</span> <span class="o">=</span> s.<span class="f">value</span>()
+    <span class="f">print</span>(<span class="f">len</span>(s.items), <span class="s">"items, worth"</span>, <span class="f">show</span>(total))
+    <span class="k">for</span> it <span class="k">in</span> s.items:
+        <span class="f">print</span>(it.name, it.price.<span class="f">show</span>(), <span class="s">"x"</span>, it.qty)</code></pre></div>
+<p>Running it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern run shop/main.tn</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>2 items, worth $164.90
+lamp $25.00 x 3
+rope $8.99 x 10</code></pre></div>
+<p>Notice how the "methods" work across modules. <code>s.add_item(...)</code> in <code>main.tn</code> finds <code>add_item</code> even though it lives in <code>inventory</code>: <code>x.f(...)</code> looks for <code>f</code> in the module where the type of <code>x</code> is defined. Likewise <code>it.price.show()</code> finds <code>money.show</code>, because <code>Price</code> is defined in <code>money</code>. This is what lets you call <code>d.exec(...)</code> on a database handle from the <code>sqlite</code> module without writing <code>sqlite.exec(d, ...)</code>.</p>
+<p>A package's files are read in alphabetical order, but the order doesn't matter, since functions and types can be used before they are defined. Two files of one package can't define the same name.</p>
+<h2 id="how-import-finds-a-module"><a class="anchor" href="#how-import-finds-a-module" aria-hidden="true">#</a>How import finds a module</h2>
+<p>For <code>import name</code>, the compiler looks in this order and takes the first match:</p>
+<ol><li><code>library/std/name.tn</code>, a standard library module;</li><li><code>library/name/</code>, a first-party package such as <code>roost</code>, <code>queue</code>, or <code>pg</code>;</li><li><code>name.tn</code> in the directory of the main file (the file you passed to <code>run</code>, <code>check</code>, or <code>build</code>);</li><li><code>name/</code>, a directory of <code>.tn</code> files next to the main file;</li><li><code>deps/name/</code>, a third-party package fetched by <code>tern get</code> (only in a project with a <code>tern.mod</code>).</li></ol>
+<p>Some consequences:</p>
+<ul><li>Imports are always resolved from the main file's directory, even inside a package. That is why <code>inventory/item.tn</code> writes <code>import money</code>, not <code>import ../money</code>: there are no relative paths and no nested module names like <code>a.b</code>.</li><li>The standard library and first-party packages come first. A file of yours named <code>fmt.tn</code>, <code>json.tn</code>, or <code>web.tn</code> would be ignored in favor of the library's, so pick other names.</li><li>Each module is loaded once, however many files import it.</li><li>Modules can't import each other in a cycle (<code>a</code> imports <code>b</code> and <code>b</code> imports <code>a</code>). Move the shared part into a third module that both import.</li><li>If nothing matches, the error lists where it looked: <code>can't find module `invntory` (looked in the standard library and /path/to/shop)</code>.</li></ul>
+<h2 id="private-names"><a class="anchor" href="#private-names" aria-hidden="true">#</a>Private names</h2>
+<p>A struct, enum, or function whose name starts with <code>_</code> is private to its module (or package): other modules can't use it, with or without <code>from ... import</code>. Use this for helpers that are not part of the module's promise to its users, so you can change them freely:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(fmt.<span class="f">_scaled</span>(<span class="n">1205</span>, <span class="n">2</span>))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>4: error: `_scaled` is private to module `fmt`</code></pre></div>
+<p>The same error appears for <code>inventory._tidy("x")</code> in the shop example. Inside <code>inventory</code>, both <code>item.tn</code> and <code>stock.tn</code> may call <code>_tidy</code>, because they are the same package.</p>
+<h2 id="sharing-code-between-projects"><a class="anchor" href="#sharing-code-between-projects" aria-hidden="true">#</a>Sharing code between projects</h2>
+<p>There is no package manager, registry, or version file. To reuse a module in another project, copy its file or directory next to that project's main file. For a library of your own, keep it in its own repository and copy (or link) it in. This keeps builds simple and reproducible: everything a program uses is either in <code>std/</code> or in its own directory.</p>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Split the bank from <a href="09-values-and-mut.html#try-it">chapter 9</a> into two files: <code>bank.tn</code> with the <code>Bank</code> struct and its functions (make a private <code>_check_owner(b: Bank, owner: str) bool</code> helper that <code>deposit</code> uses to ignore unknown owners), and <code>main.tn</code> that imports it and calls <code>b.deposit(...)</code> with method syntax. Then try calling <code>bank._check_owner</code> from <code>main.tn</code> and read the error.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># bank.tn</span>
+<span class="k">struct</span> <span class="t">Bank</span>:
+    accounts: {<span class="t">str</span>: <span class="t">int</span>}
+
+<span class="k">fn</span> <span class="f">new_bank</span>() <span class="t">Bank</span>:
+    <span class="k">return</span> <span class="t">Bank</span>({})
+
+<span class="k">fn</span> <span class="f">open_account</span>(b: <span class="k">mut</span> <span class="t">Bank</span>, owner: <span class="t">str</span>):
+    b.accounts[owner] <span class="o">=</span> <span class="n">0</span>
+
+<span class="k">fn</span> <span class="f">deposit</span>(b: <span class="k">mut</span> <span class="t">Bank</span>, owner: <span class="t">str</span>, amount: <span class="t">int</span>):
+    <span class="k">if</span> <span class="f">_check_owner</span>(b, owner):
+        b.accounts[owner] <span class="o">+</span><span class="o">=</span> amount
+
+<span class="k">fn</span> <span class="f">total</span>(b: <span class="t">Bank</span>) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> owner, bal <span class="k">in</span> b.accounts:
+        t <span class="o">+</span><span class="o">=</span> bal
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">_check_owner</span>(b: <span class="t">Bank</span>, owner: <span class="t">str</span>) <span class="t">bool</span>:
+    <span class="k">return</span> owner <span class="k">in</span> b.accounts</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># main.tn</span>
+<span class="k">import</span> bank
+
+<span class="k">fn</span> <span class="f">main</span>():
+    b <span class="o">=</span> bank.<span class="f">new_bank</span>()
+    b.<span class="f">open_account</span>(<span class="s">"ada"</span>)
+    b.<span class="f">deposit</span>(<span class="s">"ada"</span>, <span class="n">100</span>)
+    b.<span class="f">deposit</span>(<span class="s">"zed"</span>, <span class="n">50</span>)            <span class="c"># ignored: no such account</span>
+    <span class="f">print</span>(b.<span class="f">total</span>(), b.accounts)</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>100 {"ada": 100}</code></pre></div>
+<p>Next: <a href="13-next-steps.html">13. Where to go next</a>. Reference: <a href="../reference.html#17-modules-and-packages">§17 Modules and packages</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/11-parallelism.html"><span>Previous</span>11. Parallelism</a><a class="next" href="../tour/13-next-steps.html"><span>Next</span>13. Where to go next</a></div>
+<footer>Source: <code>docs/tour/12-modules.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#using-a-module">Using a module</a></li><li class="l2"><a href="#your-own-modules">Your own modules</a></li><li class="l2"><a href="#packages-a-directory-is-one-module">Packages: a directory is one module</a></li><li class="l2"><a href="#how-import-finds-a-module">How import finds a module</a></li><li class="l2"><a href="#private-names">Private names</a></li><li class="l2"><a href="#sharing-code-between-projects">Sharing code between projects</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2. Values and types · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/02-values-and-types.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html" class="cur" aria-current="page">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="2-values-and-types"><a class="anchor" href="#2-values-and-types" aria-hidden="true">#</a>2. Values and types</h1>
+<p>This chapter covers the building blocks every program uses: variables, the four basic types (<code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>), arithmetic, and conversions. The main thing to learn is that Tern infers types for you but never converts between them silently: when an <code>int</code> meets a <code>float</code>, you say which one you want.</p>
+<h2 id="variables"><a class="anchor" href="#variables" aria-hidden="true">#</a>Variables</h2>
+<p>A variable is created the first time you assign to it. There is no <code>let</code>, <code>var</code>, or <code>const</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    name <span class="o">=</span> <span class="s">"Ada"</span>
+    age <span class="o">=</span> <span class="n">36</span>
+    height <span class="o">=</span> <span class="n">1.65</span>
+    likes_tea <span class="o">=</span> <span class="k">true</span>
+    <span class="f">print</span>(name, age, height, likes_tea)
+    age <span class="o">=</span> age <span class="o">+</span> <span class="n">1</span>
+    age <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="f">print</span>(name, <span class="s">"is now"</span>, age)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Ada 36 1.65 true
+Ada is now 38</code></pre></div>
+<p>The compiler works out each variable's type from its first value: <code>name</code> is a <code>str</code>, <code>age</code> an <code>int</code>, <code>height</code> a <code>float</code>, and <code>likes_tea</code> a <code>bool</code>. That type is fixed from then on. Assigning a value of another type is an error, not a quiet change of meaning:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    x <span class="o">=</span> <span class="n">1</span>
+    x <span class="o">=</span> <span class="s">"one"</span>
+    y <span class="o">=</span> <span class="n">1</span> <span class="o">+</span> <span class="n">2.0</span>
+    <span class="f">print</span>(x, y)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>3: error: can't assign str to `x` of type int
+4: error: `+` with mismatched types int and float (use float()/int() to convert)
+4: hint: ints and floats never mix: `float(i) * x` or `i * int(x)`</code></pre></div>
+<p>You can write the type yourself with <code>name: type = value</code>. This is rarely needed for the basic types, but it documents intent, and it is how you create an empty collection (<a href="06-arrays-and-maps.html">chapter 6</a>):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    ratio: <span class="t">float</span> <span class="o">=</span> <span class="n">0.5</span>
+    count: <span class="t">int</span> <span class="o">=</span> <span class="n">0</span>
+    tags: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="f">print</span>(ratio, count, tags)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>0.5 0 []</code></pre></div>
+<p>Every variable needs a value when it is created: <code>x: int</code> on its own is an error. Use a natural starting value such as <code>0</code>, <code>0.0</code>, <code>false</code>, or <code>""</code>.</p>
+<p>There are no global variables. A value that never changes can be a constant, declared at the top level of the file with <code>const</code>; anything that changes is passed to the functions that use it:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>const <span class="t">TAX_RATE</span> <span class="o">=</span> <span class="n">0.2</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    price <span class="o">=</span> <span class="n">50.0</span>
+    <span class="f">print</span>(<span class="s">"tax:"</span>, price <span class="o">*</span> <span class="t">TAX_RATE</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>tax: 10.0</code></pre></div>
+<h2 id="numbers"><a class="anchor" href="#numbers" aria-hidden="true">#</a>Numbers</h2>
+<p><code>int</code> is a 64-bit signed integer and <code>float</code> is a 64-bit floating-point number. A number with a dot is a <code>float</code>; without one it is an <code>int</code>. Floats need digits on both sides of the dot (<code>1.0</code>, <code>0.5</code>), and underscores can group digits:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    population <span class="o">=</span> <span class="n">8_100_000_000</span>
+    pi <span class="o">=</span> <span class="n">3.14159</span>
+    <span class="f">print</span>(population, pi)
+    <span class="f">print</span>(<span class="n">7</span> <span class="o">+</span> <span class="n">2</span>, <span class="n">7</span> <span class="o">-</span> <span class="n">2</span>, <span class="n">7</span> <span class="o">*</span> <span class="n">2</span>, <span class="n">7</span> <span class="o">/</span> <span class="n">2</span>, <span class="n">7</span> <span class="o">%</span> <span class="n">2</span>)
+    <span class="f">print</span>(<span class="n">7.0</span> <span class="o">/</span> <span class="n">2.0</span>, <span class="o">-</span><span class="n">7</span> <span class="o">/</span> <span class="n">2</span>, <span class="o">-</span><span class="n">7</span> <span class="o">%</span> <span class="n">3</span>)
+    <span class="f">print</span>(<span class="n">0.1</span> <span class="o">+</span> <span class="n">0.2</span>, <span class="n">1.0</span> <span class="o">/</span> <span class="n">3.0</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>8100000000 3.14159
+9 5 14 3 1
+3.5 -3 -1
+0.30000000000000004 0.3333333333333333</code></pre></div>
+<p>The rules worth remembering:</p>
+<ul><li><code>/</code> on two <code>int</code>s is integer division. It truncates toward zero, so <code>7 / 2</code> is <code>3</code> and <code>-7 / 2</code> is <code>-3</code>. There is no <code>//</code>.</li><li><code>%</code> is the remainder, and its sign follows the left side.</li><li>There is no <code>**</code> for powers; use <code>math.pow</code> (<code>import math</code>), or multiply.</li><li>Dividing an int by zero is a runtime error. <code>int</code> arithmetic wraps around on overflow rather than stopping the program.</li><li>Floats print with at least one decimal (<code>10.0</code>), using the shortest form that reads back exactly. That is why <code>0.1 + 0.2</code> shows its rounding error, just as in Python or JavaScript.</li></ul>
+<h2 id="no-implicit-conversions"><a class="anchor" href="#no-implicit-conversions" aria-hidden="true">#</a>No implicit conversions</h2>
+<p>In most languages <code>1 + 2.5</code> quietly turns the <code>1</code> into a float. Tern refuses, because this kind of silent conversion hides bugs (integer division where you wanted a fraction, or a fraction truncated where you wanted a whole number). You convert explicitly:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    total <span class="o">=</span> <span class="n">7</span>
+    count <span class="o">=</span> <span class="n">2</span>
+    avg <span class="o">=</span> <span class="t">float</span>(total) <span class="o">/</span> <span class="t">float</span>(count)
+    <span class="f">print</span>(avg)
+    <span class="f">print</span>(<span class="t">int</span>(avg), <span class="t">int</span>(<span class="o">-</span><span class="n">2.7</span>))
+    <span class="f">print</span>(<span class="t">float</span>(total) <span class="o">*</span> <span class="n">1.5</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3.5
+3 -2
+10.5</code></pre></div>
+<p><code>float(i)</code> turns an int into a float. <code>int(f)</code> turns a float into an int by dropping the fraction (toward zero). For rounding, use <code>math.round</code>, <code>math.floor</code>, or <code>math.ceil</code>.</p>
+<h2 id="booleans"><a class="anchor" href="#booleans" aria-hidden="true">#</a>Booleans</h2>
+<p><code>bool</code> has two values, written <code>true</code> and <code>false</code> in lowercase. Combine them with the words <code>and</code>, <code>or</code>, and <code>not</code> (there is no <code>&amp;&amp;</code>, <code>||</code>, or <code>!</code>):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    temp <span class="o">=</span> <span class="n">22</span>
+    sunny <span class="o">=</span> <span class="k">true</span>
+    good_day <span class="o">=</span> sunny <span class="k">and</span> temp <span class="o">&gt;</span> <span class="n">18</span> <span class="k">and</span> temp <span class="o">&lt;</span> <span class="n">30</span>
+    <span class="f">print</span>(good_day, <span class="k">not</span> good_day, temp <span class="o">==</span> <span class="n">22</span>, temp <span class="o">!=</span> <span class="n">22</span>)
+    <span class="f">print</span>(temp <span class="o">&gt;=</span> <span class="n">30</span> <span class="k">or</span> sunny)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true false true false
+true</code></pre></div>
+<p><code>and</code> and <code>or</code> short-circuit: the right side runs only if it is needed. Comparisons (<code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>) work on numbers and on strings. There is no "truthiness": an <code>if</code> needs a real <code>bool</code>, so write <code>if len(xs) &gt; 0:</code> rather than <code>if xs:</code>.</p>
+<h2 id="strings"><a class="anchor" href="#strings" aria-hidden="true">#</a>Strings</h2>
+<p>A <code>str</code> is text in double quotes. <code>+</code> joins two strings; <code>*</code> repeats one. To put another kind of value into a string, use <code>str(x)</code> or an f-string, which evaluates each <code>{...}</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    first <span class="o">=</span> <span class="s">"Grace"</span>
+    last <span class="o">=</span> <span class="s">"Hopper"</span>
+    full <span class="o">=</span> first <span class="o">+</span> <span class="s">" "</span> <span class="o">+</span> last
+    born <span class="o">=</span> <span class="n">1906</span>
+    <span class="f">print</span>(full)
+    <span class="f">print</span>(full <span class="o">+</span> <span class="s">" was born in "</span> <span class="o">+</span> <span class="t">str</span>(born))
+    <span class="f">print</span>(<span class="s">f"{full} was born in {born}, {2024 - born} years ago"</span>)
+    <span class="f">print</span>(<span class="s">"-"</span> <span class="o">*</span> <span class="n">20</span>)
+    <span class="f">print</span>(<span class="s">"tab:\tquote:\" backslash:\\"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Grace Hopper
+Grace Hopper was born in 1906
+Grace Hopper was born in 1906, 118 years ago
+--------------------
+tab:	quote:" backslash:\</code></pre></div>
+<p>Strings use double quotes only, and a string must fit on one line (use <code>\n</code> for a line break). The usual escapes work: <code>\n</code>, <code>\t</code>, <code>\"</code>, <code>\\</code>, and <code>\u00e9</code> or <code>\u{1F600}</code> for any Unicode character. <a href="07-strings.html">Chapter 7</a> covers strings in depth: slicing, searching, splitting, and formatting numbers.</p>
+<h2 id="comments"><a class="anchor" href="#comments" aria-hidden="true">#</a>Comments</h2>
+<p>A comment starts with <code>#</code> and runs to the end of the line. There are no block comments or docstrings; write several <code>#</code> lines.</p>
+<h2 id="mistakes-from-other-languages"><a class="anchor" href="#mistakes-from-other-languages" aria-hidden="true">#</a>Mistakes from other languages</h2>
+<p>Because Tern looks like Python, Python habits are the most common source of errors. The compiler recognizes many of them and says what to write instead:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    ok <span class="o">=</span> <span class="t">True</span>
+    <span class="f">print</span>(ok)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>2: error: unknown variable `True`
+2: hint: booleans are lowercase: `true`</code></pre></div>
+<p>Only the first error is shown here because the program could not be parsed past line 3. After fixing it, <code>check</code> reports the next one: <code>unknown variable True</code>, with the hint "booleans are lowercase: <code>true</code>".</p>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>A recipe needs 250 grams of flour for 4 people. Write a program that takes a number of people in a variable <code>guests</code> (an <code>int</code>) and prints how much flour to use, as a <code>float</code>. Then print it again rounded down to whole grams, as an <code>int</code>. For 6 guests the answer is 375.0 grams. Make sure the computation does not lose the fraction for, say, 3 guests.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    grams_for_4 <span class="o">=</span> <span class="n">250</span>
+    <span class="k">for</span> guests <span class="k">in</span> [<span class="n">3</span>, <span class="n">6</span>]:
+        flour <span class="o">=</span> <span class="t">float</span>(grams_for_4) <span class="o">*</span> <span class="t">float</span>(guests) <span class="o">/</span> <span class="n">4.0</span>
+        <span class="f">print</span>(<span class="s">f"{guests} guests: {flour} g (about {int(flour)} g)"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 guests: 187.5 g (about 187 g)
+6 guests: 375.0 g (about 375 g)</code></pre></div>
+<p>Writing <code>grams_for_4 * guests / 4</code> would compute with ints and give <code>187</code> for 3 guests.</p>
+<p>Next: <a href="03-control-flow.html">3. Control flow</a>. Reference: <a href="../reference.html#2-lexical-rules">§2 Lexical rules</a>, <a href="../reference.html#3-variables-and-types">§3 Variables and types</a>, <a href="../reference.html#4-operators">§4 Operators</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/01-getting-started.html"><span>Previous</span>1. Getting started</a><a class="next" href="../tour/03-control-flow.html"><span>Next</span>3. Control flow</a></div>
+<footer>Source: <code>docs/tour/02-values-and-types.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#variables">Variables</a></li><li class="l2"><a href="#numbers">Numbers</a></li><li class="l2"><a href="#no-implicit-conversions">No implicit conversions</a></li><li class="l2"><a href="#booleans">Booleans</a></li><li class="l2"><a href="#strings">Strings</a></li><li class="l2"><a href="#comments">Comments</a></li><li class="l2"><a href="#mistakes-from-other-languages">Mistakes from other languages</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>http · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/http.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html" class="cur" aria-current="page">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="http"><a class="anchor" href="#http" aria-hidden="true">#</a>http</h1>
+<p>The <code>http</code> module is Tern's HTTP: two servers, a client, and the request and response types they share. <code>http.serve</code> is the one-line server: an HTTP/1.1 event loop on every core that calls one handler function for each request. The engine (<code>http.new_server</code>) is the server web frameworks are built on: routes, WebSockets, server-sent events, streamed bodies, static files and HTTPS, on the task runtime. <a href="../packages/roost.html">roost</a>, the router and middleware framework, is written on top of it, and its <code>roost.Request</code> and <code>roost.Response</code> are this module's types under another name. This page covers the types, <code>serve</code>, every request and response function, the engine, the client, and the helpers middleware uses.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/"</span>:
+        <span class="k">return</span> http.<span class="f">text</span>(<span class="s">"hello "</span> <span class="o">+</span> req.<span class="f">query</span>(<span class="s">"name"</span>))
+    <span class="k">return</span> http.<span class="f">not_found</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    http.<span class="f">serve</span>(<span class="n">8080</span>, handle)</code></pre></div>
+<p>Build and run it, then visit <code>http://localhost:8080/?name=ada</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern build hello.tn -o hello &amp;&amp; ./hello
+<span class="c"># tern: serving http://localhost:8080 on 14 threads</span></code></pre></div>
+<p>The whole app compiles to one small binary with no dependencies beyond the C library (and SQLite, if you <code>import sqlite</code>). A program pays only for what it calls: an <code>http.serve</code> app doesn't carry the engine, and neither links TLS unless it imports <a href="tls.html">tls</a>.</p>
+<h2 id="request"><a class="anchor" href="#request" aria-hidden="true">#</a>Request</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Request</span>:
+    method: <span class="t">str</span>                 <span class="c"># "GET", "POST", ...</span>
+    path: <span class="t">str</span>                   <span class="c"># "/users/42" (without the query string)</span>
+    raw_query: <span class="t">str</span>              <span class="c"># "page=2&amp;sort=name" (see query)</span>
+    head: <span class="t">str</span>                   <span class="c"># header lines as received, "Name: value\r\n" each (see header)</span>
+    body: <span class="t">str</span>
+    params: <span class="t">str</span>                 <span class="c"># path parameters of an engine route, packed (see param)</span>
+    ctx: {<span class="t">str</span>: <span class="t">str</span>}             <span class="c"># values middleware passes to inner handlers (see set_ctx)</span>
+    conn: <span class="t">int</span>                   <span class="c"># the connection's socket (see peer and client_ip)</span></code></pre></div>
+<ul><li><code>path</code> is the part of the URL before <code>?</code>, exactly as the client sent it: it is <strong>not</strong> URL-decoded (<code>/a%20b</code> stays <code>/a%20b</code>). <code>http.match</code> and route parameters decode what they capture.</li><li><code>raw_query</code> is the part after <code>?</code>, also raw, or <code>""</code> if there is none. Read values with <code>req.query(name)</code>.</li><li><code>head</code> holds the header lines as the client sent them. Read them with <code>req.header(name)</code>, which ignores case.</li><li><code>body</code> is the request body (for example, a JSON document or a form), as bytes.</li></ul>
+<h3 id="reading-requests"><a class="anchor" href="#reading-requests" aria-hidden="true">#</a>Reading requests</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">query</span>(req: <span class="t">Request</span>, name: <span class="t">str</span>) <span class="t">str</span>           a query parameter, decoded (<span class="s">""</span> <span class="k">if</span> absent)
+<span class="k">fn</span> <span class="f">queries</span>(req: <span class="t">Request</span>) {<span class="t">str</span>: <span class="t">str</span>}             every query parameter
+<span class="k">fn</span> <span class="f">header</span>(req: <span class="t">Request</span>, name: <span class="t">str</span>) <span class="t">str</span>          a header, ignoring case (<span class="s">""</span> <span class="k">if</span> absent)
+<span class="k">fn</span> <span class="f">headers</span>(req: <span class="t">Request</span>) {<span class="t">str</span>: <span class="t">str</span>}             every header (lowercase names)
+<span class="k">fn</span> <span class="f">cookie</span>(req: <span class="t">Request</span>, name: <span class="t">str</span>) <span class="t">str</span>          a cookie <span class="k">from</span> the <span class="t">Cookie</span> header
+<span class="k">fn</span> <span class="f">form</span>(req: <span class="t">Request</span>, name: <span class="t">str</span>) <span class="t">str</span>            a field of an x<span class="o">-</span>www<span class="o">-</span>form<span class="o">-</span>urlencoded body
+<span class="k">fn</span> <span class="f">forms</span>(req: <span class="t">Request</span>) {<span class="t">str</span>: <span class="t">str</span>}               every field of one
+<span class="k">fn</span> <span class="f">parts</span>(req: <span class="t">Request</span>) [<span class="t">Part</span>]                   a multipart<span class="o">/</span>form<span class="o">-</span>data body (file uploads)
+<span class="k">fn</span> <span class="f">part</span>(req: <span class="t">Request</span>, name: <span class="t">str</span>) <span class="t">Part</span>           the part <span class="k">for</span> one field (name <span class="s">""</span> <span class="k">if</span> none)
+<span class="k">fn</span> <span class="f">param</span>(req: <span class="t">Request</span>, name: <span class="t">str</span>) <span class="t">str</span>           a path parameter of an engine route
+<span class="k">fn</span> <span class="f">param_int</span>(req: <span class="t">Request</span>, name: <span class="t">str</span>, default: <span class="t">int</span>) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">params</span>(req: <span class="t">Request</span>) {<span class="t">str</span>: <span class="t">str</span>}
+req.<span class="f">json</span>(<span class="o">&amp;</span>value) <span class="t">bool</span>                           decode the <span class="t">JSON</span> body into value (needs <span class="k">import</span> json)
+<span class="k">fn</span> <span class="f">add_header</span>(req: <span class="k">mut</span> <span class="t">Request</span>, name: <span class="t">str</span>, value: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">set_ctx</span>(req: <span class="k">mut</span> <span class="t">Request</span>, key: <span class="t">str</span>, value: <span class="t">str</span>)    <span class="k">fn</span> <span class="f">ctx_value</span>(req: <span class="t">Request</span>, key: <span class="t">str</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">new_request</span>(method: <span class="t">str</span>, target: <span class="t">str</span>, body: <span class="t">str</span>) <span class="t">Request</span></code></pre></div>
+<p>Call them as methods: <code>req.query("page")</code>. <code>query</code> and <code>form</code> decode <code>+</code> and <code>%XX</code>; a name that appears more than once gives its first value, and a name with no <code>=</code> (as in <code>?debug</code>) is <code>""</code>. <code>to_int</code> reads a number: <code>req.query("page").to_int(1)</code>. <code>Part</code> has <code>name</code> (the form field), <code>filename</code> (<code>""</code> for a plain field), <code>content_type</code> and <code>data</code>.</p>
+<p><code>http.new_request(method, target, body)</code> builds a request the way the servers do, for calling a handler in a test: <code>target</code> is the path with its query string, and <code>add_header</code> adds headers.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">main</span>():
+    req <span class="o">=</span> http.<span class="f">new_request</span>(<span class="s">"GET"</span>, <span class="s">"/search?q=tern+lang&amp;page=2&amp;tag=a%26b&amp;debug"</span>, <span class="s">""</span>)
+    req.<span class="f">add_header</span>(<span class="s">"User-Agent"</span>, <span class="s">"curl/8.0"</span>)
+    req.<span class="f">add_header</span>(<span class="s">"Cookie"</span>, <span class="s">"theme=dark; sid=abc"</span>)
+    <span class="f">print</span>(req.path, <span class="s">"|"</span>, req.<span class="f">query</span>(<span class="s">"q"</span>), req.<span class="f">query</span>(<span class="s">"page"</span>).<span class="f">to_int</span>(<span class="n">1</span>), req.<span class="f">query</span>(<span class="s">"tag"</span>), <span class="s">"["</span> <span class="o">+</span> req.<span class="f">query</span>(<span class="s">"debug"</span>) <span class="o">+</span> <span class="s">"]"</span>)
+    <span class="f">print</span>(req.<span class="f">header</span>(<span class="s">"user-agent"</span>), req.<span class="f">header</span>(<span class="s">"X-API-KEY"</span>) <span class="o">==</span> <span class="s">""</span>, req.<span class="f">cookie</span>(<span class="s">"sid"</span>))
+    <span class="f">print</span>(req.<span class="f">headers</span>())
+    <span class="f">print</span>(req.<span class="f">queries</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>/search | tern lang 2 a&amp;b []
+curl/8.0 true abc
+{"user-agent": "curl/8.0", "cookie": "theme=dark; sid=abc"}
+{"q": "tern lang", "page": "2", "tag": "a&amp;b", "debug": ""}</code></pre></div>
+<h2 id="response"><a class="anchor" href="#response" aria-hidden="true">#</a>Response</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Response</span>:
+    status: <span class="t">int</span>
+    content_type: <span class="t">str</span>
+    body: <span class="t">str</span>
+    headers: <span class="t">str</span>                <span class="c"># extra header lines, "Name: value\r\n" each (see set_header)</span>
+    upgrade: <span class="t">int</span>                <span class="c"># 1: WebSocket, 2: event stream (set by ws_upgrade / sse_open)</span></code></pre></div>
+<p>The server writes the status line, a <code>Content-Type</code> header from <code>content_type</code> (left out if it is <code>""</code>), the lines in <code>headers</code> as they are, a <code>Content-Length</code>, and the body.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">text</span>(body: <span class="t">str</span>) <span class="t">Response</span>                 <span class="n">200</span>, text<span class="o">/</span>plain; charset<span class="o">=</span>utf<span class="o">-</span><span class="n">8</span>
+<span class="k">fn</span> <span class="f">html</span>(body: <span class="t">str</span>) <span class="t">Response</span>                 <span class="n">200</span>, text<span class="o">/</span>html; charset<span class="o">=</span>utf<span class="o">-</span><span class="n">8</span>
+<span class="k">fn</span> <span class="f">json</span>(body: <span class="t">str</span>) <span class="t">Response</span>                 <span class="n">200</span>, application<span class="o">/</span>json
+<span class="k">fn</span> <span class="f">status</span>(code: <span class="t">int</span>, body: <span class="t">str</span>) <span class="t">Response</span>    any status, plain text
+<span class="k">fn</span> <span class="f">not_found</span>() <span class="t">Response</span>                     <span class="n">404</span> <span class="s">"not found"</span>
+<span class="k">fn</span> <span class="f">no_content</span>() <span class="t">Response</span>                    <span class="n">204</span>
+<span class="k">fn</span> <span class="f">redirect</span>(to: <span class="t">str</span>) <span class="t">Response</span>               <span class="n">302</span> with <span class="t">Location</span>
+<span class="k">fn</span> <span class="f">redirect_permanent</span>(to: <span class="t">str</span>) <span class="t">Response</span>     <span class="n">308</span> with <span class="t">Location</span>
+<span class="k">fn</span> <span class="f">with_status</span>(res: <span class="t">Response</span>, code: <span class="t">int</span>) <span class="t">Response</span>
+<span class="k">fn</span> <span class="f">set_header</span>(res: <span class="k">mut</span> <span class="t">Response</span>, name: <span class="t">str</span>, value: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">set_cookie</span>(res: <span class="k">mut</span> <span class="t">Response</span>, name: <span class="t">str</span>, value: <span class="t">str</span>)     <span class="t">Path</span><span class="o">=</span><span class="o">/</span>; <span class="t">HttpOnly</span>; <span class="t">SameSite</span><span class="o">=</span><span class="t">Lax</span>
+<span class="k">fn</span> <span class="f">set_cookie_with</span>(res: <span class="k">mut</span> <span class="t">Response</span>, name: <span class="t">str</span>, value: <span class="t">str</span>, attrs: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">get_header</span>(res: <span class="t">Response</span>, name: <span class="t">str</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">header_line</span>(name: <span class="t">str</span>, value: <span class="t">str</span>) <span class="t">str</span>   <span class="s">"Name: value\r\n"</span></code></pre></div>
+<p><code>html</code> sends the body as it is: escape user input yourself (see <a href="html.html">html</a>). <code>json</code>'s body must already be JSON text, usually from <code>json.encode</code>: <code>http.json(json.encode(users))</code>. <code>set_header("Content-Type", ...)</code> sets <code>content_type</code>; other names add a line to <code>headers</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(http.<span class="f">text</span>(<span class="s">"hi"</span>))
+    <span class="f">print</span>(http.<span class="f">json</span>(<span class="s">"[1,2]"</span>).content_type, <span class="s">"|"</span>, http.<span class="f">html</span>(<span class="s">"&lt;p&gt;"</span>).content_type)
+    r <span class="o">=</span> http.<span class="f">redirect</span>(<span class="s">"/login"</span>)
+    <span class="f">print</span>(r.status, r.<span class="f">get_header</span>(<span class="s">"location"</span>), r.body <span class="o">==</span> <span class="s">""</span>)
+    csv <span class="o">=</span> http.<span class="t">Response</span>(<span class="n">200</span>, <span class="s">"text/csv"</span>, <span class="s">"id,name\n1,ada\n"</span>, <span class="s">""</span>, <span class="n">0</span>)
+    csv.<span class="f">set_header</span>(<span class="s">"Cache-Control"</span>, <span class="s">"no-store"</span>)
+    csv.<span class="f">set_cookie</span>(<span class="s">"sid"</span>, <span class="s">"abc"</span>)
+    <span class="f">print</span>(csv.<span class="f">get_header</span>(<span class="s">"cache-control"</span>), <span class="s">"|"</span>, csv.<span class="f">get_header</span>(<span class="s">"set-cookie"</span>))
+    <span class="f">print</span>(http.<span class="f">with_status</span>(http.<span class="f">json</span>(<span class="s">`{"error":"taken"}`</span>), <span class="n">409</span>).status)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>http.Response{status: 200, content_type: "text/plain; charset=utf-8", body: "hi", headers: "", upgrade: 0}
+application/json | text/html; charset=utf-8
+302 /login true
+no-store | sid=abc; Path=/; HttpOnly; SameSite=Lax
+409</code></pre></div>
+<h2 id="match"><a class="anchor" href="#match" aria-hidden="true">#</a>match</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="k">match</span>(path: <span class="t">str</span>, pattern: <span class="t">str</span>, params: <span class="k">mut</span> {<span class="t">str</span>: <span class="t">str</span>}) <span class="t">bool</span></code></pre></div>
+<p>Routing for <code>serve</code>'s handlers (the engine and roost route by themselves). It matches a path against a pattern such as <code>"/users/{id}/posts/{post}"</code>, where each <code>{name}</code> matches one whole path segment. On a match, it returns <code>true</code> and <strong>replaces</strong> <code>params</code> with the captured values (URL-decoded), keyed by name. If it doesn't match, it returns <code>false</code> and leaves <code>params</code> unchanged.</p>
+<p>The path and the pattern must have the same number of <code>/</code>-separated segments, so <code>/users/42/</code> (with a trailing slash) doesn't match <code>/users/{id}</code>. A segment can be empty: <code>/users/</code> matches <code>/users/{id}</code> with <code>id</code> equal to <code>""</code>, so check captured values before using them. Captured values are always strings; convert them with <code>to_int</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">main</span>():
+    p: {<span class="t">str</span>: <span class="t">str</span>} <span class="o">=</span> {}
+    <span class="f">print</span>(http.<span class="k">match</span>(<span class="s">"/users/42/posts/7"</span>, <span class="s">"/users/{id}/posts/{post}"</span>, <span class="o">&amp;</span>p), p)
+    <span class="f">print</span>(http.<span class="k">match</span>(<span class="s">"/files/my%20notes.txt"</span>, <span class="s">"/files/{name}"</span>, <span class="o">&amp;</span>p), p)
+    <span class="f">print</span>(http.<span class="k">match</span>(<span class="s">"/users/42/"</span>, <span class="s">"/users/{id}"</span>, <span class="o">&amp;</span>p), p)
+    <span class="f">print</span>(http.<span class="k">match</span>(<span class="s">"/users/"</span>, <span class="s">"/users/{id}"</span>, <span class="o">&amp;</span>p), p)
+    <span class="f">print</span>(http.<span class="k">match</span>(<span class="s">"/about"</span>, <span class="s">"/about"</span>, <span class="o">&amp;</span>p), p)
+    id <span class="o">=</span> <span class="n">0</span>
+    <span class="k">if</span> http.<span class="k">match</span>(<span class="s">"/orders/1001"</span>, <span class="s">"/orders/{id}"</span>, <span class="o">&amp;</span>p):
+        id <span class="o">=</span> p[<span class="s">"id"</span>].<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+    <span class="f">print</span>(id)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true {"id": "42", "post": "7"}
+true {"name": "my notes.txt"}
+false {"name": "my notes.txt"}
+true {"id": ""}
+true {}
+1001</code></pre></div>
+<p><code>match</code> is a soft keyword in Tern, which is why a function can be called <code>match</code>.</p>
+<h2 id="serve"><a class="anchor" href="#serve" aria-hidden="true">#</a>serve</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">serve</span>(port: <span class="t">int</span>, handler)                 <span class="c"># handler: fn(req: http.Request) http.Response</span>
+<span class="k">fn</span> <span class="f">serve</span>(port: <span class="t">int</span>, handler, app)            <span class="c"># handler: fn(req: http.Request, app: App) http.Response</span>
+<span class="k">fn</span> <span class="f">serve</span>(port: <span class="t">int</span>, handler, <span class="o">&amp;</span>app)           <span class="c"># handler: fn(req: http.Request, app: mut App) http.Response</span></code></pre></div>
+<p>Listens on <code>port</code> on every network interface (IPv4) and answers requests forever; <code>serve</code> never returns. The handler must be a top-level function (not a lambda) of the shape shown. The compiler generates the glue between the server and your handler, which is why <code>serve</code> has three forms instead of a single signature.</p>
+<p>It prints <code>tern: serving http://localhost:PORT on N threads</code> to standard error. If the port can't be used (for example, another program has it), it prints <code>tern: bind: Address already in use</code> and the program exits with status 1.</p>
+<h3 id="sharing-state-with-handlers"><a class="anchor" href="#sharing-state-with-handlers" aria-hidden="true">#</a>Sharing state with handlers</h3>
+<p>The third argument chooses how handlers see your app's data:</p>
+<div class="table"><table><thead><tr><th>Form</th><th>The handler gets</th><th>Requests run</th></tr></thead><tbody><tr><td><code>serve(port, handle)</code></td><td>nothing but the request</td><td>fully in parallel</td></tr><tr><td><code>serve(port, handle, app)</code></td><td><code>app: App</code>, read-only, shared by all threads</td><td>fully in parallel</td></tr><tr><td><code>serve(port, handle, &amp;app)</code></td><td><code>app: mut App</code>, which it may change</td><td>one at a time</td></tr></tbody></table></div>
+<p>The read-only form is for data loaded once at start-up (configuration, lookup tables, a <code>sqlite.Db</code>). The <code>mut</code> form lets handlers change shared state safely: the server runs such requests one at a time, so two requests can never race on <code>app</code>. Keep those handlers short; for heavy traffic, keep changing data in the database instead.</p>
+<p>The compiler checks that the form matches the handler:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">struct</span> <span class="t">Counter</span>:
+    hits: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>, c: <span class="k">mut</span> <span class="t">Counter</span>) http.<span class="t">Response</span>:
+    c.hits <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> http.<span class="f">text</span>(<span class="s">f"visit number {c.hits}"</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    c <span class="o">=</span> <span class="t">Counter</span>(<span class="n">0</span>)
+    http.<span class="f">serve</span>(<span class="n">8080</span>, handle, c)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>12: error: `handle` changes the app state, so pass it with `&amp;`; requests then run one at a time</code></pre></div>
+<p>With <code>http.serve(8080, handle, &amp;c)</code> it compiles, and every visitor gets a unique number.</p>
+<h3 id="threads"><a class="anchor" href="#threads" aria-hidden="true">#</a>Threads</h3>
+<p>The server runs an event loop (kqueue on macOS, epoll on Linux and Android) on one thread per core, with keep-alive connections and pipelining. Set <code>TERN_HTTP_THREADS</code> to choose the number of threads. A handler may itself use <code>parallel</code> blocks. A handler runs on the event loop's thread, so it shouldn't wait on tasks or channels; use the engine for that.</p>
+<h3 id="limits-and-timeouts"><a class="anchor" href="#limits-and-timeouts" aria-hidden="true">#</a>Limits and timeouts</h3>
+<div class="table"><table><thead><tr><th>Limit</th><th>Default</th><th>What happens</th><th>Change with</th></tr></thead><tbody><tr><td>Request body size</td><td>16 MB</td><td><code>413 Payload Too Large</code>, connection closed</td><td><code>TERN_HTTP_MAX_BODY_MB</code></td></tr><tr><td>Request line and headers</td><td>64 KB</td><td><code>400 Bad Request</code>, connection closed</td><td></td></tr><tr><td>Idle keep-alive connection</td><td>60 s</td><td>connection closed</td><td><code>TERN_HTTP_IDLE_SEC</code></td></tr><tr><td>Slow client (a request started but not finished)</td><td>10 s</td><td>connection closed</td><td><code>TERN_HTTP_HEADER_SEC</code></td></tr></tbody></table></div>
+<p>Malformed requests get <code>400 Bad Request</code>. The environment variables are read when <code>serve</code> starts, e.g. <code>TERN_HTTP_MAX_BODY_MB=64 ./app</code>.</p>
+<p>Not supported by <code>serve</code>: TLS (put a proxy such as Caddy or nginx in front, or use the engine's <code>listen_tls</code>), HTTP/2, request bodies sent with chunked transfer encoding (the body must have a <code>Content-Length</code>), and streaming responses (the whole body is built, then sent). The engine has all of these but HTTP/2.</p>
+<h3 id="errors-in-handlers"><a class="anchor" href="#errors-in-handlers" aria-hidden="true">#</a>Errors in handlers</h3>
+<p>A runtime error inside a handler (an index out of range, a missing map key, a division by zero, a failed SQL statement) doesn't stop the server. That request is answered with <code>500 internal server error</code>, a line is logged to standard error, and the server carries on:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern: GET /crash failed: runtime error in handle (hello.tn:6): index 5 out of bounds (length 1)</code></pre></div>
+<p>With <code>serve(port, handle, &amp;app)</code>, changes a failing handler made to <code>app</code> before the error are kept, so update <code>app</code> at the end of the handler, after the checks that can fail.</p>
+<p>The servers and the client are not available on WebAssembly (a compile error). The request and response functions work everywhere, so request-handling code can be tested anywhere.</p>
+<h2 id="a-complete-example"><a class="anchor" href="#a-complete-example" aria-hidden="true">#</a>A complete example</h2>
+<p>A guestbook: an HTML form, a form-encoded <code>POST</code>, a JSON API, and state shared between requests with <code>mut</code>:</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+<span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Entry</span>:
+    name: <span class="t">str</span>
+    message: <span class="t">str</span>
+
+<span class="k">struct</span> <span class="t">Book</span>:
+    entries: [<span class="t">Entry</span>]
+
+<span class="k">fn</span> <span class="f">escape</span>(s: <span class="t">str</span>) <span class="t">str</span>:
+    <span class="k">return</span> s.<span class="f">replace</span>(<span class="s">"&amp;"</span>, <span class="s">"&amp;amp;"</span>).<span class="f">replace</span>(<span class="s">"&lt;"</span>, <span class="s">"&amp;lt;"</span>).<span class="f">replace</span>(<span class="s">"&gt;"</span>, <span class="s">"&amp;gt;"</span>).<span class="f">replace</span>(<span class="s">`"`</span>, <span class="s">"&amp;quot;"</span>)
+
+<span class="k">fn</span> <span class="f">page</span>(b: <span class="t">Book</span>) http.<span class="t">Response</span>:
+    out <span class="o">=</span> <span class="s">`&lt;h1&gt;Guestbook&lt;/h1&gt;&lt;form method="post" action="/sign"&gt;`</span>
+    out <span class="o">+</span><span class="o">=</span> <span class="s">`&lt;input name="name"&gt; &lt;input name="message"&gt; &lt;button&gt;Sign&lt;/button&gt;&lt;/form&gt;&lt;ul&gt;`</span>
+    <span class="k">for</span> e <span class="k">in</span> b.entries:
+        out <span class="o">+</span><span class="o">=</span> <span class="s">"&lt;li&gt;&lt;b&gt;"</span> <span class="o">+</span> <span class="f">escape</span>(e.name) <span class="o">+</span> <span class="s">"&lt;/b&gt;: "</span> <span class="o">+</span> <span class="f">escape</span>(e.message) <span class="o">+</span> <span class="s">"&lt;/li&gt;"</span>
+    <span class="k">return</span> http.<span class="f">html</span>(out <span class="o">+</span> <span class="s">"&lt;/ul&gt;"</span>)
+
+<span class="k">fn</span> <span class="f">sign</span>(req: http.<span class="t">Request</span>, b: <span class="k">mut</span> <span class="t">Book</span>) http.<span class="t">Response</span>:
+    name <span class="o">=</span> req.<span class="f">form</span>(<span class="s">"name"</span>).<span class="f">trim</span>()
+    message <span class="o">=</span> req.<span class="f">form</span>(<span class="s">"message"</span>).<span class="f">trim</span>()
+    <span class="k">if</span> name <span class="o">==</span> <span class="s">""</span> <span class="k">or</span> message <span class="o">==</span> <span class="s">""</span> <span class="k">or</span> <span class="f">len</span>(message) <span class="o">&gt;</span> <span class="n">500</span>:
+        <span class="k">return</span> http.<span class="f">status</span>(<span class="n">400</span>, <span class="s">"name and message (up to 500 bytes) are required"</span>)
+    b.entries.<span class="f">push</span>(<span class="t">Entry</span>(name, message))
+    <span class="k">return</span> http.<span class="f">redirect</span>(<span class="s">"/"</span>)
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>, b: <span class="k">mut</span> <span class="t">Book</span>) http.<span class="t">Response</span>:
+    params: {<span class="t">str</span>: <span class="t">str</span>} <span class="o">=</span> {}
+    <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"GET"</span> <span class="k">and</span> req.path <span class="o">==</span> <span class="s">"/"</span>:
+        <span class="k">return</span> <span class="f">page</span>(b)
+    <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"POST"</span> <span class="k">and</span> req.path <span class="o">==</span> <span class="s">"/sign"</span>:
+        <span class="k">return</span> <span class="f">sign</span>(req, <span class="o">&amp;</span>b)
+    <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"GET"</span> <span class="k">and</span> req.path <span class="o">==</span> <span class="s">"/api/entries"</span>:
+        <span class="k">return</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(b.entries))
+    <span class="k">if</span> req.method <span class="o">==</span> <span class="s">"GET"</span> <span class="k">and</span> http.<span class="k">match</span>(req.path, <span class="s">"/api/entries/{n}"</span>, <span class="o">&amp;</span>params):
+        n <span class="o">=</span> params[<span class="s">"n"</span>].<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+        <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">0</span> <span class="k">or</span> n <span class="o">&gt;=</span> <span class="f">len</span>(b.entries):
+            <span class="k">return</span> http.<span class="f">status</span>(<span class="n">404</span>, <span class="s">f"no entry {params["</span>n<span class="s">"]}"</span>)
+        <span class="k">return</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(b.entries[n]))
+    <span class="k">return</span> http.<span class="f">not_found</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    book <span class="o">=</span> <span class="t">Book</span>([<span class="t">Entry</span>(<span class="s">"tern"</span>, <span class="s">"first!"</span>)])
+    http.<span class="f">serve</span>(<span class="n">8080</span>, handle, <span class="o">&amp;</span>book)</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">curl</span> -d 'name=Ada&amp;message=Hello+there' localhost:8080/sign<span class="c">     # 302 back to /</span>
+<span class="k">curl</span> localhost:8080/api/entries<span class="c">          # [{"name":"tern","message":"first!"},{"name":"Ada","message":"Hello there"}]</span>
+<span class="k">curl</span> localhost:8080/api/entries/5<span class="c">        # 404: no entry 5</span></code></pre></div>
+<p>For a database-backed server, see the example at the end of <a href="../packages/sqlite.html#a-complete-example">sqlite</a>.</p>
+<h2 id="the-engine"><a class="anchor" href="#the-engine" aria-hidden="true">#</a>The engine</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">new_server</span>() <span class="t">Server</span>
+<span class="k">fn</span> <span class="f">add_route</span>(s: <span class="t">Server</span>, method: <span class="t">str</span>, pattern: <span class="t">str</span>, h: <span class="k">fn</span>(<span class="t">Request</span>) <span class="t">Response</span>,
+             ws: <span class="k">fn</span>(<span class="t">Request</span>, <span class="t">Socket</span>), sse: <span class="k">fn</span>(<span class="t">Request</span>, <span class="t">Stream</span>), stream: <span class="t">bool</span>)
+<span class="k">fn</span> <span class="f">no_ws</span>(req: <span class="t">Request</span>, ws: <span class="t">Socket</span>)          the ws argument of a route without one
+<span class="k">fn</span> <span class="f">no_sse</span>(req: <span class="t">Request</span>, out: <span class="t">Stream</span>)        the sse argument of a route without one
+<span class="k">fn</span> <span class="f">limit_connections</span>(s: <span class="t">Server</span>, n: <span class="t">int</span>)
+<span class="k">fn</span> <span class="f">listen</span>(s: <span class="k">mut</span> <span class="t">Server</span>, host: <span class="t">str</span>, port: <span class="t">int</span>, fallback: <span class="k">fn</span>(<span class="t">Request</span>) <span class="t">Response</span>)
+<span class="k">fn</span> <span class="f">listen_tls</span>(s: <span class="k">mut</span> <span class="t">Server</span>, host: <span class="t">str</span>, port: <span class="t">int</span>, fallback: <span class="k">fn</span>(<span class="t">Request</span>) <span class="t">Response</span>, cert: <span class="t">str</span>, key: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">wait</span>(s: <span class="t">Server</span>)
+<span class="k">fn</span> <span class="f">stop</span>(s: <span class="t">Server</span>)</code></pre></div>
+<p>The engine runs each connection as a task on the task runtime (every core), so a handler may wait (sleep, channels, the client below, a database) without holding up other requests. Handlers are closures <code>fn(http.Request) http.Response</code>, so they can capture the state they need (a <code>task.shared</code> value for state that changes). A runtime error in a handler answers 500 and the server keeps running.</p>
+<p><code>s.add_route(method, pattern, h, ws, sse, stream)</code> registers a route; method <code>"*"</code> matches every method. Patterns: <code>"/users/{id}"</code> (one segment, read with <code>req.param("id")</code>), <code>"/files/{*rest}"</code> (the rest of the path); static segments win over <code>{params}</code>, which win over <code>{*wildcards}</code>. <code>s.listen(host, port, fallback)</code> starts serving in the background: host <code>""</code> is every interface, port <code>0</code> picks a free one (then <code>s.port</code> says which), and <code>fallback</code> answers requests no route matches. <code>s.wait()</code> blocks until SIGINT or SIGTERM, then stops accepting and lets requests in progress finish (up to <code>TERN_WEB_DRAIN_SEC</code>, 10 s); <code>s.stop()</code> closes the server and waits for its handlers. <code>s.limit_connections(n)</code> (or <code>TERN_WEB_MAX_CONNS</code>) caps the connections open at once; past it, new clients wait in the kernel's queue. <code>listen_tls</code> serves HTTPS with a PEM certificate chain and key; it needs <code>import tls</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">hello</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    <span class="k">return</span> http.<span class="f">text</span>(<span class="s">"hello "</span> <span class="o">+</span> req.<span class="f">param</span>(<span class="s">"name"</span>))
+
+<span class="k">fn</span> <span class="f">missing</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    <span class="k">return</span> http.<span class="f">status</span>(<span class="n">404</span>, <span class="s">"no route for "</span> <span class="o">+</span> req.path)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> http.<span class="f">new_server</span>()
+    s.<span class="f">add_route</span>(<span class="s">"GET"</span>, <span class="s">"/hello/{name}"</span>, hello, http.no_ws, http.no_sse, <span class="k">false</span>)
+    s.<span class="f">add_route</span>(<span class="s">"POST"</span>, <span class="s">"/echo"</span>, <span class="k">fn</span>(req) http.<span class="f">text</span>(req.body), http.no_ws, http.no_sse, <span class="k">false</span>)
+    s.<span class="f">listen</span>(<span class="s">"127.0.0.1"</span>, <span class="n">0</span>, missing)
+    base <span class="o">=</span> <span class="s">f"http://127.0.0.1:{s.port}"</span>
+    <span class="f">print</span>(http.<span class="f">get</span>(base <span class="o">+</span> <span class="s">"/hello/ada"</span>).body)
+    <span class="f">print</span>(http.<span class="f">post</span>(base <span class="o">+</span> <span class="s">"/echo"</span>, <span class="s">"ping"</span>, <span class="s">"text/plain"</span>).body)
+    res <span class="o">=</span> http.<span class="f">get</span>(base <span class="o">+</span> <span class="s">"/nope"</span>)
+    <span class="f">print</span>(res.status, res.body)
+    s.<span class="f">stop</span>()</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>hello ada
+ping
+404 no route for /nope</code></pre></div>
+<p>A framework adds the rest: <a href="../packages/roost.html">roost</a> has a router with <code>r.get(path, h)</code>, nested routers, middleware layers, 405 answers with <code>Allow</code>, validation and metrics pages, all in Tern on these functions. Environment: <code>TERN_ASYNC_THREADS</code> (worker threads), <code>TERN_WEB_IDLE_SEC</code> (60), <code>TERN_WEB_HEADER_SEC</code> (10), <code>TERN_WEB_MAX_BODY_MB</code> (16), <code>TERN_WEB_WS_MAX_MB</code> (16).</p>
+<h3 id="websockets-and-server-sent-events"><a class="anchor" href="#websockets-and-server-sent-events" aria-hidden="true">#</a>WebSockets and server-sent events</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">ws_upgrade</span>(req: <span class="t">Request</span>) <span class="t">Response</span>        accept a <span class="t">WebSocket</span> (the route's ws handler runs next)
+<span class="k">fn</span> <span class="f">sse_open</span>(req: <span class="t">Request</span>) <span class="t">Response</span>          open an event stream (the route's sse handler runs next)
+ws.<span class="f">next</span>(<span class="o">&amp;</span>msg) <span class="t">bool</span>   ws.<span class="f">recv</span>() <span class="t">str</span>   ws.<span class="f">is_binary</span>() <span class="t">bool</span>   ws.<span class="f">is_open</span>() <span class="t">bool</span>   ws.<span class="f">close</span>()
+ws.<span class="f">send</span>(text) <span class="t">bool</span>   ws.<span class="f">send_binary</span>(data) <span class="t">bool</span>   ws.<span class="f">ping</span>(data) <span class="t">bool</span>     (<span class="k">false</span>: the client is gone)
+out.<span class="f">send</span>(data) <span class="t">bool</span>   out.<span class="f">event</span>(name, data) <span class="t">bool</span>   out.<span class="f">comment</span>(text) <span class="t">bool</span>
+out.<span class="f">forward</span>(ch) <span class="t">bool</span>                        every message of a chan[<span class="t">str</span>] as an event, until it closes
+<span class="k">fn</span> <span class="f">ws_connect</span>(url: <span class="t">str</span>) <span class="t">Socket</span>              a client (<span class="s">"ws://host:port/path"</span>, <span class="s">"wss://"</span> over <span class="t">TLS</span>): ws.<span class="f">ok</span>(), http.<span class="f">error</span>()
+<span class="k">fn</span> <span class="f">ws_connect_with</span>(url: <span class="t">str</span>, headers: <span class="t">str</span>) <span class="t">Socket</span></code></pre></div>
+<p>A WebSocket route answers the handshake with <code>http.ws_upgrade</code> and names its socket handler, which then has the connection to itself; an event-stream route does the same with <code>http.sse_open</code>. Pings are answered and fragmented messages put together for you. <code>wss://</code> URLs connect over TLS (default port 443) with SNI and certificate verification, like <code>https://</code>, and need <code>import tls</code> in the program; without it <code>ws_connect</code> fails with "wss:// needs <code>import tls</code>". The <code>Host</code> header carries the URL's host and port, and the handshake accepts what CDNs add (extra headers, <code>Connection: upgrade</code> in any case). <code>out.forward(ch)</code> notices a client that went away within a second, even when <code>ch</code> is quiet, and sends messages that are already waiting in one write.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+<span class="k">import</span> task
+
+<span class="k">fn</span> <span class="f">echo</span>(req: http.<span class="t">Request</span>, ws: http.<span class="t">Socket</span>):
+    msg <span class="o">=</span> <span class="s">""</span>
+    <span class="k">while</span> ws.<span class="f">next</span>(<span class="o">&amp;</span>msg):
+        ws.<span class="f">send</span>(<span class="s">"echo: "</span> <span class="o">+</span> msg)
+
+<span class="k">fn</span> <span class="f">ticks</span>(req: http.<span class="t">Request</span>, out: http.<span class="t">Stream</span>):
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">3</span>:
+        <span class="k">if</span> <span class="k">not</span> out.<span class="f">event</span>(<span class="s">"tick"</span>, <span class="t">str</span>(i)):
+            <span class="k">return</span>
+        task.<span class="f">sleep</span>(<span class="n">1000</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> http.<span class="f">new_server</span>()
+    s.<span class="f">add_route</span>(<span class="s">"GET"</span>, <span class="s">"/ws"</span>, http.ws_upgrade, echo, http.no_sse, <span class="k">false</span>)
+    s.<span class="f">add_route</span>(<span class="s">"GET"</span>, <span class="s">"/ticks"</span>, http.sse_open, http.no_ws, ticks, <span class="k">false</span>)
+    s.<span class="f">add_route</span>(<span class="s">"GET"</span>, <span class="s">"/assets/{*path}"</span>, <span class="k">fn</span>(req) http.<span class="f">static_file</span>(<span class="s">"./public"</span>, req.<span class="f">param</span>(<span class="s">"path"</span>), req), http.no_ws, http.no_sse, <span class="k">false</span>)
+    s.<span class="f">listen</span>(<span class="s">""</span>, <span class="n">8080</span>, <span class="k">fn</span>(req) http.<span class="f">not_found</span>())
+    s.<span class="f">wait</span>()</code></pre></div>
+<h3 id="streamed-bodies-and-files"><a class="anchor" href="#streamed-bodies-and-files" aria-hidden="true">#</a>Streamed bodies and files</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">read_body</span>(req: <span class="t">Request</span>, max: <span class="t">int</span>) <span class="t">str</span>            the next piece (<span class="s">""</span> at the end)
+<span class="k">fn</span> <span class="f">save_body</span>(req: <span class="t">Request</span>, path: <span class="t">str</span>) <span class="t">int</span>           the rest into a file: bytes, <span class="k">or</span> <span class="o">-</span><span class="n">1</span> (http.<span class="f">error</span>())
+<span class="k">fn</span> <span class="f">next_part</span>(req: <span class="t">Request</span>, p: <span class="k">mut</span> <span class="t">Part</span>) <span class="t">bool</span>        multipart: the next part (its data is <span class="s">""</span>)
+<span class="k">fn</span> <span class="f">read_part</span>(req: <span class="t">Request</span>, max: <span class="t">int</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">save_part</span>(req: <span class="t">Request</span>, path: <span class="t">str</span>) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">static_file</span>(dir: <span class="t">str</span>, rel: <span class="t">str</span>, req: <span class="t">Request</span>) <span class="t">Response</span>
+<span class="k">fn</span> <span class="f">file_response</span>(path: <span class="t">str</span>, req: <span class="t">Request</span>) <span class="t">Response</span></code></pre></div>
+<p>A route added with <code>stream</code> set to <code>true</code> runs its handler as soon as the headers arrive, with <code>req.body</code> empty; the handler reads the body itself, a piece at a time, in constant memory and without the body size limit (<code>Content-Length</code> and chunked bodies both work).</p>
+<p><code>http.static_file(dir, rel, req)</code> answers with the file <code>rel</code> under <code>dir</code>: the content type from the extension, <code>ETag</code> and <code>Last-Modified</code> with <code>304</code> answers, single byte ranges (<code>206</code>), and big files streamed from disk. Paths with <code>..</code>, and dot files other than <code>.well-known</code>, are <code>404</code>; a directory serves its <code>index.html</code>. <code>http.file_response(path, req)</code> sends one file (relative to the working directory) with the same headers.</p>
+<h2 id="the-client"><a class="anchor" href="#the-client" aria-hidden="true">#</a>The client</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">get</span>(url: <span class="t">str</span>) <span class="t">Response</span>
+<span class="k">fn</span> <span class="f">post</span>(url: <span class="t">str</span>, body: <span class="t">str</span>, content_type: <span class="t">str</span>) <span class="t">Response</span>
+<span class="k">fn</span> <span class="f">fetch</span>(cr: <span class="t">ClientRequest</span>) <span class="t">Response</span>
+<span class="k">fn</span> <span class="f">request</span>(method: <span class="t">str</span>, url: <span class="t">str</span>) <span class="t">ClientRequest</span>     a <span class="n">30</span> s timeout, follows <span class="n">5</span> redirects
+<span class="k">fn</span> <span class="f">try_get</span>(url: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">Response</span>, <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">try_fetch</span>(cr: <span class="t">ClientRequest</span>) <span class="t">Result</span>[<span class="t">Response</span>, <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">failed</span>(res: <span class="t">Response</span>) <span class="t">bool</span>                       no response at all (status <span class="n">0</span>; body says why)
+<span class="k">fn</span> <span class="f">url_encode</span>(s: <span class="t">str</span>) <span class="t">str</span>
+
+<span class="k">struct</span> <span class="t">ClientRequest</span>:
+    method: <span class="t">str</span>
+    url: <span class="t">str</span>
+    headers: <span class="t">str</span>                <span class="c"># "Name: value\r\n" lines (see header_line)</span>
+    body: <span class="t">str</span>
+    timeout_ms: <span class="t">int</span>
+    redirects: <span class="t">int</span>              <span class="c"># how many redirects to follow</span></code></pre></div>
+<p>An HTTP/1.1 client for tasks: a request waits without blocking its thread, and keep-alive connections are pooled per host and shared by all tasks. <code>https://</code> URLs need <code>import tls</code> (certificates are verified; see <a href="tls.html">tls</a>). A request that gets no response at all returns status <code>0</code> with the reason in <code>body</code>; <code>try_get</code> and <code>try_fetch</code> make that an <code>Err</code>, while 4xx and 5xx responses are <code>Ok</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">main</span>():
+    cr <span class="o">=</span> http.<span class="f">request</span>(<span class="s">"POST"</span>, <span class="s">"http://127.0.0.1:1/api/items"</span>)
+    cr.headers <span class="o">=</span> http.<span class="f">header_line</span>(<span class="s">"Content-Type"</span>, <span class="s">"application/json"</span>) <span class="o">+</span> http.<span class="f">header_line</span>(<span class="s">"Authorization"</span>, <span class="s">"Bearer t0k3n"</span>)
+    cr.body <span class="o">=</span> <span class="s">`{"name": "tea"}`</span>
+    cr.timeout_ms <span class="o">=</span> <span class="n">2000</span>
+    res <span class="o">=</span> http.<span class="f">fetch</span>(cr)
+    <span class="k">if</span> http.<span class="f">failed</span>(res):
+        <span class="f">print</span>(<span class="s">"no response:"</span>, res.body)
+    <span class="k">match</span> http.<span class="f">try_get</span>(<span class="s">"http://127.0.0.1:1/"</span>):
+        <span class="t">Ok</span>(r):
+            <span class="f">print</span>(r.status)
+        <span class="t">Err</span>(e):
+            <span class="f">print</span>(e)
+    <span class="f">print</span>(http.<span class="f">url_encode</span>(<span class="s">"a b&amp;c"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>no response: connect: Connection refused
+http: request failed: connect: Connection refused
+a%20b%26c</code></pre></div>
+<h2 id="for-middleware"><a class="anchor" href="#for-middleware" aria-hidden="true">#</a>For middleware</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">peer</span>(req: <span class="t">Request</span>) <span class="t">str</span>               <span class="s">"1.2.3.4:5678"</span>, the connection's address
+<span class="k">fn</span> <span class="f">client_ip</span>(req: <span class="t">Request</span>) <span class="t">str</span>          the client's <span class="t">IP</span> (see trust_proxies)
+<span class="k">fn</span> <span class="f">trust_proxies</span>(n: <span class="t">int</span>)                behind n proxies: client_ip reads <span class="t">X</span><span class="o">-</span><span class="t">Forwarded</span><span class="o">-</span><span class="t">For</span>
+<span class="k">fn</span> <span class="f">matched_route</span>(req: <span class="t">Request</span>) <span class="t">str</span>      the route's pattern, once <span class="f">track_routes</span>() was called
+<span class="k">fn</span> <span class="f">track_routes</span>()
+<span class="k">fn</span> <span class="f">now_us</span>() <span class="t">int</span>                         a monotonic clock, microseconds
+<span class="k">fn</span> <span class="f">log</span>(line: <span class="t">str</span>)                       one line to stderr, buffered (an access log's writer)
+<span class="k">fn</span> <span class="f">limiter</span>(per_second: <span class="t">float</span>, burst: <span class="t">int</span>) <span class="t">Limiter</span>
+<span class="k">fn</span> <span class="f">consume</span>(l: <span class="t">Limiter</span>, key: <span class="t">str</span>) <span class="t">float</span>  <span class="n">0.0</span>, <span class="k">or</span> (no tokens left) the seconds to wait
+<span class="k">fn</span> <span class="f">request_id</span>() <span class="t">str</span>                     a random (version <span class="n">4</span>) <span class="t">UUID</span>
+<span class="k">fn</span> <span class="f">secure_equal</span>(a: <span class="t">str</span>, b: <span class="t">str</span>) <span class="t">bool</span>    a <span class="o">==</span> b <span class="k">in</span> constant time (<span class="k">for</span> secrets)
+<span class="k">fn</span> <span class="f">gzip</span>(data: <span class="t">str</span>) <span class="t">str</span>                  gzip<span class="o">-</span>compressed (<span class="s">""</span> <span class="k">if</span> it can't)
+<span class="k">fn</span> <span class="f">enable_metrics</span>()                     count requests <span class="k">from</span> now on (every engine server)
+<span class="k">fn</span> <span class="f">metrics_text</span>() <span class="t">str</span>                   <span class="t">Prometheus</span> text format
+<span class="k">fn</span> <span class="f">metric_add</span>(name: <span class="t">str</span>, labels: <span class="t">str</span>, v: <span class="t">float</span>)      a counter of your own
+<span class="k">fn</span> <span class="f">metric_set</span>(name: <span class="t">str</span>, labels: <span class="t">str</span>, v: <span class="t">float</span>)      a gauge of your own</code></pre></div>
+<p>These are what <a href="../packages/roost.html">roost</a>'s middleware (logging, rate limits, request ids, bearer tokens, gzip, metrics) is made of. A limiter holds a token bucket per key (a client IP, an API key), refilled at <code>per_second</code> up to <code>burst</code>, shared by every thread; idle buckets are forgotten. <code>client_ip</code> is the connection's address unless <code>trust_proxies(n)</code> was called: then it takes the <code>X-Forwarded-For</code> entry the <code>n</code> proxies in front of the server added, counting from the right (entries further left were written by the client).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> http
+
+<span class="k">fn</span> <span class="f">main</span>():
+    lim <span class="o">=</span> http.<span class="f">limiter</span>(<span class="n">1.0</span>, <span class="n">2</span>)
+    <span class="f">print</span>(lim.<span class="f">consume</span>(<span class="s">"10.0.0.1"</span>), lim.<span class="f">consume</span>(<span class="s">"10.0.0.1"</span>), lim.<span class="f">consume</span>(<span class="s">"10.0.0.1"</span>) <span class="o">&gt;</span> <span class="n">0.0</span>)
+    <span class="f">print</span>(<span class="f">len</span>(http.<span class="f">request_id</span>()), http.<span class="f">secure_equal</span>(<span class="s">"t0k3n"</span>, <span class="s">"t0k3n"</span>), http.<span class="f">secure_equal</span>(<span class="s">"t0k3n"</span>, <span class="s">"guess"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>0.0 0.0 true
+36 true false</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../std/simd.html"><span>Previous</span>simd</a><a class="next" href="../std/crypto.html"><span>Next</span>crypto</a></div>
+<footer>Source: <code>docs/std/http.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#request">Request</a></li><li class="l3"><a href="#reading-requests">Reading requests</a></li><li class="l2"><a href="#response">Response</a></li><li class="l2"><a href="#match">match</a></li><li class="l2"><a href="#serve">serve</a></li><li class="l3"><a href="#sharing-state-with-handlers">Sharing state with handlers</a></li><li class="l3"><a href="#threads">Threads</a></li><li class="l3"><a href="#limits-and-timeouts">Limits and timeouts</a></li><li class="l3"><a href="#errors-in-handlers">Errors in handlers</a></li><li class="l2"><a href="#a-complete-example">A complete example</a></li><li class="l2"><a href="#the-engine">The engine</a></li><li class="l3"><a href="#websockets-and-server-sent-events">WebSockets and server-sent events</a></li><li class="l3"><a href="#streamed-bodies-and-files">Streamed bodies and files</a></li><li class="l2"><a href="#the-client">The client</a></li><li class="l2"><a href="#for-middleware">For middleware</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

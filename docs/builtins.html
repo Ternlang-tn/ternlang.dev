@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Builtin functions · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/builtins.html">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="tour/01-getting-started.html">1. Getting started</a></li><li><a href="tour/02-values-and-types.html">2. Values and types</a></li><li><a href="tour/03-control-flow.html">3. Control flow</a></li><li><a href="tour/04-functions.html">4. Functions</a></li><li><a href="tour/05-structs.html">5. Structs</a></li><li><a href="tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="tour/07-strings.html">7. Strings</a></li><li><a href="tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="tour/10-closures.html">10. Functions as values</a></li><li><a href="tour/11-parallelism.html">11. Parallelism</a></li><li><a href="tour/12-modules.html">12. Modules and packages</a></li><li><a href="tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="guides/web-apps.html">Building web apps</a></li><li><a href="guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="guides/parallelism.html">Parallel programming</a></li><li><a href="guides/memory.html">How memory works</a></li><li><a href="guides/performance.html">Performance tips</a></li><li><a href="guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="guides/mobile.html">iOS and Android</a></li><li><a href="guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="std/index.html">Overview</a></li><li><a href="std/fmt.html">fmt</a></li><li><a href="std/math.html">math</a></li><li><a href="std/random.html">random</a></li><li><a href="std/time.html">time</a></li><li><a href="std/os.html">os</a></li><li><a href="std/fs.html">fs</a></li><li><a href="std/path.html">path</a></li><li><a href="std/flag.html">flag</a></li><li><a href="std/term.html">term</a></li><li><a href="std/url.html">url</a></li><li><a href="std/toml.html">toml</a></li><li><a href="std/binary.html">binary</a></li><li><a href="std/heap.html">heap</a></li><li><a href="std/pqueue.html">pqueue</a></li><li><a href="std/deque.html">deque</a></li><li><a href="std/bitset.html">bitset</a></li><li><a href="std/json.html">json</a></li><li><a href="std/re.html">re</a></li><li><a href="std/simd.html">simd</a></li><li><a href="std/http.html">http</a></li><li><a href="std/crypto.html">crypto</a></li><li><a href="std/compress.html">compress</a></li><li><a href="std/tls.html">tls</a></li><li><a href="std/log.html">log</a></li><li><a href="std/html.html">html</a></li><li><a href="std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="packages/index.html">Overview</a></li><li><a href="packages/roost.html">roost</a></li><li><a href="packages/sqlite.html">sqlite</a></li><li><a href="packages/pg.html">pg</a></li><li><a href="packages/redis.html">redis</a></li><li><a href="packages/migrate.html">migrate</a></li><li><a href="packages/sqlgen.html">sqlgen</a></li><li><a href="packages/auth.html">auth</a></li><li><a href="packages/openapi.html">openapi</a></li><li><a href="packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="reference.html">Language reference</a></li><li><a href="builtins.html" class="cur" aria-current="page">Builtin functions</a></li><li><a href="grammar.html">Grammar</a></li><li><a href="errors.html">Compiler errors</a></li><li><a href="cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="builtin-functions"><a class="anchor" href="#builtin-functions" aria-hidden="true">#</a>Builtin functions</h1>
+<p>Builtins are the functions that are part of the language: they need no <code>import</code>, and their names are reserved. This page lists every one with its signature, what it does, the errors it can cause (at compile time and at run time), and a tested example. It starts with the rule that lets you call any function as a method.</p>
+<h2 id="method-calls-xfa-is-fx-a"><a class="anchor" href="#method-calls-xfa-is-fx-a" aria-hidden="true">#</a>Method calls: <code>x.f(a)</code> is <code>f(x, a)</code></h2>
+<p>Any function, builtin or your own, can be called with its first argument in front: <code>s.upper()</code> is <code>upper(s)</code>, <code>xs.sort_by(fn(x) x)</code> is <code>sort_by(xs, fn(x) x)</code>, and <code>"-".join(parts)</code> is <code>join("-", parts)</code>. The two spellings are the same call; use whichever reads better. If the first parameter is <code>mut</code>, the method form passes it with <code>&amp;</code> for you: <code>xs.push(v)</code> is <code>push(&amp;xs, v)</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Circle</span>:
+    r: <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">area</span>(c: <span class="t">Circle</span>) <span class="t">float</span>:
+    <span class="k">return</span> <span class="n">3.14159</span> <span class="o">*</span> c.r <span class="o">*</span> c.r
+
+<span class="k">fn</span> <span class="f">grow</span>(c: <span class="k">mut</span> <span class="t">Circle</span>, by: <span class="t">float</span>):
+    c.r <span class="o">+</span><span class="o">=</span> by
+
+<span class="k">fn</span> <span class="f">main</span>():
+    c <span class="o">=</span> <span class="t">Circle</span>(<span class="n">1.0</span>)
+    c.<span class="f">grow</span>(<span class="n">1.0</span>)                   <span class="c"># grow(&amp;c, 1.0)</span>
+    <span class="f">print</span>(c.<span class="f">area</span>(), <span class="f">area</span>(c))      <span class="c"># the same call twice</span>
+    <span class="f">print</span>(<span class="s">"a-b"</span>.<span class="f">split</span>(<span class="s">"-"</span>), <span class="f">split</span>(<span class="s">"a-b"</span>, <span class="s">"-"</span>), <span class="f">len</span>(<span class="s">"abc"</span>), <span class="s">"abc"</span>.<span class="f">len</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>12.56636 12.56636
+["a", "b"] ["a", "b"] 3 3</code></pre></div>
+<p>For a value whose type comes from a module, <code>x.f</code> also looks in that module: <code>d.exec(sql, params)</code> calls <code>sqlite.exec(d, sql, params)</code> because <code>d</code> is a <code>sqlite.Db</code>.</p>
+<p>The signatures below use <code>T</code>, <code>K</code>, and <code>V</code> for "any type" (an element type, a map's key and value types). Your own functions can be generic too: <code>fn first[T](xs: [T]) T</code> (see the reference, §7).</p>
+<h2 id="your-functions-with-builtin-names"><a class="anchor" href="#your-functions-with-builtin-names" aria-hidden="true">#</a>Your functions with builtin names</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>print len push pop chr copy float int sqrt abs sum min max str join split find contains
+starts_with ends_with replace trim upper lower to_int to_float byte repeat get remove
+keys values is_null map filter sort_by reversed url_decode json_quote to_bytes to_str</code></pre></div>
+<p>A function of your own may have one of these names. A call goes to yours when its first parameter fits the first argument (and the argument count matches), and to the builtin otherwise; so <code>find</code> on a string still means the builtin here:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">find</span>(xs: [<span class="t">int</span>], v: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">for</span> i, x <span class="k">in</span> xs:
+        <span class="k">if</span> x <span class="o">==</span> v:
+            <span class="k">return</span> i
+    <span class="k">return</span> <span class="o">-</span><span class="n">1</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">find</span>([<span class="n">1</span>, <span class="n">2</span>], <span class="n">2</span>), [<span class="n">5</span>, <span class="n">6</span>].<span class="f">find</span>(<span class="n">6</span>), <span class="s">"hello"</span>.<span class="f">find</span>(<span class="s">"l"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1 1 2</code></pre></div>
+<p>Functions in an <code>extern</code> block and <code>export fn</code> functions can't have a builtin's name: C sees their names.</p>
+<h2 id="output"><a class="anchor" href="#output" aria-hidden="true">#</a>Output</h2>
+<h3 id="print"><a class="anchor" href="#print" aria-hidden="true">#</a>print</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">print</span>(values<span class="o">..</span>.)</code></pre></div>
+<p>Prints its arguments to standard output, separated by single spaces, then a newline. It takes any number of values of any type, including arrays, maps, structs, and enums.</p>
+<ul><li>Strings print as they are at the top level, and in double quotes inside arrays, maps, and structs.</li><li>Floats always show a decimal point or an exponent (<code>2.0</code>, <code>1e+20</code>) and use the shortest text that reads back as the same number (<code>0.1 + 0.2</code> prints <code>0.30000000000000004</code>).</li><li>Structs print as <code>Name{field: value, ...}</code>, enums as <code>Enum.Variant</code> or <code>Enum.Variant(field: value)</code>, maps as <code>{key: value, ...}</code>.</li><li>There is no <code>end=</code> or <code>sep=</code>: build the line as a string, then print it. <code>print()</code> with no arguments prints an empty line.</li></ul>
+<p>Output is buffered and flushed when the program ends (also by <code>os.exit</code>). There is no builtin for printing to standard error.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">int</span>
+
+<span class="k">enum</span> <span class="t">Shape</span>:
+    <span class="t">Circle</span>(r: <span class="t">float</span>)
+    <span class="t">Empty</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="s">"total"</span>, <span class="n">3</span>, <span class="n">2.0</span>, <span class="n">0.1</span> <span class="o">+</span> <span class="n">0.2</span>, <span class="k">true</span>)
+    <span class="f">print</span>([<span class="s">"a"</span>, <span class="s">"b"</span>], {<span class="s">"k"</span>: <span class="n">1</span>}, <span class="t">Point</span>(<span class="n">1</span>, <span class="n">2</span>), <span class="t">Shape</span>.<span class="t">Circle</span>(<span class="n">1.5</span>), <span class="t">Shape</span>.<span class="t">Empty</span>)
+    <span class="f">print</span>()
+    <span class="f">print</span>(<span class="s">"a"</span> <span class="o">+</span> <span class="s">","</span> <span class="o">+</span> <span class="s">"b"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>total 3 2.0 0.30000000000000004 true
+["a", "b"] {"k": 1} Point{x: 1, y: 2} Shape.Circle(r: 1.5) Shape.Empty
+
+a,b</code></pre></div>
+<h2 id="numbers-and-conversions"><a class="anchor" href="#numbers-and-conversions" aria-hidden="true">#</a>Numbers and conversions</h2>
+<h3 id="len"><a class="anchor" href="#len" aria-hidden="true">#</a>len</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">len</span>(s: <span class="t">str</span>) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">len</span>(xs: [<span class="t">T</span>]) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">len</span>(m: {<span class="t">K</span>: <span class="t">V</span>}) <span class="t">int</span></code></pre></div>
+<p>The length of a string in <strong>bytes</strong>, the number of elements in an array, or the number of entries in a map. It takes constant time. Any other type is a compile error.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">len</span>(<span class="s">"hello"</span>), <span class="f">len</span>(<span class="s">"héllo"</span>), <span class="f">len</span>([<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]), <span class="f">len</span>({<span class="s">"a"</span>: <span class="n">1</span>}), <span class="f">len</span>(<span class="s">""</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>5 6 3 1 0</code></pre></div>
+<p><code>"héllo"</code> is six bytes because <code>é</code> takes two bytes in UTF-8.</p>
+<h3 id="int"><a class="anchor" href="#int" aria-hidden="true">#</a>int</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="t">int</span>(x: <span class="t">float</span>) <span class="t">int</span></code></pre></div>
+<p>Converts a float to an int by cutting off the fraction (rounding toward zero): <code>int(2.9)</code> is <code>2</code> and <code>int(-2.9)</code> is <code>-2</code>. To round instead, use <code>int(math.round(x))</code> or <code>int(math.floor(x))</code> (see <a href="std/math.html">math</a>). The result for NaN, infinity, or a value outside the <code>int</code> range is unspecified. <code>int(b)</code> of a <code>byte</code> gives its value. <code>int</code> of anything else is a compile error; to parse a string, use <code>to_int</code>.</p>
+<h3 id="float"><a class="anchor" href="#float" aria-hidden="true">#</a>float</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="t">float</span>(n: <span class="t">int</span>) <span class="t">float</span></code></pre></div>
+<p>Converts an int (or a byte or an f32) to a float. Ints above 2&lt;sup&gt;53&lt;/sup&gt; (about 9 × 10&lt;sup&gt;15&lt;/sup&gt;) may be rounded to the nearest float. <code>float</code> of anything else is a compile error.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">7</span>
+    avg <span class="o">=</span> <span class="t">float</span>(n) <span class="o">/</span> <span class="n">2.0</span>
+    <span class="f">print</span>(avg, <span class="t">int</span>(avg), <span class="t">int</span>(<span class="o">-</span><span class="n">2.9</span>), <span class="t">float</span>(<span class="n">3</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3.5 3 -2 3.0</code></pre></div>
+<h3 id="f32"><a class="anchor" href="#f32" aria-hidden="true">#</a>f32</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">f32</span>(x: <span class="t">float</span>) f32
+<span class="k">fn</span> <span class="f">f32</span>(n: <span class="t">int</span>) f32</code></pre></div>
+<p>Rounds a float (or an int) to the nearest <a href="reference.html#32-bit-floats">f32</a>, the 32-bit float: about 7 significant digits, up to about 3.4 × 10&lt;sup&gt;38&lt;/sup&gt; (larger is <code>inf</code>). <code>float(x)</code> widens it back exactly.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    x <span class="o">=</span> <span class="f">f32</span>(<span class="n">0.1</span>)
+    <span class="f">print</span>(x, <span class="t">float</span>(x), <span class="f">f32</span>(<span class="n">16777217</span>), <span class="f">f32</span>(1e39), <span class="f">f32</span>(<span class="n">3</span>) <span class="o">/</span> <span class="n">2.0</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>0.1 0.10000000149011612 16777216.0 inf 1.5</code></pre></div>
+<h3 id="str"><a class="anchor" href="#str" aria-hidden="true">#</a>str</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="t">str</span>(x: <span class="t">int</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="t">str</span>(x: <span class="t">float</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="t">str</span>(x: <span class="t">bool</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="t">str</span>(x: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p>The text of a number or a bool, written the same way <code>print</code> writes it: <code>str(42)</code> is <code>"42"</code>, <code>str(2.0)</code> is <code>"2.0"</code>, <code>str(true)</code> is <code>"true"</code>. Arrays, maps, structs, and enums are a compile error; use <code>json.encode(x)</code> for text, or <code>print</code> to show them.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    n <span class="o">=</span> <span class="n">42</span>
+    <span class="f">print</span>(<span class="s">"n="</span> <span class="o">+</span> <span class="t">str</span>(n), <span class="t">str</span>(<span class="n">2.5</span>) <span class="o">+</span> <span class="s">"!"</span>, <span class="t">str</span>(<span class="n">1.0</span> <span class="o">/</span> <span class="n">3.0</span>), <span class="t">str</span>(<span class="n">100000000000000000000.0</span>), <span class="t">str</span>(<span class="k">false</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>n=42 2.5! 0.3333333333333333 1e+20 false</code></pre></div>
+<p>F-strings convert the same way: <code>f"n={n}"</code> equals <code>"n=" + str(n)</code>.</p>
+<h3 id="abs"><a class="anchor" href="#abs" aria-hidden="true">#</a>abs</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">abs</span>(x: <span class="t">int</span>) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">abs</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p>The absolute value. The result has the argument's type. <code>abs</code> of the most negative <code>int</code> (-9223372036854775808) is itself, since the positive value doesn't fit.</p>
+<h3 id="min-max"><a class="anchor" href="#min-max" aria-hidden="true">#</a>min, max</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">min</span>(a: <span class="t">int</span>, b: <span class="t">int</span>) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">min</span>(a: <span class="t">float</span>, b: <span class="t">float</span>) <span class="t">float</span>
+<span class="k">fn</span> <span class="f">min</span>(xs: [<span class="t">int</span>]) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">min</span>(xs: [<span class="t">float</span>]) <span class="t">float</span>
+<span class="k">fn</span> <span class="f">max</span>(<span class="o">..</span>.)                     <span class="c"># the same four forms</span></code></pre></div>
+<p>The smaller or larger of two numbers of the <strong>same type</strong> (mixing <code>int</code> and <code>float</code> is a compile error), or the smallest or largest element of an array of numbers. An empty array is a runtime error, <code>max() of an empty array</code>: check <code>len(xs) &gt; 0</code> first. In a float array, NaN elements are skipped.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    scores <span class="o">=</span> [<span class="n">70</span>, <span class="n">95</span>, <span class="n">82</span>]
+    <span class="f">print</span>(<span class="f">max</span>(<span class="n">3</span>, <span class="n">8</span>), <span class="f">min</span>(<span class="n">2.5</span>, <span class="n">1.0</span>), <span class="f">max</span>(scores), scores.<span class="f">min</span>(), <span class="f">max</span>(scores.<span class="f">map</span>(<span class="k">fn</span>(s) s <span class="o">/</span> <span class="n">10</span>)))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>8 1.0 95 70 9</code></pre></div>
+<h3 id="sqrt"><a class="anchor" href="#sqrt" aria-hidden="true">#</a>sqrt</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sqrt</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p>The square root, the same as <code>math.sqrt</code> without the import. It takes a <code>float</code> only: write <code>sqrt(float(n))</code>. The square root of a negative number is NaN.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">abs</span>(<span class="o">-</span><span class="n">3</span>), <span class="f">abs</span>(<span class="o">-</span><span class="n">2.5</span>), <span class="f">min</span>(<span class="n">3</span>, <span class="n">4</span>), <span class="f">max</span>(<span class="n">1.5</span>, <span class="n">0.5</span>), <span class="f">sqrt</span>(<span class="n">2.0</span>), <span class="f">sqrt</span>(<span class="t">float</span>(<span class="n">16</span>)))
+    scores <span class="o">=</span> [<span class="n">72</span>, <span class="n">95</span>, <span class="n">88</span>]
+    best <span class="o">=</span> scores[<span class="n">0</span>]
+    <span class="k">for</span> s <span class="k">in</span> scores:
+        best <span class="o">=</span> <span class="f">max</span>(best, s)
+    <span class="f">print</span>(best)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 2.5 3 1.5 1.4142135623730951 4.0
+95</code></pre></div>
+<h3 id="chr"><a class="anchor" href="#chr" aria-hidden="true">#</a>chr</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">chr</span>(n: <span class="t">int</span>) <span class="t">str</span></code></pre></div>
+<p>A one-byte string whose byte value is <code>n</code>: <code>chr(65)</code> is <code>"A"</code>. <code>n</code> must be 0 to 255; any other value is a runtime error. Bytes 128 to 255 are not characters on their own in UTF-8: <code>chr(233)</code> is not <code>"é"</code>. The reverse is <code>s.byte(i)</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    word <span class="o">=</span> <span class="s">""</span>
+    <span class="k">for</span> code <span class="k">in</span> [<span class="n">84</span>, <span class="n">101</span>, <span class="n">114</span>, <span class="n">110</span>]:
+        word <span class="o">+</span><span class="o">=</span> <span class="f">chr</span>(code)
+    <span class="f">print</span>(word, <span class="s">"A"</span>.<span class="f">byte</span>(<span class="n">0</span>), <span class="f">chr</span>(<span class="n">97</span> <span class="o">+</span> <span class="n">2</span>), <span class="f">chr</span>(0x41) <span class="o">==</span> <span class="s">"A"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Tern 65 c true</code></pre></div>
+<h3 id="copy"><a class="anchor" href="#copy" aria-hidden="true">#</a>copy</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">copy</span>(x: <span class="t">T</span>) <span class="t">T</span></code></pre></div>
+<p>An explicit copy of any value. Assignment already copies (<code>b = a</code>), so <code>copy</code> is only needed where a value would otherwise be <strong>moved</strong>: when passing it to a <code>take</code> parameter or to <code>push</code> (below) while still using it afterwards. Copies are lazy, so <code>copy</code> itself is cheap; the real copy happens only if one side is later changed.</p>
+<h2 id="arrays"><a class="anchor" href="#arrays" aria-hidden="true">#</a>Arrays</h2>
+<h3 id="push"><a class="anchor" href="#push" aria-hidden="true">#</a>push</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">push</span>(xs: <span class="k">mut</span> [<span class="t">T</span>], v: <span class="t">T</span>)</code></pre></div>
+<p>Adds <code>v</code> to the end of <code>xs</code>; write <code>xs.push(v)</code>. Adding is amortized constant time.</p>
+<p><code>push</code> copies <code>v</code> into the array, the way <code>=</code> does: the copy is lazy (the two share storage until one is written), and when <code>v</code> is a variable that isn't used afterwards, its value moves in without even that.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    names: [<span class="t">str</span>] <span class="o">=</span> []
+    name <span class="o">=</span> <span class="s">"ada"</span>
+    names.<span class="f">push</span>(name)
+    name <span class="o">+</span><span class="o">=</span> <span class="s">"!"</span>
+    <span class="f">print</span>(name, names)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>ada! ["ada"]</code></pre></div>
+<p>Compile errors: pushing a value of the wrong type (<code>argument 2 of push should be int, not str</code>), and pushing onto the array a <code>for</code> loop is iterating over.</p>
+<h3 id="pop"><a class="anchor" href="#pop" aria-hidden="true">#</a>pop</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">pop</span>(xs: <span class="k">mut</span> [<span class="t">T</span>]) <span class="t">T</span></code></pre></div>
+<p>Removes the last element of <code>xs</code> and returns it; write <code>xs.pop()</code>. On an empty array it is a runtime error: <code>pop() from an empty array</code>. Check <code>len(xs) &gt; 0</code> first. There is no way to remove from the front or the middle in place; slice (<code>xs[1..]</code>) or <code>filter</code> instead.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    stack: [<span class="t">str</span>] <span class="o">=</span> []
+    stack.<span class="f">push</span>(<span class="s">"a"</span>)
+    stack.<span class="f">push</span>(<span class="s">"b"</span>)
+    word <span class="o">=</span> <span class="s">"c"</span>
+    stack.<span class="f">push</span>(word)
+    <span class="f">print</span>(stack, word)
+    top <span class="o">=</span> stack.<span class="f">pop</span>()
+    <span class="f">print</span>(top, stack)
+    <span class="k">while</span> <span class="f">len</span>(stack) <span class="o">&gt;</span> <span class="n">0</span>:
+        <span class="f">print</span>(<span class="s">"popped"</span>, stack.<span class="f">pop</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["a", "b", "c"] c
+c ["a", "b"]
+popped b
+popped a</code></pre></div>
+<h3 id="map"><a class="anchor" href="#map" aria-hidden="true">#</a>map</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">map</span>(xs: [<span class="t">T</span>], f: <span class="k">fn</span>(<span class="t">T</span>) <span class="t">U</span>) [<span class="t">U</span>]</code></pre></div>
+<p>A new array with <code>f</code> applied to each element, in order. <code>f</code> must return a value; the result's element type is whatever <code>f</code> returns. <code>xs</code> is not changed.</p>
+<h3 id="filter"><a class="anchor" href="#filter" aria-hidden="true">#</a>filter</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">filter</span>(xs: [<span class="t">T</span>], keep: <span class="k">fn</span>(<span class="t">T</span>) <span class="t">bool</span>) [<span class="t">T</span>]</code></pre></div>
+<p>A new array with the elements for which <code>keep</code> returns <code>true</code>, in their original order. <code>keep</code> must return <code>bool</code>.</p>
+<h3 id="sort_by"><a class="anchor" href="#sort_by" aria-hidden="true">#</a>sort_by</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sort_by</span>(xs: [<span class="t">T</span>], key: <span class="k">fn</span>(<span class="t">T</span>) <span class="t">K</span>) [<span class="t">T</span>]          <span class="c"># K is int, float, or str</span></code></pre></div>
+<p>A new array sorted by the key <code>key</code> returns for each element, smallest first. <code>xs</code> itself is not changed. The sort is <strong>stable</strong>: elements with equal keys keep their original order, so you can sort by one key and then another. Strings compare by bytes, so uppercase sorts before lowercase (<code>"B" &lt; "a"</code>); sort by <code>w.lower()</code> to ignore case. For descending order, negate a number key (<code>fn(x) -x.score</code>). A key of any other type is a compile error.</p>
+<p>The function in <code>map</code>, <code>filter</code>, and <code>sort_by</code> is usually a lambda, whose parameter type is inferred from the array; a named function works too.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Player</span>:
+    name: <span class="t">str</span>
+    score: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">is_even</span>(n: <span class="t">int</span>) <span class="t">bool</span>:
+    <span class="k">return</span> n <span class="o">%</span> <span class="n">2</span> <span class="o">==</span> <span class="n">0</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    nums <span class="o">=</span> [<span class="n">5</span>, <span class="n">2</span>, <span class="n">8</span>, <span class="n">1</span>]
+    <span class="f">print</span>(nums.<span class="f">map</span>(<span class="k">fn</span>(n) n <span class="o">*</span> <span class="n">10</span>), nums.<span class="f">map</span>(<span class="k">fn</span>(n) <span class="s">f"#{n}"</span>), nums.<span class="f">filter</span>(is_even))
+    <span class="f">print</span>(nums.<span class="f">sort_by</span>(<span class="k">fn</span>(n) n), nums.<span class="f">sort_by</span>(<span class="k">fn</span>(n) <span class="o">-</span>n), nums)
+    players <span class="o">=</span> [<span class="t">Player</span>(<span class="s">"cy"</span>, <span class="n">30</span>), <span class="t">Player</span>(<span class="s">"ada"</span>, <span class="n">50</span>), <span class="t">Player</span>(<span class="s">"bob"</span>, <span class="n">30</span>)]
+    ranked <span class="o">=</span> players.<span class="f">sort_by</span>(<span class="k">fn</span>(p) <span class="o">-</span>p.score)
+    <span class="f">print</span>(ranked.<span class="f">map</span>(<span class="k">fn</span>(p) p.name))
+    words <span class="o">=</span> [<span class="s">"pear"</span>, <span class="s">"Fig"</span>, <span class="s">"apple"</span>]
+    <span class="f">print</span>(words.<span class="f">sort_by</span>(<span class="k">fn</span>(w) w), words.<span class="f">sort_by</span>(<span class="k">fn</span>(w) w.<span class="f">lower</span>()), words.<span class="f">sort_by</span>(<span class="k">fn</span>(w) <span class="f">len</span>(w)))
+    <span class="f">print</span>(players.<span class="f">filter</span>(<span class="k">fn</span>(p) p.score <span class="o">&gt;</span> <span class="n">40</span>).<span class="f">map</span>(<span class="k">fn</span>(p) p.name))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[50, 20, 80, 10] ["#5", "#2", "#8", "#1"] [2, 8]
+[1, 2, 5, 8] [8, 5, 2, 1] [5, 2, 8, 1]
+["ada", "cy", "bob"]
+["Fig", "apple", "pear"] ["apple", "Fig", "pear"] ["Fig", "pear", "apple"]
+["ada"]</code></pre></div>
+<h3 id="sum"><a class="anchor" href="#sum" aria-hidden="true">#</a>sum</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sum</span>(xs: [<span class="t">int</span>]) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">sum</span>(xs: [<span class="t">float</span>]) <span class="t">float</span></code></pre></div>
+<p>The elements added up, in order; <code>0</code> (or <code>0.0</code>) for an empty array. Int sums wrap on overflow, like <code>+</code>. Any other element type is a compile error: <code>sum() needs an array of numbers ([int], [float] or [f32]), not [str]</code>.</p>
+<h3 id="sorted-reversed"><a class="anchor" href="#sorted-reversed" aria-hidden="true">#</a>sorted, reversed</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sorted</span>(xs: [<span class="t">T</span>]) [<span class="t">T</span>]          <span class="c"># T is int, float, or str</span>
+<span class="k">fn</span> <span class="f">reversed</span>(xs: [<span class="t">T</span>]) [<span class="t">T</span>]</code></pre></div>
+<p>A sorted copy (smallest first) and a copy in reverse order. <code>xs</code> is not changed; to sort in place, write <code>xs = xs.sorted()</code>. For other orders, use <code>sort_by</code>. (<code>sorted</code> comes from the prelude rather than the language, so it isn't in the list of builtin names above; a function of yours named <code>sorted</code> takes its place.)</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">3</span>, <span class="n">1</span>, <span class="n">2</span>]
+    <span class="f">print</span>(<span class="f">sum</span>(xs), xs.<span class="f">sum</span>(), <span class="f">sum</span>([<span class="n">0.5</span>, <span class="n">1.25</span>]), <span class="f">sum</span>(xs.<span class="f">filter</span>(<span class="k">fn</span>(x) x <span class="o">&gt;</span> <span class="n">5</span>)))
+    <span class="f">print</span>(xs.<span class="f">sorted</span>(), xs.<span class="f">reversed</span>(), xs.<span class="f">sorted</span>().<span class="f">reversed</span>(), xs)
+    <span class="f">print</span>([<span class="s">"pear"</span>, <span class="s">"fig"</span>].<span class="f">sorted</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>6 6 1.75 0
+[1, 2, 3] [2, 1, 3] [3, 2, 1] [3, 1, 2]
+["fig", "pear"]</code></pre></div>
+<h2 id="strings"><a class="anchor" href="#strings" aria-hidden="true">#</a>Strings</h2>
+<p>Strings are UTF-8 bytes, and every position and length below counts <strong>bytes</strong>. For ASCII text that is the same as characters. None of these functions change the string they are called on: strings are values, and each function returns a new one.</p>
+<h3 id="find"><a class="anchor" href="#find" aria-hidden="true">#</a>find</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">find</span>(s: <span class="t">str</span>, sub: <span class="t">str</span>) <span class="t">int</span></code></pre></div>
+<p>The byte index of the first occurrence of <code>sub</code> in <code>s</code>, or <code>-1</code> if there is none. An empty <code>sub</code> is found at <code>0</code>.</p>
+<h3 id="contains"><a class="anchor" href="#contains" aria-hidden="true">#</a>contains</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">contains</span>(s: <span class="t">str</span>, sub: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p>Whether <code>sub</code> occurs in <code>s</code>. Same as <code>sub in s</code>.</p>
+<h3 id="starts_with-ends_with"><a class="anchor" href="#starts_with-ends_with" aria-hidden="true">#</a>starts_with, ends_with</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">starts_with</span>(s: <span class="t">str</span>, prefix: <span class="t">str</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">ends_with</span>(s: <span class="t">str</span>, suffix: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p>Whether <code>s</code> begins or ends with the given text. Every string starts and ends with <code>""</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="s">"report-2024.csv"</span>
+    <span class="f">print</span>(s.<span class="f">find</span>(<span class="s">"-"</span>), s.<span class="f">find</span>(<span class="s">"x"</span>), s.<span class="f">find</span>(<span class="s">""</span>), s.<span class="f">contains</span>(<span class="s">"2024"</span>), <span class="s">"csv"</span> <span class="k">in</span> s)
+    <span class="f">print</span>(s.<span class="f">starts_with</span>(<span class="s">"report"</span>), s.<span class="f">ends_with</span>(<span class="s">".csv"</span>), s.<span class="f">ends_with</span>(<span class="s">".CSV"</span>))
+    dot <span class="o">=</span> s.<span class="f">find</span>(<span class="s">"."</span>)
+    <span class="f">print</span>(s[<span class="o">..</span>dot], s[dot <span class="o">+</span> <span class="n">1</span><span class="o">..</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>6 -1 0 true true
+true true false
+report-2024 csv</code></pre></div>
+<h3 id="replace"><a class="anchor" href="#replace" aria-hidden="true">#</a>replace</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">replace</span>(s: <span class="t">str</span>, old: <span class="t">str</span>, new: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p><code>s</code> with every non-overlapping occurrence of <code>old</code> replaced by <code>new</code>, scanning left to right. An empty <code>old</code> returns <code>s</code> unchanged.</p>
+<h3 id="trim"><a class="anchor" href="#trim" aria-hidden="true">#</a>trim</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">trim</span>(s: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p><code>s</code> without leading and trailing spaces, tabs, <code>\n</code>, and <code>\r</code>. There is no left-only or right-only version.</p>
+<h3 id="upper-lower"><a class="anchor" href="#upper-lower" aria-hidden="true">#</a>upper, lower</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">upper</span>(s: <span class="t">str</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">lower</span>(s: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p><code>s</code> with ASCII letters changed to upper or lower case. Other bytes, including non-ASCII letters like <code>é</code>, are unchanged.</p>
+<h3 id="repeat"><a class="anchor" href="#repeat" aria-hidden="true">#</a>repeat</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">repeat</span>(s: <span class="t">str</span>, n: <span class="t">int</span>) <span class="t">str</span></code></pre></div>
+<p><code>s</code> repeated <code>n</code> times; <code>""</code> if <code>n</code> is 0 or negative. <code>s * n</code> is the same.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="s">"a-b-c"</span>.<span class="f">replace</span>(<span class="s">"-"</span>, <span class="s">", "</span>), <span class="s">"aaa"</span>.<span class="f">replace</span>(<span class="s">"aa"</span>, <span class="s">"b"</span>), <span class="s">"abc"</span>.<span class="f">replace</span>(<span class="s">""</span>, <span class="s">"x"</span>))
+    <span class="f">print</span>(<span class="s">"["</span> <span class="o">+</span> <span class="s">"  padded\t\n"</span>.<span class="f">trim</span>() <span class="o">+</span> <span class="s">"]"</span>, <span class="s">"Hello World"</span>.<span class="f">upper</span>(), <span class="s">"ÉCOLE Tern"</span>.<span class="f">lower</span>())
+    <span class="f">print</span>(<span class="s">"ab"</span>.<span class="f">repeat</span>(<span class="n">3</span>), <span class="s">"-"</span> <span class="o">*</span> <span class="n">10</span>, <span class="s">"x"</span>.<span class="f">repeat</span>(<span class="n">0</span>) <span class="o">==</span> <span class="s">""</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>a, b, c ba abc
+[padded] HELLO WORLD École tern
+ababab ---------- true</code></pre></div>
+<h3 id="split"><a class="anchor" href="#split" aria-hidden="true">#</a>split</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">split</span>(s: <span class="t">str</span>, sep: <span class="t">str</span>) [<span class="t">str</span>]</code></pre></div>
+<p>The pieces of <code>s</code> between occurrences of <code>sep</code>. Empty pieces are kept, so <code>len(s.split(sep))</code> is always one more than the number of separators, and <code>"".split(",")</code> is <code>[""]</code>. An empty <code>sep</code> splits into single bytes. There is no "split on any whitespace"; replace tabs and newlines with spaces first, and skip empty pieces.</p>
+<h3 id="join"><a class="anchor" href="#join" aria-hidden="true">#</a>join</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">join</span>(sep: <span class="t">str</span>, parts: [<span class="t">str</span>]) <span class="t">str</span></code></pre></div>
+<p>The strings in <code>parts</code> with <code>sep</code> between them. It is called on the separator, like Python: <code>", ".join(names)</code>. Joining <code>[]</code> gives <code>""</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="s">"a,b,,c"</span>.<span class="f">split</span>(<span class="s">","</span>), <span class="s">""</span>.<span class="f">split</span>(<span class="s">","</span>), <span class="s">"abc"</span>.<span class="f">split</span>(<span class="s">""</span>), <span class="s">"no sep"</span>.<span class="f">split</span>(<span class="s">","</span>))
+    <span class="f">print</span>(<span class="s">" / "</span>.<span class="f">join</span>([<span class="s">"home"</span>, <span class="s">"docs"</span>]), <span class="s">""</span>.<span class="f">join</span>([<span class="s">"a"</span>, <span class="s">"b"</span>]), <span class="s">","</span>.<span class="f">join</span>([]) <span class="o">==</span> <span class="s">""</span>)
+    words: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="k">for</span> w <span class="k">in</span> <span class="s">"  two   spaces "</span>.<span class="f">split</span>(<span class="s">" "</span>):
+        <span class="k">if</span> w <span class="o">!=</span> <span class="s">""</span>:
+            words.<span class="f">push</span>(w)
+    <span class="f">print</span>(words)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["a", "b", "", "c"] [""] ["a", "b", "c"] ["no sep"]
+home / docs ab true
+["two", "spaces"]</code></pre></div>
+<h3 id="to_int"><a class="anchor" href="#to_int" aria-hidden="true">#</a>to_int</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">to_int</span>(s: <span class="t">str</span>, default: <span class="t">int</span>) <span class="t">int</span></code></pre></div>
+<p><code>s</code> parsed as a whole number, or <code>default</code> if <code>s</code> isn't one. It accepts an optional <code>+</code> or <code>-</code> followed by decimal digits, and nothing else: no spaces (trim first), no <code>_</code>, no decimal point, no hex. Numbers too large for an <code>int</code> are not detected and wrap around, so limit the length of untrusted input.</p>
+<h3 id="to_float"><a class="anchor" href="#to_float" aria-hidden="true">#</a>to_float</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">to_float</span>(s: <span class="t">str</span>, default: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p><code>s</code> parsed as a number, or <code>default</code> if it isn't one. It accepts what C's <code>strtod</code> accepts: integers, decimals, exponents (<code>1e3</code>), leading whitespace, and also <code>inf</code>, <code>nan</code>, and hex floats (<code>0x10</code>), so check the result's range if the input is untrusted. Trailing text makes it fail.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="s">"42"</span>.<span class="f">to_int</span>(<span class="n">0</span>), <span class="s">"-7"</span>.<span class="f">to_int</span>(<span class="n">0</span>), <span class="s">"+5"</span>.<span class="f">to_int</span>(<span class="n">0</span>), <span class="s">" 42"</span>.<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>), <span class="s">"4.0"</span>.<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>), <span class="s">"1_000"</span>.<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>))
+    <span class="f">print</span>(<span class="s">"2.5"</span>.<span class="f">to_float</span>(<span class="n">0.0</span>), <span class="s">"3"</span>.<span class="f">to_float</span>(<span class="n">0.0</span>), <span class="s">"1e3"</span>.<span class="f">to_float</span>(<span class="n">0.0</span>), <span class="s">"12px"</span>.<span class="f">to_float</span>(<span class="o">-</span><span class="n">1.0</span>), <span class="s">""</span>.<span class="f">to_float</span>(<span class="o">-</span><span class="n">1.0</span>))
+    port <span class="o">=</span> <span class="s">"8080x"</span>.<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+    <span class="k">if</span> port <span class="o">&lt;</span> <span class="n">0</span>:
+        <span class="f">print</span>(<span class="s">"bad port"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>42 -7 5 -1 -1 -1
+2.5 3.0 1000.0 -1.0 -1.0
+bad port</code></pre></div>
+<h3 id="byte"><a class="anchor" href="#byte" aria-hidden="true">#</a>byte</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">byte</span>(n: <span class="t">int</span>) byte
+<span class="k">fn</span> <span class="f">byte</span>(s: <span class="t">str</span>, i: <span class="t">int</span>) <span class="t">int</span></code></pre></div>
+<p><code>byte(n)</code> makes a <a href="reference.html#bytes">byte</a> from an int, keeping its low 8 bits: <code>byte(300)</code> is <code>44</code>, <code>byte(-1)</code> is <code>255</code>.</p>
+<p><code>s.byte(i)</code> is the byte at index <code>i</code>, as an <code>int</code> from 0 to 255. An index outside the string is a runtime error, as with <code>s[i]</code> (which gives a one-byte string instead of a number).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">is_digit</span>(c: <span class="t">int</span>) <span class="t">bool</span>:
+    <span class="k">return</span> c <span class="o">&gt;=</span> <span class="n">48</span> <span class="k">and</span> c <span class="o">&lt;=</span> <span class="n">57</span>            <span class="c"># "0" to "9"</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="s">"a1b22"</span>
+    digits <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(s):
+        <span class="k">if</span> <span class="f">is_digit</span>(s.<span class="f">byte</span>(i)):
+            digits <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="f">print</span>(digits, s.<span class="f">byte</span>(<span class="n">0</span>), <span class="s">"é"</span>.<span class="f">byte</span>(<span class="n">0</span>), <span class="s">"é"</span>.<span class="f">byte</span>(<span class="n">1</span>), s[<span class="n">1</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 97 195 169 1</code></pre></div>
+<h3 id="to_bytes-to_str"><a class="anchor" href="#to_bytes-to_str" aria-hidden="true">#</a>to_bytes, to_str</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">to_bytes</span>(s: <span class="t">str</span>) [byte]
+<span class="k">fn</span> <span class="f">to_str</span>(bs: [byte]) <span class="t">str</span></code></pre></div>
+<p>A string's bytes as a <code>[byte]</code>, and back. Neither copies: a <code>str</code> and a <code>[byte]</code> are stored the same way, so both share the block until one of them is changed. <code>to_str</code> doesn't check that the bytes are valid UTF-8.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    bs <span class="o">=</span> <span class="s">"abc"</span>.<span class="f">to_bytes</span>()
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(bs):
+        bs[i] <span class="o">=</span> <span class="f">byte</span>(bs[i] <span class="o">-</span> <span class="n">32</span>)          <span class="c"># ASCII lowercase to uppercase</span>
+    <span class="f">print</span>(bs, bs.<span class="f">to_str</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[65, 66, 67] ABC</code></pre></div>
+<h2 id="maps"><a class="anchor" href="#maps" aria-hidden="true">#</a>Maps</h2>
+<h3 id="get"><a class="anchor" href="#get" aria-hidden="true">#</a>get</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">get</span>(m: {<span class="t">K</span>: <span class="t">V</span>}, key: <span class="t">K</span>, default: <span class="t">V</span>) <span class="t">V</span></code></pre></div>
+<p>The value for <code>key</code>, or <code>default</code> if <code>m</code> has no such key. Reading <code>m[key]</code> for a missing key is a runtime error, so <code>get</code> is the safe way to read. The default is required.</p>
+<h3 id="remove"><a class="anchor" href="#remove" aria-hidden="true">#</a>remove</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">remove</span>(m: <span class="k">mut</span> {<span class="t">K</span>: <span class="t">V</span>}, key: <span class="t">K</span>)</code></pre></div>
+<p>Deletes <code>key</code> and its value; write <code>m.remove(key)</code>. Removing a key that isn't there does nothing. It returns nothing, so read the value first if you need it.</p>
+<h3 id="keys-values"><a class="anchor" href="#keys-values" aria-hidden="true">#</a>keys, values</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">keys</span>(m: {<span class="t">K</span>: <span class="t">V</span>}) [<span class="t">K</span>]
+<span class="k">fn</span> <span class="f">values</span>(m: {<span class="t">K</span>: <span class="t">V</span>}) [<span class="t">V</span>]</code></pre></div>
+<p>The map's keys, or values, as a new array, in insertion order (the order <code>for k, v in m:</code> uses). A key that is removed and added again moves to the end.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    stock <span class="o">=</span> {<span class="s">"apple"</span>: <span class="n">3</span>, <span class="s">"pear"</span>: <span class="n">0</span>}
+    stock[<span class="s">"fig"</span>] <span class="o">=</span> <span class="n">12</span>
+    <span class="f">print</span>(stock.<span class="f">get</span>(<span class="s">"apple"</span>, <span class="n">0</span>), stock.<span class="f">get</span>(<span class="s">"kiwi"</span>, <span class="n">0</span>), <span class="s">"kiwi"</span> <span class="k">in</span> stock)
+    stock.<span class="f">remove</span>(<span class="s">"pear"</span>)
+    stock.<span class="f">remove</span>(<span class="s">"kiwi"</span>)
+    stock[<span class="s">"apple"</span>] <span class="o">=</span> <span class="n">5</span>
+    <span class="f">print</span>(stock.<span class="f">keys</span>(), stock.<span class="f">values</span>(), <span class="f">len</span>(stock))
+    counts: {<span class="t">str</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">for</span> w <span class="k">in</span> <span class="s">"the cat and the hat"</span>.<span class="f">split</span>(<span class="s">" "</span>):
+        counts[w] <span class="o">=</span> counts.<span class="f">get</span>(w, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+    <span class="f">print</span>(counts)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 0 false
+["apple", "fig"] [5, 12] 2
+{"the": 2, "cat": 1, "and": 1, "hat": 1}</code></pre></div>
+<p>Common compile errors: calling these on something that isn't a map (<code>get() works on maps, not [int]</code>), a key or default of the wrong type, and leaving out <code>get</code>'s default.</p>
+<h2 id="web-helpers"><a class="anchor" href="#web-helpers" aria-hidden="true">#</a>Web helpers</h2>
+<h3 id="json_quote"><a class="anchor" href="#json_quote" aria-hidden="true">#</a>json_quote</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">json_quote</span>(s: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p><code>s</code> as a JSON string literal, including the surrounding double quotes: <code>"</code>, <code>\</code>, and control characters are escaped, and other bytes are kept. It is the same as <code>json.encode(s)</code>, for building JSON by hand without importing <code>json</code>.</p>
+<h3 id="url_decode"><a class="anchor" href="#url_decode" aria-hidden="true">#</a>url_decode</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">url_decode</span>(s: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p><code>s</code> with URL encoding undone: <code>+</code> becomes a space and <code>%XX</code> (two hex digits) becomes that byte. A <code>%</code> not followed by two hex digits is kept as it is. <code>req.query</code>, <code>req.form</code> and <code>http.match</code> call it for you.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    name <span class="o">=</span> <span class="s">"Ada \"the first\"\n"</span>
+    <span class="f">print</span>(<span class="s">`{"name": `</span> <span class="o">+</span> <span class="f">json_quote</span>(name) <span class="o">+</span> <span class="s">"}"</span>)
+    <span class="f">print</span>(<span class="f">url_decode</span>(<span class="s">"caf%C3%A9+au+lait"</span>), <span class="f">url_decode</span>(<span class="s">"100%25"</span>), <span class="f">url_decode</span>(<span class="s">"50%"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>{"name": "Ada \"the first\"\n"}
+café au lait 100% 50%</code></pre></div>
+<h2 id="c-pointers"><a class="anchor" href="#c-pointers" aria-hidden="true">#</a>C pointers</h2>
+<h3 id="is_null"><a class="anchor" href="#is_null" aria-hidden="true">#</a>is_null</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">is_null</span>(p: <span class="t">ptr</span>) <span class="t">bool</span></code></pre></div>
+<p>Whether a C pointer is null. <code>ptr</code> is the opaque pointer type used with <code>extern</code> functions; see <a href="guides/c-interop.html">Calling C</a>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    p: <span class="t">ptr</span> <span class="o">=</span> <span class="k">null</span>
+    <span class="f">print</span>(p.<span class="f">is_null</span>(), <span class="f">is_null</span>(p))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true true</code></pre></div>
+<h2 id="runtime-errors"><a class="anchor" href="#runtime-errors" aria-hidden="true">#</a>Runtime errors</h2>
+<p>These builtins can stop a program at run time. The program prints <code>runtime error in f (prog.tn:N): &lt;message&gt;</code> to standard error and exits with status 2 (inside a web request handler, the request gets a 500 instead; see <a href="std/http.html#errors-in-handlers">http</a>):</p>
+<div class="table"><table><thead><tr><th>Call</th><th>Message</th></tr></thead><tbody><tr><td><code>xs.pop()</code> on an empty array</td><td><code>pop() from an empty array</code></td></tr><tr><td><code>s.byte(i)</code> with <code>i</code> out of range</td><td><code>index 5 out of bounds (length 3)</code></td></tr><tr><td><code>m[key]</code> for a missing key (not a builtin, but common)</td><td><code>key not found (use m.get(key, default) or `key in m`)</code></td></tr></tbody></table></div>
+<p>Everything else on this page either can't fail or reports failure through its result (<code>find</code> gives <code>-1</code>, <code>to_int</code> gives your default, <code>get</code> gives your default).</p>
+</article>
+<div class="pn"><a class="prev" href="reference.html"><span>Previous</span>Language reference</a><a class="next" href="grammar.html"><span>Next</span>Grammar</a></div>
+<footer>Source: <code>docs/builtins.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#method-calls-xfa-is-fx-a">Method calls: x.f(a) is f(x, a)</a></li><li class="l2"><a href="#your-functions-with-builtin-names">Your functions with builtin names</a></li><li class="l2"><a href="#output">Output</a></li><li class="l3"><a href="#print">print</a></li><li class="l2"><a href="#numbers-and-conversions">Numbers and conversions</a></li><li class="l3"><a href="#len">len</a></li><li class="l3"><a href="#int">int</a></li><li class="l3"><a href="#float">float</a></li><li class="l3"><a href="#f32">f32</a></li><li class="l3"><a href="#str">str</a></li><li class="l3"><a href="#abs">abs</a></li><li class="l3"><a href="#min-max">min, max</a></li><li class="l3"><a href="#sqrt">sqrt</a></li><li class="l3"><a href="#chr">chr</a></li><li class="l3"><a href="#copy">copy</a></li><li class="l2"><a href="#arrays">Arrays</a></li><li class="l3"><a href="#push">push</a></li><li class="l3"><a href="#pop">pop</a></li><li class="l3"><a href="#map">map</a></li><li class="l3"><a href="#filter">filter</a></li><li class="l3"><a href="#sort_by">sort_by</a></li><li class="l3"><a href="#sum">sum</a></li><li class="l3"><a href="#sorted-reversed">sorted, reversed</a></li><li class="l2"><a href="#strings">Strings</a></li><li class="l3"><a href="#find">find</a></li><li class="l3"><a href="#contains">contains</a></li><li class="l3"><a href="#starts_with-ends_with">starts_with, ends_with</a></li><li class="l3"><a href="#replace">replace</a></li><li class="l3"><a href="#trim">trim</a></li><li class="l3"><a href="#upper-lower">upper, lower</a></li><li class="l3"><a href="#repeat">repeat</a></li><li class="l3"><a href="#split">split</a></li><li class="l3"><a href="#join">join</a></li><li class="l3"><a href="#to_int">to_int</a></li><li class="l3"><a href="#to_float">to_float</a></li><li class="l3"><a href="#byte">byte</a></li><li class="l3"><a href="#to_bytes-to_str">to_bytes, to_str</a></li><li class="l2"><a href="#maps">Maps</a></li><li class="l3"><a href="#get">get</a></li><li class="l3"><a href="#remove">remove</a></li><li class="l3"><a href="#keys-values">keys, values</a></li><li class="l2"><a href="#web-helpers">Web helpers</a></li><li class="l3"><a href="#json_quote">json_quote</a></li><li class="l3"><a href="#url_decode">url_decode</a></li><li class="l2"><a href="#c-pointers">C pointers</a></li><li class="l3"><a href="#is_null">is_null</a></li><li class="l2"><a href="#runtime-errors">Runtime errors</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="";</script>
+<script src="search.js"></script>
+<script src="site.js"></script>
+</body>
+</html>

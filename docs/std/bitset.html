@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bitset · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/bitset.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html" class="cur" aria-current="page">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="bitset"><a class="anchor" href="#bitset" aria-hidden="true">#</a>bitset</h1>
+<p>The <code>bitset</code> module is a set of small non-negative ints, one bit each: a sieve, a visited set, a set of flags. Setting a bit past the end grows the set.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> bitset
+
+<span class="k">fn</span> <span class="f">main</span>():
+    seen <span class="o">=</span> bitset.<span class="f">new</span>(<span class="n">100</span>)
+    <span class="k">for</span> x <span class="k">in</span> [<span class="n">3</span>, <span class="n">64</span>, <span class="n">7</span>, <span class="n">3</span>, <span class="n">99</span>]:
+        seen.<span class="f">set</span>(x)
+    <span class="f">print</span>(seen.<span class="f">count</span>(), seen.<span class="f">has</span>(<span class="n">7</span>), seen.<span class="f">has</span>(<span class="n">8</span>), seen.<span class="f">ones</span>())
+    seen.<span class="f">unset</span>(<span class="n">64</span>)
+    other <span class="o">=</span> bitset.<span class="f">new</span>(<span class="n">10</span>)
+    other.<span class="f">set</span>(<span class="n">3</span>)
+    other.<span class="f">set</span>(<span class="n">4</span>)
+    both <span class="o">=</span> seen
+    both.<span class="f">intersect_with</span>(other)
+    <span class="f">print</span>(seen.<span class="f">ones</span>(), both.<span class="f">ones</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>4 true false [3, 7, 64, 99]
+[3, 7, 99] [3]</code></pre></div>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">new</span>(n: <span class="t">int</span>) <span class="t">Bitset</span>                     room <span class="k">for</span> bits <span class="n">0</span><span class="o">..</span>n<span class="o">-</span><span class="n">1</span> (it grows past that)
+<span class="k">fn</span> <span class="f">set</span>(b: <span class="k">mut</span> <span class="t">Bitset</span>, i: <span class="t">int</span>)             <span class="k">fn</span> <span class="f">unset</span>(b: <span class="k">mut</span> <span class="t">Bitset</span>, i: <span class="t">int</span>)
+<span class="k">fn</span> <span class="f">toggle</span>(b: <span class="k">mut</span> <span class="t">Bitset</span>, i: <span class="t">int</span>)          <span class="k">fn</span> <span class="f">has</span>(b: <span class="t">Bitset</span>, i: <span class="t">int</span>) <span class="t">bool</span>   (<span class="k">false</span> outside it)
+<span class="k">fn</span> <span class="f">count</span>(b: <span class="t">Bitset</span>) <span class="t">int</span>                   how many bits are set (the <span class="t">CPU</span>'s popcount)
+<span class="k">fn</span> <span class="f">ones</span>(b: <span class="t">Bitset</span>) [<span class="t">int</span>]                  the set bits, ascending
+<span class="k">fn</span> <span class="f">size</span>(b: <span class="t">Bitset</span>) <span class="t">int</span>                    how many bits it has room <span class="k">for</span> (a multiple of <span class="n">64</span>)
+<span class="k">fn</span> <span class="f">union_with</span>(b: <span class="k">mut</span> <span class="t">Bitset</span>, o: <span class="t">Bitset</span>)   <span class="k">fn</span> <span class="f">intersect_with</span>(b: <span class="k">mut</span> <span class="t">Bitset</span>, o: <span class="t">Bitset</span>)
+<span class="k">fn</span> <span class="f">subtract</span>(b: <span class="k">mut</span> <span class="t">Bitset</span>, o: <span class="t">Bitset</span>)     each changes b</code></pre></div>
+<h2 id="speed"><a class="anchor" href="#speed" aria-hidden="true">#</a>Speed</h2>
+<p><code>bench/std</code> sieves the primes up to 100 million and sums them: Tern 366 ms, Rust's <code>fixedbitset</code> 366 ms, Go's <code>bits-and-blooms/bitset</code> 445 ms.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/deque.html"><span>Previous</span>deque</a><a class="next" href="../std/json.html"><span>Next</span>json</a></div>
+<footer>Source: <code>docs/std/bitset.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

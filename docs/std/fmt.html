@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fmt · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/fmt.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html" class="cur" aria-current="page">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="fmt"><a class="anchor" href="#fmt" aria-hidden="true">#</a>fmt</h1>
+<p>The <code>fmt</code> module turns numbers into text the way reports and receipts need them: a fixed number of decimals, zero padding, thousands separators, and money stored as cents. Tern's f-strings have no format specs (<code>{x:.2f}</code> is an error), so this is where formatting lives. This page covers all six functions and their edge cases.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(fmt.<span class="f">fixed</span>(<span class="n">3.14159</span>, <span class="n">2</span>), fmt.<span class="f">zero_pad</span>(<span class="n">7</span>, <span class="n">3</span>), fmt.<span class="f">thousands</span>(<span class="n">1234567</span>), fmt.<span class="f">cents</span>(<span class="n">1205</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3.14 007 1,234,567 12.05</code></pre></div>
+<p><code>fmt</code> is written in Tern (<code>library/std/fmt.tn</code>); read it if you need to know exactly what happens.</p>
+<h2 id="fixed"><a class="anchor" href="#fixed" aria-hidden="true">#</a>fixed</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">fixed</span>(x: <span class="t">float</span>, digits: <span class="t">int</span>) <span class="t">str</span></code></pre></div>
+<p><code>x</code> rounded to <code>digits</code> decimal places, always showing exactly that many digits. Halves round away from zero (like <a href="math.html#round"><code>math.round</code></a>), after <code>x</code> is multiplied by 10&lt;sup&gt;digits&lt;/sup&gt;.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(fmt.<span class="f">fixed</span>(<span class="n">2.0</span>, <span class="n">3</span>), fmt.<span class="f">fixed</span>(<span class="n">0.125</span>, <span class="n">2</span>), fmt.<span class="f">fixed</span>(<span class="o">-</span><span class="n">1.005</span>, <span class="n">1</span>), fmt.<span class="f">fixed</span>(<span class="n">99.5</span>, <span class="n">0</span>))
+    <span class="f">print</span>(fmt.<span class="f">fixed</span>(<span class="o">-</span><span class="n">0.004</span>, <span class="n">2</span>), fmt.<span class="f">fixed</span>(<span class="n">1234.5678</span>, <span class="n">1</span>), fmt.<span class="f">fixed</span>(<span class="n">7.0</span>, <span class="o">-</span><span class="n">1</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2.000 0.13 -1.0 100
+0.00 1234.6 7</code></pre></div>
+<ul><li>A value that rounds to zero prints without a minus sign: <code>fixed(-0.004, 2)</code> is <code>"0.00"</code>.</li><li><code>digits</code> of 0 or less gives a whole number with no decimal point.</li><li>There is no digit grouping; combine with <code>thousands</code> for that (see the example at the end).</li><li>Binary floats can't store most decimals exactly, so a value that looks like a tie may round either way: <code>2.675</code> is really <code>2.67499999...</code>. For money, store integer cents and use <code>cents</code>.</li><li>The rounded value times 10&lt;sup&gt;digits&lt;/sup&gt; must fit in an <code>int</code> (about 9.2 × 10&lt;sup&gt;18&lt;/sup&gt;). Larger values, infinities, and NaN give meaningless text. Check with <code>x == x</code> (false for NaN) before formatting untrusted numbers.</li></ul>
+<h2 id="cents"><a class="anchor" href="#cents" aria-hidden="true">#</a>cents</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">cents</span>(n: <span class="t">int</span>) <span class="t">str</span></code></pre></div>
+<p>An amount stored as an integer number of cents, as a decimal with two places. Integer cents are the safe way to handle money: adding them never loses a cent.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    prices <span class="o">=</span> [<span class="n">1999</span>, <span class="n">250</span>, <span class="n">5</span>]
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> p <span class="k">in</span> prices:
+        total <span class="o">+</span><span class="o">=</span> p
+    <span class="f">print</span>(fmt.<span class="f">cents</span>(total), fmt.<span class="f">cents</span>(<span class="o">-</span><span class="n">5</span>), fmt.<span class="f">cents</span>(<span class="n">0</span>), fmt.<span class="f">cents</span>(<span class="n">100000</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>22.54 -0.05 0.00 1000.00</code></pre></div>
+<h2 id="zero_pad"><a class="anchor" href="#zero_pad" aria-hidden="true">#</a>zero_pad</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">zero_pad</span>(n: <span class="t">int</span>, width: <span class="t">int</span>) <span class="t">str</span></code></pre></div>
+<p><code>n</code> with leading zeros to make it <code>width</code> characters long. For a negative number the minus sign counts toward the width and the zeros go after it. A number that is already <code>width</code> characters or longer is returned unchanged.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(fmt.<span class="f">zero_pad</span>(<span class="n">5</span>, <span class="n">2</span>), fmt.<span class="f">zero_pad</span>(<span class="o">-</span><span class="n">5</span>, <span class="n">3</span>), fmt.<span class="f">zero_pad</span>(<span class="n">12345</span>, <span class="n">3</span>), fmt.<span class="f">zero_pad</span>(<span class="n">0</span>, <span class="n">4</span>))
+    hours <span class="o">=</span> <span class="n">9</span>
+    minutes <span class="o">=</span> <span class="n">5</span>
+    <span class="f">print</span>(<span class="s">f"{fmt.zero_pad(hours, 2)}:{fmt.zero_pad(minutes, 2)}"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>05 -05 12345 0000
+09:05</code></pre></div>
+<h2 id="pad_left"><a class="anchor" href="#pad_left" aria-hidden="true">#</a>pad_left</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">pad_left</span>(s: <span class="t">str</span>, width: <span class="t">int</span>, fill: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p><code>s</code> with copies of <code>fill</code> added on the left until it is <code>width</code> bytes long. Use it to right-align columns. Text already <code>width</code> bytes or longer is returned unchanged (never cut).</p>
+<h2 id="pad_right"><a class="anchor" href="#pad_right" aria-hidden="true">#</a>pad_right</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">pad_right</span>(s: <span class="t">str</span>, width: <span class="t">int</span>, fill: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p><code>s</code> with copies of <code>fill</code> added on the right until it is <code>width</code> bytes long. Use it to left-align columns.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    names <span class="o">=</span> [<span class="s">"apple"</span>, <span class="s">"fig"</span>, <span class="s">"watermelon"</span>]
+    counts <span class="o">=</span> [<span class="n">12</span>, <span class="n">7</span>, <span class="n">130</span>]
+    <span class="k">for</span> i, name <span class="k">in</span> names:
+        <span class="f">print</span>(<span class="s">"["</span> <span class="o">+</span> fmt.<span class="f">pad_right</span>(name, <span class="n">12</span>, <span class="s">"."</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(<span class="t">str</span>(counts[i]), <span class="n">5</span>, <span class="s">" "</span>) <span class="o">+</span> <span class="s">"]"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[apple.......   12]
+[fig.........    7]
+[watermelon..  130]</code></pre></div>
+<p>Both functions count <strong>bytes</strong>, like <code>len</code>. For ASCII text that is the same as characters, but a letter such as <code>é</code> is two bytes, so text containing it comes out one column short. <code>fill</code> should be one character: a longer <code>fill</code> is repeated whole, so the result can be longer than <code>width</code>.</p>
+<h2 id="thousands"><a class="anchor" href="#thousands" aria-hidden="true">#</a>thousands</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">thousands</span>(n: <span class="t">int</span>) <span class="t">str</span></code></pre></div>
+<p><code>n</code> with a comma between each group of three digits.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(fmt.<span class="f">thousands</span>(<span class="n">1234567</span>), fmt.<span class="f">thousands</span>(<span class="o">-</span><span class="n">9876543210</span>), fmt.<span class="f">thousands</span>(<span class="n">999</span>), fmt.<span class="f">thousands</span>(<span class="n">0</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1,234,567 -9,876,543,210 999 0</code></pre></div>
+<p>The separator is always a comma; for other conventions, <code>replace</code> it: <code>fmt.thousands(n).replace(",", ".")</code>.</p>
+<h2 id="a-complete-example"><a class="anchor" href="#a-complete-example" aria-hidden="true">#</a>A complete example</h2>
+<p>An invoice printed as an aligned table. Prices are kept in integer cents, so the total is exact:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">struct</span> <span class="t">Line</span>:
+    item: <span class="t">str</span>
+    qty: <span class="t">int</span>
+    unit_cents: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">money</span>(c: <span class="t">int</span>) <span class="t">str</span>:                    <span class="c"># c &gt;= 0: 129900 -&gt; "1,299.00"</span>
+    <span class="k">return</span> fmt.<span class="f">thousands</span>(c <span class="o">/</span> <span class="n">100</span>) <span class="o">+</span> <span class="s">"."</span> <span class="o">+</span> fmt.<span class="f">zero_pad</span>(c <span class="o">%</span> <span class="n">100</span>, <span class="n">2</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    lines <span class="o">=</span> [<span class="t">Line</span>(<span class="s">"Keyboard"</span>, <span class="n">2</span>, <span class="n">4999</span>), <span class="t">Line</span>(<span class="s">"Monitor"</span>, <span class="n">1</span>, <span class="n">129900</span>), <span class="t">Line</span>(<span class="s">"Cable"</span>, <span class="n">5</span>, <span class="n">399</span>)]
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="f">print</span>(fmt.<span class="f">pad_right</span>(<span class="s">"item"</span>, <span class="n">10</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(<span class="s">"qty"</span>, <span class="n">5</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(<span class="s">"amount"</span>, <span class="n">12</span>, <span class="s">" "</span>))
+    <span class="k">for</span> l <span class="k">in</span> lines:
+        amount <span class="o">=</span> l.qty <span class="o">*</span> l.unit_cents
+        total <span class="o">+</span><span class="o">=</span> amount
+        <span class="f">print</span>(fmt.<span class="f">pad_right</span>(l.item, <span class="n">10</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(<span class="t">str</span>(l.qty), <span class="n">5</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(<span class="f">money</span>(amount), <span class="n">12</span>, <span class="s">" "</span>))
+    <span class="f">print</span>(fmt.<span class="f">pad_right</span>(<span class="s">"total"</span>, <span class="n">15</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(<span class="f">money</span>(total), <span class="n">12</span>, <span class="s">" "</span>))
+    tax_rate <span class="o">=</span> <span class="n">0.0825</span>
+    <span class="f">print</span>(<span class="s">"tax at "</span> <span class="o">+</span> fmt.<span class="f">fixed</span>(tax_rate <span class="o">*</span> <span class="n">100.0</span>, <span class="n">2</span>) <span class="o">+</span> <span class="s">"%: "</span> <span class="o">+</span> fmt.<span class="f">cents</span>(<span class="t">int</span>(<span class="t">float</span>(total) <span class="o">*</span> tax_rate <span class="o">+</span> <span class="n">0.5</span>)))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>item        qty      amount
+Keyboard      2       99.98
+Monitor       1    1,299.00
+Cable         5       19.95
+total              1,418.93
+tax at 8.25%: 117.06</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../std/index.html"><span>Previous</span>Overview</a><a class="next" href="../std/math.html"><span>Next</span>math</a></div>
+<footer>Source: <code>docs/std/fmt.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#fixed">fixed</a></li><li class="l2"><a href="#cents">cents</a></li><li class="l2"><a href="#zero_pad">zero_pad</a></li><li class="l2"><a href="#pad_left">pad_left</a></li><li class="l2"><a href="#pad_right">pad_right</a></li><li class="l2"><a href="#thousands">thousands</a></li><li class="l2"><a href="#a-complete-example">A complete example</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

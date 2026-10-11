@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>openapi · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/packages/openapi.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html" class="cur" aria-current="page">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="openapi"><a class="anchor" href="#openapi" aria-hidden="true">#</a>openapi</h1>
+<p>Describe a web API with Tern types, and get an <a href="https://spec.openapis.org/oas/v3.1.0">OpenAPI 3.1</a> document, Swagger UI, and a typed TypeScript client from the routes you register. Schemas come from <a href="../std/json.html#schema"><code>json.schema[T]()</code></a>, so they always match what <code>json.encode</code> writes.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> json
+<span class="k">import</span> openapi
+<span class="k">import</span> roost
+
+<span class="k">struct</span> <span class="t">User</span>:
+    id: <span class="t">int</span>
+    name: <span class="t">str</span>
+
+<span class="k">struct</span> <span class="t">NewUser</span>:
+    name: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    api <span class="o">=</span> openapi.<span class="f">new</span>(<span class="s">"users"</span>, <span class="s">"1.0.0"</span>, <span class="s">"A small user service"</span>)
+    openapi.<span class="f">bearer</span>(<span class="o">&amp;</span>api, <span class="s">"an API key"</span>)
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    get_user <span class="o">=</span> openapi.<span class="f">op</span>(<span class="s">"GET"</span>, <span class="s">"/users/{id}"</span>, <span class="s">"Get a user"</span>).returns[<span class="t">User</span>]().<span class="f">tag</span>(<span class="s">"users"</span>)
+    openapi.<span class="f">add</span>(<span class="o">&amp;</span>api, <span class="o">&amp;</span>r, get_user, <span class="k">fn</span>(req) roost.<span class="f">json</span>(json.<span class="f">encode</span>(<span class="t">User</span>(req.<span class="f">param_int</span>(<span class="s">"id"</span>, <span class="n">0</span>), <span class="s">"ada"</span>))))
+    create <span class="o">=</span> openapi.<span class="f">op</span>(<span class="s">"POST"</span>, <span class="s">"/users"</span>, <span class="s">"Create a user"</span>).accepts[<span class="t">NewUser</span>]().returns[<span class="t">User</span>]().<span class="f">status</span>(<span class="n">201</span>)
+    openapi.<span class="f">add</span>(<span class="o">&amp;</span>api, <span class="o">&amp;</span>r, create, <span class="k">fn</span>(req) roost.<span class="f">json</span>(<span class="s">"{}"</span>))
+    openapi.<span class="f">serve</span>(api, <span class="o">&amp;</span>r)          <span class="c"># GET /openapi.json, GET /docs</span>
+    roost.<span class="f">serve</span>(r, <span class="n">8080</span>)</code></pre></div>
+<p><code>openapi.add</code> registers the route on the router (like <code>r.route(method, path, handler)</code>) and records the operation; <code>openapi.serve</code> adds <code>GET /openapi.json</code> and <code>GET /docs</code> (Swagger UI, loaded from jsDelivr), so call it after the last <code>add</code>.</p>
+<h2 id="describing-an-operation"><a class="anchor" href="#describing-an-operation" aria-hidden="true">#</a>Describing an operation</h2>
+<p><code>openapi.op(method, path, summary)</code> starts one; each of these returns the changed <code>Op</code>, so calls chain:</p>
+<div class="table"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td><code>o.returns[T]()</code></td><td>the response is JSON of type <code>T</code></td></tr><tr><td><code>o.accepts[T]()</code></td><td>the request body is JSON of type <code>T</code></td></tr><tr><td><code>o.returns_text()</code></td><td>the response is <code>text/plain</code></td></tr><tr><td><code>o.status(code)</code></td><td>the success status (default 200)</td></tr><tr><td><code>o.query(name, type, description)</code></td><td>a query parameter; type is <code>"string"</code>, <code>"integer"</code>, <code>"number"</code> or <code>"boolean"</code></td></tr><tr><td><code>o.describe(text)</code>, <code>o.tag(name)</code>, <code>o.id(operation_id)</code></td><td>documentation; the id defaults to the method and path (<code>getUsersId</code>)</td></tr><tr><td><code>o.fails(code, description)</code></td><td>a documented error response; secured operations get a 401 unless you describe your own</td></tr><tr><td><code>o.public()</code></td><td>no credentials needed, when the spec has <code>openapi.bearer</code></td></tr></tbody></table></div>
+<p>Path parameters come from the path: <code>/users/{id}</code> and <code>/files/{*rest}</code> both document a required string parameter.</p>
+<h2 id="the-document-and-the-client"><a class="anchor" href="#the-document-and-the-client" aria-hidden="true">#</a>The document and the client</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> openapi
+<span class="k">import</span> roost
+
+<span class="k">struct</span> <span class="t">Item</span>:
+    sku: <span class="t">str</span>
+    qty: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    api <span class="o">=</span> openapi.<span class="f">new</span>(<span class="s">"shop"</span>, <span class="s">"2.1.0"</span>, <span class="s">""</span>)
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    o <span class="o">=</span> openapi.<span class="f">op</span>(<span class="s">"GET"</span>, <span class="s">"/items/{sku}"</span>, <span class="s">"Get an item"</span>).returns[<span class="t">Item</span>]().<span class="f">query</span>(<span class="s">"fresh"</span>, <span class="s">"boolean"</span>, <span class="s">"skip the cache"</span>)
+    openapi.<span class="f">add</span>(<span class="o">&amp;</span>api, <span class="o">&amp;</span>r, o, <span class="k">fn</span>(req) roost.<span class="f">json</span>(<span class="s">"{}"</span>))
+    doc <span class="o">=</span> openapi.<span class="f">document</span>(api)
+    <span class="f">print</span>(doc.<span class="f">contains</span>(<span class="s">`"/items/{sku}":{"get":{"operationId":"getItemsSku"`</span>))
+    <span class="f">print</span>(doc.<span class="f">contains</span>(<span class="s">`"Item":{"type":"object"`</span>))
+    ts <span class="o">=</span> openapi.<span class="f">typescript</span>(api)
+    <span class="f">print</span>(ts.<span class="f">contains</span>(<span class="s">"export type Item = { sku: string; qty: number };"</span>))
+    <span class="f">print</span>(ts.<span class="f">contains</span>(<span class="s">"getItemsSku: (p: { sku: string }, q: { fresh?: boolean } = {}) =&gt; call&lt;Item&gt;("</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true
+true
+true
+true</code></pre></div>
+<ul><li><code>openapi.document(spec) str</code>: the OpenAPI 3.1 JSON. Structs become <code>components/schemas</code>; with <code>openapi.bearer(&amp;spec, description)</code> the document declares a bearer scheme, requires it everywhere but <code>public()</code> operations, and lists 401 responses.</li><li><code>openapi.typescript(spec) str</code>: <code>export type</code> for every schema, and <code>createClient({ baseUrl, token, fetch, init })</code> with one method per operation, named by its operation id: path parameters first, then the body, then the query. Errors throw <code>ApiError</code> with the status and body. Enums become string unions (<code>"Active" | "Banned"</code>) or, with payloads, tagged objects (<code>{ Circle: number } | "Empty"</code>); an <code>Option</code> is <code>T | null</code>. Write it to a <code>.ts</code> file in a build step; a web front end then calls the API with checked types.</li><li><code>openapi.server(&amp;spec, url)</code> lists a server URL in the document (default: <code>/</code>, wherever the document is served from).</li><li><code>openapi.record(&amp;spec, o)</code> documents an operation without registering a route, for routes added another way (a nested router with its own middleware, <code>r.post_stream</code>).</li></ul>
+<p><code>int</code> becomes <code>integer</code>/<code>int64</code> in the schema and <code>number</code> in TypeScript (exact up to 2^53). Enums and tuples can't be described, since they have no JSON form.</p>
+</article>
+<div class="pn"><a class="prev" href="../packages/auth.html"><span>Previous</span>auth</a><a class="next" href="../packages/sentry.html"><span>Next</span>sentry</a></div>
+<footer>Source: <code>docs/packages/openapi.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

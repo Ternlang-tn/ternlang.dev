@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iOS and Android · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/mobile.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html" class="cur" aria-current="page">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="ios-and-android"><a class="anchor" href="#ios-and-android" aria-hidden="true">#</a>iOS and Android</h1>
+<p>Tern compiles for iPhones and iPads (arm64 devices and the iOS Simulator) and for Android (arm64 and x86-64). This guide shows what you need installed, how to build command-line programs and libraries for each platform, how Swift and Kotlin/Java call a Tern library, and how the runtime behaves inside an app: when it starts, which threads may call it, and what happens on a runtime error. The examples come from <code>examples/mobile/</code> in the repository, and <code>tern run tests/runner/main.tn -- run --mobile</code> runs them.</p>
+<h2 id="the-targets"><a class="anchor" href="#the-targets" aria-hidden="true">#</a>The targets</h2>
+<p>Pick a platform with <code>--target</code>:</p>
+<div class="table"><table><thead><tr><th><code>--target</code></th><th>Builds for</th><th>C toolchain</th></tr></thead><tbody><tr><td><code>ios</code></td><td>iPhone / iPad, arm64, iOS 15.0 or later</td><td>Xcode (<code>xcrun --sdk iphoneos clang</code>)</td></tr><tr><td><code>ios-sim</code></td><td>the iOS Simulator on an Apple-silicon Mac</td><td>Xcode (<code>xcrun --sdk iphonesimulator clang</code>)</td></tr><tr><td><code>android</code> (or <code>android-arm64</code>)</td><td>Android arm64, API level 24 or later</td><td>the Android NDK</td></tr><tr><td><code>android-x86_64</code></td><td>x86-64 Android (emulators on Intel machines, Chromebooks)</td><td>the Android NDK</td></tr></tbody></table></div>
+<p>What each one needs:</p>
+<ul><li><strong>iOS</strong>: Xcode, with an iOS Simulator runtime installed if you use <code>ios-sim</code> (Xcode &gt; Settings &gt; Components). <code>tern</code> calls <code>xcrun</code>, so the command-line tools must point at Xcode.</li><li><strong>Android</strong>: the NDK. <code>tern</code> uses <code>$ANDROID_NDK_HOME</code> (or <code>$ANDROID_NDK_ROOT</code>), and otherwise the newest version under <code>$ANDROID_HOME/ndk/</code> (default <code>~/Library/Android/sdk/ndk/</code>). Running programs also needs <code>adb</code> (the SDK's platform-tools) and a connected device or a running emulator.</li></ul>
+<p>Your Tern code doesn't change between targets. The same program builds everywhere, and the race checks and everything else in the language are the same. This one runs as is on your machine, and unchanged on a phone:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    squares <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">8</span>
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(squares):
+        squares[i] <span class="o">=</span> i <span class="o">*</span> i
+    total <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> s <span class="k">in</span> squares:
+        total <span class="o">+</span><span class="o">=</span> s
+    <span class="f">print</span>(<span class="s">"squares"</span>, squares, <span class="s">"total"</span>, total)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>squares [0, 1, 4, 9, 16, 25, 36, 49] total 140</code></pre></div>
+<h2 id="command-line-programs"><a class="anchor" href="#command-line-programs" aria-hidden="true">#</a>Command-line programs</h2>
+<p><code>build</code> and <code>run</code> take <code>--target</code> like any other flag:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern run   --target ios-sim squares.tn<span class="c">                        # build, then run in the booted Simulator</span>
+tern build --target ios     squares.tn -o squares<span class="c">              # an arm64 iOS executable</span>
+tern run   --target android squares.tn<span class="c">                        # build, push with adb, run, clean up</span>
+tern build --target android squares.tn -o squares<span class="c">              # an arm64 Android (ELF) executable</span></code></pre></div>
+<p>What <code>run</code> does on each target:</p>
+<ul><li><strong><code>ios-sim</code></strong>: if no Simulator is booted, it boots one (the last iPhone in <code>xcrun simctl list</code>, or the device whose UDID is in <code>$TERN_IOS_DEVICE</code>), then runs the program with <code>xcrun simctl spawn booted</code>. <code>TERN_*</code> environment variables such as <code>TERN_STATS=1</code> are passed through.</li><li><strong><code>android</code></strong>: it pushes the binary to <code>/data/local/tmp</code> with <code>adb</code>, runs it there (again passing <code>TERN_*</code> variables), prints its output, and deletes it. If no device or emulator is connected, it says so; start one first, for example <code>emulator -avd Pixel_9a -no-window &amp;</code> then <code>adb wait-for-device</code>.</li><li><strong><code>ios</code></strong>: a device build can't run on the Mac. <code>tern</code> refuses and suggests <code>ios-sim</code>, or building a library and linking it into an Xcode app.</li></ul>
+<p>Exit codes work as on the desktop: a runtime error prints <code>runtime error in f (prog.tn:N): ...</code> and the program exits with status 2, on the Simulator and on Android alike.</p>
+<p>Command-line programs are mostly for testing. On a phone, Tern code normally lives inside an app, as a library.</p>
+<h2 id="libraries-for-apps"><a class="anchor" href="#libraries-for-apps" aria-hidden="true">#</a>Libraries for apps</h2>
+<p>A library is a <code>.tn</code> file with <code>export fn</code> functions. Only <code>int</code>, <code>float</code>, <code>bool</code>, and <code>str</code> cross in and out; the rest of the program uses any types it likes. See <a href="c-interop.html">Calling C, and Tern as a library</a> for the full rules; this section is the mobile side of it.</p>
+<p>A library may also have a <code>fn main()</code>. <code>build --lib</code> leaves it out of the library (it isn't exported), so you can test the library's functions from the desktop with <code>tern run</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Stats</span>:
+    count: <span class="t">int</span>
+    best: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">parse</span>(csv: <span class="t">str</span>) [<span class="t">int</span>]:
+    out: [<span class="t">int</span>] <span class="o">=</span> []
+    <span class="k">for</span> part <span class="k">in</span> csv.<span class="f">split</span>(<span class="s">","</span>):
+        out.<span class="f">push</span>(part.<span class="f">trim</span>().<span class="f">to_int</span>(<span class="n">0</span>))
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">stats</span>(xs: [<span class="t">int</span>]) <span class="t">Stats</span>:
+    s <span class="o">=</span> <span class="t">Stats</span>(<span class="n">0</span>, <span class="n">0</span>)
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        s.count <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        s.best <span class="o">=</span> <span class="f">max</span>(s.best, x)
+    <span class="k">return</span> s
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">best_score</span>(csv: <span class="t">str</span>) <span class="t">int</span>:
+    <span class="k">return</span> <span class="f">stats</span>(<span class="f">parse</span>(csv)).best
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">summary</span>(csv: <span class="t">str</span>) <span class="t">str</span>:
+    s <span class="o">=</span> <span class="f">stats</span>(<span class="f">parse</span>(csv))
+    <span class="k">return</span> <span class="s">f"{s.count} games, best {s.best}"</span>
+
+<span class="k">export</span> <span class="k">fn</span> <span class="f">score_at</span>(csv: <span class="t">str</span>, i: <span class="t">int</span>) <span class="t">int</span>:
+    <span class="k">return</span> <span class="f">parse</span>(csv)[i]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">best_score</span>(<span class="s">"12, 40, 7"</span>))
+    <span class="f">print</span>(<span class="f">summary</span>(<span class="s">"12, 40, 7"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>40
+3 games, best 40</code></pre></div>
+<p>Build it for each platform. The output directory must already exist.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="c"># iOS: a static library for Xcode (use --target ios-sim for the Simulator)</span>
+tern build --lib --target ios scores.tn -o build/libscores.a
+
+<span class="c"># Android: a static library to link with your JNI glue...</span>
+tern build --lib --target android scores.tn -o build/libscores.a
+<span class="c"># ...or a shared library directly</span>
+tern build --lib --shared --target android scores.tn -o build/libscores.so</code></pre></div>
+<p>Each build also writes a C header named after the library, here <code>build/scores.h</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>int64_t best_score(const char* csv);
+char* summary(const char* csv);   // returns a malloc'd string: free it with tern_free()
+int64_t score_at(const char* csv, int64_t i);   // can fail: check tern_last_error()
+
+// After a call to a function marked "can fail": the message of its runtime error, or NULL.
+// (A runtime error returns 0 / NULL / false from the call instead of ending the process.)
+const char* tern_last_error(void);
+void tern_free(void* p);</code></pre></div>
+<p>The shared library exports exactly these functions (plus <code>tern_alloc</code> and <code>tern_stats</code>); everything else is hidden.</p>
+<h2 id="swift-on-ios"><a class="anchor" href="#swift-on-ios" aria-hidden="true">#</a>Swift on iOS</h2>
+<p><code>examples/mobile/ios/</code> builds <code>examples/embed/lib.tn</code> for the Simulator and calls it from Swift. In an Xcode app, add the <code>.a</code> and the <code>.h</code> to the target and <code>#include</code> the header in the bridging header. From the command line, <code>run.sh</code> does the equivalent:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern build --lib --target ios-sim examples/embed/lib.tn -o build/libstats.a
+xcrun --sdk iphonesimulator swiftc -O -target arm64-apple-ios15.0-simulator \
+    -import-objc-header build/stats.h main.swift build/libstats.a -o build/host
+xcrun simctl spawn booted "$PWD/build/host"</code></pre></div>
+<p>The Swift side calls the exported functions directly. Numbers arrive as <code>Int64</code>, Swift <code>String</code>s convert to <code>const char*</code> automatically, and a returned string is a C string you copy and then free with <code>tern_free</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>import Foundation
+
+func describeNumbers(_ csv: String) -&gt; String {
+    guard let p = describe(csv) else { return "" }
+    defer { tern_free(p) }
+    return String(cString: p)
+}
+
+print("describe:", describeNumbers("3, 1, 4, 1, 5, 9, 2, 6"))
+print("sum_csv:", sum_csv("10, 20, 12"))
+
+// Tern runs on whatever thread calls it (Grand Central Dispatch threads here)
+let group = DispatchGroup()
+for t in 0..&lt;4 {
+    DispatchQueue.global().async(group: group) {
+        _ = sum_csv("1,2,3,\(t)")
+    }
+}
+group.wait()
+
+let v = nth("5,6,7", 10)
+print("nth(10) =", v, "error:", tern_last_error().map { String(cString: $0) } ?? "none")</code></pre></div>
+<p>The full <code>main.swift</code> prints:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>describe: 8 numbers, total 31, largest 9
+sum_csv: 42
+squares_total(1000): 332833500
+from 4 GCD threads: [3000, 3500, 4000, 4500]
+nth(10) = 0 error: runtime error (line 40): index 10 out of bounds (length 3)</code></pre></div>
+<p>For a device, build with <code>--target ios</code> instead. The library is arm64 only; it isn't a universal binary or an <code>.xcframework</code>, so build the Simulator and device versions separately.</p>
+<h2 id="kotlin-and-java-on-android"><a class="anchor" href="#kotlin-and-java-on-android" aria-hidden="true">#</a>Kotlin and Java on Android</h2>
+<p>The JVM calls native code through JNI, which looks up functions by special names (<code>Java_&lt;package&gt;_&lt;class&gt;_&lt;method&gt;</code>). So an Android library has two parts: the Tern code, and a small C file of JNI glue that converts Java strings and forwards each call. <code>examples/mobile/android/tern_jni.c</code> is that glue for <code>examples/embed/lib.tn</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>#include &lt;jni.h&gt;
+#include "stats.h"
+
+static void rethrow(JNIEnv *env) {
+    const char *err = tern_last_error();
+    if (err) (*env)-&gt;ThrowNew(env, (*env)-&gt;FindClass(env, "java/lang/RuntimeException"), err);
+}
+
+JNIEXPORT jstring JNICALL Java_com_example_tern_Stats_describe(JNIEnv *env, jclass cls, jstring csv) {
+    const char *s = (*env)-&gt;GetStringUTFChars(env, csv, NULL);
+    char *out = describe(s);
+    (*env)-&gt;ReleaseStringUTFChars(env, csv, s);
+    rethrow(env);
+    jstring r = (*env)-&gt;NewStringUTF(env, out ? out : "");
+    tern_free(out);
+    return r;
+}</code></pre></div>
+<p>On the Kotlin side, the class loads the library and declares the functions:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>package com.example.tern
+
+object Stats {
+    init { System.loadLibrary("stats") }
+    external fun sumCsv(csv: String): Long
+    external fun describe(csv: String): String      // throws RuntimeException on a Tern error
+}</code></pre></div>
+<p>Build the Tern static library, then link it with the glue into one <code>.so</code> (<code>--whole-archive</code> keeps every Tern function in it). This is what <code>run.sh</code> does:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>NDK=${ANDROID_NDK_HOME:-$(ls -d "$HOME"/Library/Android/sdk/ndk/* | tail -1)}
+CC="$NDK/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=aarch64-linux-android24"
+tern build --lib --target android examples/embed/lib.tn -o build/libstats.a
+$CC -O2 -shared -fPIC -Ibuild tern_jni.c \
+    -Wl,--whole-archive build/libstats.a -Wl,--no-whole-archive -lm -o build/libstats.so</code></pre></div>
+<p>Copy <code>build/libstats.so</code> to <code>app/src/main/jniLibs/arm64-v8a/</code> in the app. For x86-64 emulators, build a second copy with <code>--target android-x86_64</code> (and <code>--target=x86_64-linux-android24</code> for the glue) into <code>jniLibs/x86_64/</code>.</p>
+<p><code>run.sh</code> checks the result without an app: <code>host.c</code> loads <code>libstats.so</code> with <code>dlopen</code>, the way the JVM does, and calls it from two threads on a device or emulator:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>describe: 8 numbers, total 31, largest 9
+thread 1,2,3 -&gt; 6000
+thread 4,5,6 -&gt; 15000
+nth(10) = 0, error: runtime error (line 40): index 10 out of bounds (length 3)
+JNI entry point present: yes</code></pre></div>
+<h2 id="threads-and-runtime-startup"><a class="anchor" href="#threads-and-runtime-startup" aria-hidden="true">#</a>Threads and runtime startup</h2>
+<p>Apps have their own threads (the main thread, GCD queues, Java threads), so the runtime works differently from a Tern program that owns <code>main</code>:</p>
+<ul><li><strong>No setup call.</strong> The runtime starts on the first call into any exported function, on whatever thread makes it. If several threads make their first call at once, it still starts exactly once.</li><li><strong>Any thread may call, and several may call at once.</strong> Each host thread gets its own Tern heap on its first allocation. When the thread ends, its free memory goes back to a shared pool for other threads to reuse.</li><li><strong><code>parallel</code> runs on Tern's own worker threads</strong>, one per core (set <code>TERN_THREADS</code> in the environment to change the count). An exported function that uses <code>parallel for</code> waits for its loop before returning, as usual.</li><li><strong>Callbacks.</strong> In a library, a C callback into a Tern closure may run on any thread; see <a href="c-interop.html">Calling C</a>.</li></ul>
+<p>This is the <em>portable runtime</em>, which every target except the native desktop one uses: the current thread's heap is found through thread-local storage, rather than from the stack address as in the fast desktop runtime. It costs about 20% on allocation-heavy code and nothing measurable elsewhere.</p>
+<h2 id="runtime-errors-in-a-library"><a class="anchor" href="#runtime-errors-in-a-library" aria-hidden="true">#</a>Runtime errors in a library</h2>
+<p>A runtime error inside an exported call (an index out of bounds, a missing map key, division by zero) doesn't end the app. The call returns <code>0</code>, <code>NULL</code>, or <code>false</code>, and <code>tern_last_error()</code> returns the message on that thread. The header marks which functions can fail; the others skip the error handling entirely.</p>
+<ul><li>The message is per thread: read it on the thread that made the call.</li><li>It is cleared at the start of each call to a function marked "can fail", so check it right after that call. Calls to functions that can't fail leave it unchanged.</li><li>The Swift example reads it with <code>tern_last_error().map { String(cString: $0) }</code>; the JNI glue turns it into a <code>RuntimeException</code>.</li><li>The call's string arguments (the Tern copies of the <code>const char*</code>s) are released when an error unwinds.</li></ul>
+<h2 id="limits"><a class="anchor" href="#limits" aria-hidden="true">#</a>Limits</h2>
+<ul><li><strong>Architectures.</strong> iOS builds are arm64 only, for devices and for the Simulator on Apple-silicon Macs. Android builds are arm64 or x86-64; there is no 32-bit ARM target.</li><li><strong>Minimum versions.</strong> iOS 15.0 and Android API level 24, fixed by the compiler's target triples.</li><li><strong>SQLite.</strong> On iOS, <code>sqlite</code> links against the SDK's SQLite. The NDK has no SQLite, so <code>import sqlite</code> is a compile error on Android: <code>`import sqlite` is not available on android</code>.</li><li><strong>The web server.</strong> <code>http.serve</code> runs on Android (the epoll server path). The repository has no iOS example or test that uses it.</li><li><strong>Heap size.</strong> Phones limit address space, so the runtime reserves the largest heap region it can get, starting at 32GB and halving down to 256MB, and maps more as the heap outgrows it. See <a href="memory.html">How memory works</a>.</li><li><strong>What crosses the boundary.</strong> Numbers, <code>bool</code>, and <code>str</code> for exported functions; no structs, arrays, or maps. Pass structured data as text (JSON with <code>json.encode</code>, or CSV as above), or as several calls.</li><li><strong>Packaging is up to you.</strong> <code>tern</code> makes the <code>.a</code>, <code>.so</code>, and header; adding them to an Xcode project or a Gradle build is done by hand, as described above.</li></ul>
+<p>The complete language reference for targets is in <a href="../reference.html#18-other-targets-and-c">section 18 of the reference</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../guides/wasm.html"><span>Previous</span>WebAssembly and JavaScript</a><a class="next" href="../guides/cookbook.html"><span>Next</span>Cookbook</a></div>
+<footer>Source: <code>docs/guides/mobile.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#the-targets">The targets</a></li><li class="l2"><a href="#command-line-programs">Command-line programs</a></li><li class="l2"><a href="#libraries-for-apps">Libraries for apps</a></li><li class="l2"><a href="#swift-on-ios">Swift on iOS</a></li><li class="l2"><a href="#kotlin-and-java-on-android">Kotlin and Java on Android</a></li><li class="l2"><a href="#threads-and-runtime-startup">Threads and runtime startup</a></li><li class="l2"><a href="#runtime-errors-in-a-library">Runtime errors in a library</a></li><li class="l2"><a href="#limits">Limits</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

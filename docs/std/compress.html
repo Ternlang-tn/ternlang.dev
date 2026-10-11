@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>compress · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/compress.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html" class="cur" aria-current="page">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="compress"><a class="anchor" href="#compress" aria-hidden="true">#</a>compress</h1>
+<p>The <code>compress</code> module compresses bytes with <a href="https://facebook.github.io/zstd/">zstd</a> (fast to compress, very fast to decompress, and smaller than gzip at the same speed) and with gzip, zlib and raw deflate, for the files and protocols that use them (<code>.gz</code> files, HTTP <code>Content-Encoding</code>, PNG, zip entries). Both are built into Tern (zstd's official library and <a href="https://github.com/ebiggers/libdeflate">libdeflate</a>, vendored), so there is nothing to install, and they're linked into a program only when it imports <code>compress</code>. They work on every target, WebAssembly included.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> compress
+
+<span class="k">fn</span> <span class="f">main</span>():
+    text <span class="o">=</span> <span class="s">"a line of a log file, much like the one before it\n"</span> <span class="o">*</span> <span class="n">1000</span>
+    packed <span class="o">=</span> compress.<span class="f">zstd</span>(text, <span class="n">3</span>)
+    <span class="f">print</span>(<span class="f">len</span>(text), <span class="s">"-&gt;"</span>, <span class="f">len</span>(packed))
+    <span class="k">match</span> compress.<span class="f">unzstd</span>(packed):
+        <span class="t">Ok</span>(back):
+            <span class="f">print</span>(back <span class="o">==</span> text)
+        <span class="t">Err</span>(e):
+            <span class="f">print</span>(e)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>50000 -&gt; 70
+true</code></pre></div>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="table"><table><thead><tr><th>Function</th><th>What it does</th></tr></thead><tbody><tr><td><code>compress.zstd(data str, level int) str</code></td><td>One zstd frame holding <code>data</code>, with its size in the frame header.</td></tr><tr><td><code>compress.unzstd(data str) Result[str, str]</code></td><td>The bytes of every zstd frame in <code>data</code>, in order.</td></tr><tr><td><code>compress.unzstd_max(data str, max_out int) Result[str, str]</code></td><td>The same, but <code>Err</code> as soon as the output passes <code>max_out</code> bytes.</td></tr><tr><td><code>compress.zstd_bound(n int) int</code></td><td>The most bytes <code>compress.zstd</code> of <code>n</code> bytes can produce.</td></tr><tr><td><code>compress.gzip(data str, level int) str</code></td><td>One gzip member (what a <code>.gz</code> file holds).</td></tr><tr><td><code>compress.gunzip(data str) Result[str, str]</code></td><td>The bytes of every gzip member in <code>data</code>, in order.</td></tr><tr><td><code>compress.gunzip_max(data str, max_out int) Result[str, str]</code></td><td>The same, with a size limit.</td></tr><tr><td><code>compress.zlib(data, level)</code>, <code>unzlib(data)</code>, <code>unzlib_max(data, max_out)</code></td><td>A zlib stream (HTTP's <code>deflate</code> encoding, PNG).</td></tr><tr><td><code>compress.deflate(data, level)</code>, <code>inflate(data)</code>, <code>inflate_max(data, max_out)</code></td><td>Raw deflate: no header or checksum (zip entries).</td></tr><tr><td><code>compress.error() str</code></td><td>Why the last decompression failed (<code>""</code> after a success).</td></tr></tbody></table></div>
+<p>Both sides take and return a <code>str</code>, which holds any bytes, zeros included: a file read with <code>fs.read</code>, a request body, a <code>[byte]</code> converted with <code>.to_str()</code>.</p>
+<h2 id="levels"><a class="anchor" href="#levels" aria-hidden="true">#</a>Levels</h2>
+<p>Level 3 is zstd's default and a good choice for most data. Levels 1 to 19 trade speed for size (19 is several times slower to compress than 3 and a little smaller); 20 to 22 use much more memory. Negative levels are faster still and compress less. A level outside zstd's range is clamped to it, and every level decompresses at the same speed.</p>
+<h2 id="decompressing"><a class="anchor" href="#decompressing" aria-hidden="true">#</a>Decompressing</h2>
+<p><code>unzstd</code> reads frames whether or not they record their size: the frames the <code>zstd</code> command writes while streaming from a pipe, other libraries' streaming encoders, and several frames one after another (it returns their bytes joined). Input that isn't whole zstd frames gives an <code>Err</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> compress
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(compress.<span class="f">unzstd</span>(<span class="s">"not zstd at all"</span>))
+    packed <span class="o">=</span> compress.<span class="f">zstd</span>(<span class="s">"hello, hello, hello"</span>, <span class="n">3</span>)
+    <span class="f">print</span>(compress.<span class="f">unzstd</span>(packed[<span class="o">..</span><span class="f">len</span>(packed) <span class="o">-</span> <span class="n">2</span>]))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Err("compress: unzstd: not zstd data")
+Err("compress: unzstd: truncated zstd data")</code></pre></div>
+<h3 id="untrusted-input"><a class="anchor" href="#untrusted-input" aria-hidden="true">#</a>Untrusted input</h3>
+<p>A few bytes of zstd can expand to gigabytes. When the data comes from outside (a request body, an upload), use <code>unzstd_max</code> with the largest result you are willing to hold. It stops as soon as the output passes the limit, before it is all in memory:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> compress
+
+<span class="k">fn</span> <span class="f">main</span>():
+    bomb <span class="o">=</span> compress.<span class="f">zstd</span>(<span class="s">"0"</span> <span class="o">*</span> <span class="n">10_000_000</span>, <span class="n">19</span>)
+    <span class="f">print</span>(<span class="f">len</span>(bomb))
+    <span class="f">print</span>(compress.<span class="f">unzstd_max</span>(bomb, <span class="n">1_000_000</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>326
+Err("compress: unzstd: too large")</code></pre></div>
+<h2 id="limits"><a class="anchor" href="#limits" aria-hidden="true">#</a>Limits</h2>
+<p>A <code>str</code> holds up to 4GB, so that is the most either side can be. In a task, a call runs on the task's thread: a very large input holds up that core's other tasks briefly, as a big file read does. Wrap it in <code>task.blocking</code> if that matters.</p>
+<h2 id="gzip-zlib-and-deflate"><a class="anchor" href="#gzip-zlib-and-deflate" aria-hidden="true">#</a>gzip, zlib and deflate</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> compress
+
+<span class="k">fn</span> <span class="f">main</span>():
+    page <span class="o">=</span> <span class="s">"&lt;li&gt;an item of a long list&lt;/li&gt;\n"</span> <span class="o">*</span> <span class="n">500</span>
+    gz <span class="o">=</span> compress.<span class="f">gzip</span>(page, <span class="n">6</span>)
+    <span class="f">print</span>(<span class="f">len</span>(page), <span class="s">"-&gt;"</span>, <span class="f">len</span>(gz))
+    <span class="f">print</span>(compress.<span class="f">gunzip</span>(gz) <span class="o">==</span> <span class="t">Ok</span>(page))
+    two <span class="o">=</span> compress.<span class="f">gzip</span>(<span class="s">"first "</span>, <span class="n">6</span>) <span class="o">+</span> compress.<span class="f">gzip</span>(<span class="s">"second"</span>, <span class="n">1</span>)
+    <span class="f">print</span>(compress.<span class="f">gunzip</span>(two))
+    <span class="f">print</span>(compress.<span class="f">gunzip</span>(<span class="s">"plain text"</span>))
+    <span class="f">print</span>(compress.<span class="f">gunzip_max</span>(gz, <span class="n">1000</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>16000 -&gt; 107
+true
+Ok("first second")
+Err("compress: gunzip: not gzip data")
+Err("compress: gunzip: too large")</code></pre></div>
+<p>Levels go from 1 (fastest) to 12 (smallest, slowest); 6 is what <code>gzip</code> uses by default and a good choice, and 0 stores the data uncompressed. Out of range is clamped. <code>gunzip</code> reads every member of a file made by joining <code>.gz</code> files (<code>cat a.gz b.gz</code>), as <code>gzip -d</code> does, and ignores zeros after the last one; a bad checksum, data cut short, or anything else after the end is an <code>Err</code>. What <code>gzip</code>, <code>zlib</code> and <code>deflate</code> write, other gzip and zlib programs read, and the reverse (the run tests include output from <code>gzip -9</code> and Python's <code>zlib</code>).</p>
+<p>Each thread keeps its compressor between calls (making one costs more than compressing a few KB), so compressing many small pieces, like HTTP responses, is cheap.</p>
+<h3 id="speed"><a class="anchor" href="#speed" aria-hidden="true">#</a>Speed</h3>
+<p><code>bench/std</code> compresses ~40 MB of log lines and 2 KB pieces of them, against Go's <code>compress/gzip</code> and Rust's <code>flate2</code> (its default backend, miniz_oxide, and zlib-rs):</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Go</th><th>Rust flate2</th><th>Rust flate2 + zlib-rs</th></tr></thead><tbody><tr><td>gzip, level 1</td><td><strong>623 MB/s</strong> (7.12 MB)</td><td>327 (7.89 MB)</td><td>491 (8.43 MB)</td><td>536 (9.78 MB)</td></tr><tr><td>gzip, level 6</td><td><strong>227 MB/s</strong> (5.55 MB)</td><td>89 (5.65 MB)</td><td>128 (5.65 MB)</td><td>181 (5.94 MB)</td></tr><tr><td>gunzip</td><td><strong>2,936 MB/s</strong></td><td>623</td><td>963</td><td>1,476</td></tr><tr><td>gzip of a 2 KB piece</td><td><strong>14.3 us</strong></td><td>30.7</td><td>15.9</td><td>18.3</td></tr><tr><td>peak memory</td><td><strong>89 MB</strong></td><td>201 MB</td><td>208 MB</td><td>214 MB</td></tr></tbody></table></div>
+<p>Tern's output is also the smallest at both levels.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/crypto.html"><span>Previous</span>crypto</a><a class="next" href="../std/tls.html"><span>Next</span>tls</a></div>
+<footer>Source: <code>docs/std/compress.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#functions">Functions</a></li><li class="l2"><a href="#levels">Levels</a></li><li class="l2"><a href="#decompressing">Decompressing</a></li><li class="l3"><a href="#untrusted-input">Untrusted input</a></li><li class="l2"><a href="#limits">Limits</a></li><li class="l2"><a href="#gzip-zlib-and-deflate">gzip, zlib and deflate</a></li><li class="l3"><a href="#speed">Speed</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

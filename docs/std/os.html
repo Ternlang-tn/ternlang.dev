@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>os · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/os.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html" class="cur" aria-current="page">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="os"><a class="anchor" href="#os" aria-hidden="true">#</a>os</h1>
+<p>The <code>os</code> module connects a program to the process that runs it: command-line arguments, environment variables, the exit status, standard input and error, other programs, and signals. This page covers each and the patterns for small command-line tools.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">main</span>():
+    args <span class="o">=</span> os.<span class="f">args</span>()
+    <span class="f">print</span>(<span class="f">len</span>(args) <span class="o">&gt;=</span> <span class="n">1</span>)
+    <span class="f">print</span>(os.<span class="f">env</span>(<span class="s">"APP_GREETING"</span>, <span class="s">"hello"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true
+hello</code></pre></div>
+<h2 id="args"><a class="anchor" href="#args" aria-hidden="true">#</a>args</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">args</span>() [<span class="t">str</span>]</code></pre></div>
+<p>The command-line arguments. <code>args()[0]</code> is the program itself (the path it was started with); the arguments you typed start at index 1. With <code>tern run</code>, put the program's arguments after <code>--</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern run wc.tn -- notes.txt todo.txt<span class="c">                 # args() == [&lt;binary&gt;, "notes.txt", "todo.txt"]</span>
+<span class="k">./wc</span> notes.txt todo.txt<span class="c">                              # after `tern build wc.tn -o wc`</span></code></pre></div>
+<p>Every call returns a fresh array; call it once and keep the result. Arguments are raw strings: convert numbers with <code>to_int</code> / <code>to_float</code> and a default, and check <code>len</code> before indexing, since reading past the end is a runtime error.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">main</span>():
+    args <span class="o">=</span> os.<span class="f">args</span>()
+    count <span class="o">=</span> <span class="n">3</span>
+    <span class="k">if</span> <span class="f">len</span>(args) <span class="o">&gt;</span> <span class="n">1</span>:
+        count <span class="o">=</span> args[<span class="n">1</span>].<span class="f">to_int</span>(<span class="n">3</span>)
+    names <span class="o">=</span> args[<span class="n">1</span><span class="o">..</span>]                         <span class="c"># everything after the program name</span>
+    <span class="f">print</span>(count, names)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 []</code></pre></div>
+<p>For flags (<code>--top 5</code>, <code>-v</code>, <code>--help</code>), use the <a href="flag.html">flag</a> module rather than reading <code>os.args()</code> by hand: it fills a struct, checks each value's type, and writes the usage.</p>
+<h2 id="env"><a class="anchor" href="#env" aria-hidden="true">#</a>env</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">env</span>(name: <span class="t">str</span>, default: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p>The value of the environment variable <code>name</code>, or <code>default</code> if it isn't set. A variable that is set to the empty string returns <code>""</code>, not the default. Names are case-sensitive. There is no way to set or list variables.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">main</span>():
+    port <span class="o">=</span> os.<span class="f">env</span>(<span class="s">"PORT"</span>, <span class="s">"8080"</span>).<span class="f">to_int</span>(<span class="n">8080</span>)
+    debug <span class="o">=</span> os.<span class="f">env</span>(<span class="s">"APP_DEBUG"</span>, <span class="s">"0"</span>) <span class="o">==</span> <span class="s">"1"</span>
+    <span class="f">print</span>(port, debug, os.<span class="f">env</span>(<span class="s">"PATH"</span>, <span class="s">""</span>) <span class="o">!=</span> <span class="s">""</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>8080 false true</code></pre></div>
+<h2 id="exit"><a class="anchor" href="#exit" aria-hidden="true">#</a>exit</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">exit</span>(code: <span class="t">int</span>)</code></pre></div>
+<p>Ends the program at once with exit status <code>code</code>: <code>0</code> means success, anything else failure. Standard output is flushed first, so everything already printed appears. Nothing else runs afterwards: no code after the call, no other tasks. Operating systems keep only the low 8 bits of the status, so use 0 to 125.</p>
+<p>Returning from <code>main</code> exits with status 0, and a runtime error exits with status 2, so <code>exit</code> is for reporting failure yourself, or for stopping early from deep inside the program.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="s">"checking..."</span>)
+    ok <span class="o">=</span> <span class="k">true</span>
+    <span class="k">if</span> ok:
+        os.<span class="f">exit</span>(<span class="n">0</span>)
+    <span class="f">print</span>(<span class="s">"never printed"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>checking...</code></pre></div>
+<h2 id="eprint-read_line-read_all"><a class="anchor" href="#eprint-read_line-read_all" aria-hidden="true">#</a>eprint, read_line, read_all</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">eprint</span>(s: <span class="t">str</span>)                    a line to stderr
+<span class="k">fn</span> <span class="f">read_line</span>() <span class="t">str</span>                   the next line of stdin, with its <span class="s">"\n"</span> (<span class="s">""</span> at the end)
+<span class="k">fn</span> <span class="f">read_all</span>() <span class="t">str</span>                    the rest of stdin</code></pre></div>
+<p>Errors and progress go to stderr with <code>eprint</code>, so stdout stays clean for output that is piped on. In a task, waiting for input parks only the task.</p>
+<h2 id="run"><a class="anchor" href="#run" aria-hidden="true">#</a>run</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">run</span>(cmd: <span class="t">str</span>, args: [<span class="t">str</span>]) <span class="t">Output</span>
+<span class="k">fn</span> <span class="f">run_input</span>(cmd: <span class="t">str</span>, args: [<span class="t">str</span>], input: <span class="t">str</span>) <span class="t">Output</span></code></pre></div>
+<p>Runs a program (found on <code>PATH</code>), waits for it, and returns its exit <code>status</code>, what it printed on stdout (<code>out</code>) and on stderr (<code>err</code>). <code>run_input</code> also feeds it <code>input</code> on stdin. A status of 128 + n means signal n ended it; -1 means it couldn't be started, and then <code>err</code> says why. Arguments are passed as they are, with no shell in between (so no quoting or injection issues); to use shell features, run <code>sh</code> with <code>-c</code>. In a task, the wait happens on the blocking-thread pool, so other tasks keep running.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">main</span>():
+    r <span class="o">=</span> os.<span class="f">run</span>(<span class="s">"sh"</span>, [<span class="s">"-c"</span>, <span class="s">"echo hi; echo oops &gt;&amp;2; exit 3"</span>])
+    <span class="f">print</span>(r.status, r.out.<span class="f">trim</span>(), r.err.<span class="f">trim</span>())
+    up <span class="o">=</span> os.<span class="f">run_input</span>(<span class="s">"tr"</span>, [<span class="s">"a-z"</span>, <span class="s">"A-Z"</span>], <span class="s">"shout"</span>)
+    <span class="f">print</span>(up.out)
+    <span class="f">print</span>(os.<span class="f">run</span>(<span class="s">"no-such-command"</span>, []).status)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 hi oops
+SHOUT
+-1</code></pre></div>
+<h2 id="spawn"><a class="anchor" href="#spawn" aria-hidden="true">#</a>spawn</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">spawn</span>(cmd: <span class="t">str</span>, args: [<span class="t">str</span>]) <span class="t">Process</span>
+<span class="k">fn</span> <span class="f">spawn_with</span>(cmd: <span class="t">str</span>, args: [<span class="t">str</span>], opts: <span class="t">ProcOpts</span>) <span class="t">Process</span>
+<span class="k">struct</span> <span class="t">ProcOpts</span>: dir: <span class="t">str</span>, env: [<span class="t">str</span>], out: <span class="t">str</span>, err: <span class="t">str</span></code></pre></div>
+<p>Starts a program and returns while it keeps running: a server to test against, a long-running job to watch, a program to talk to over its stdin and stdout. <code>spawn</code> gives it pipes for stdin and stdout and lets it print to our stderr. <code>spawn_with</code> also says where it runs (<code>dir</code>, <code>""</code> for here), adds <code>"NAME=value"</code> entries to its environment (<code>env</code>), and where its stdout (<code>out</code>: <code>"pipe"</code>, <code>"inherit"</code>, <code>"null"</code>, or a file path) and stderr (<code>err</code>: <code>"inherit"</code>, <code>"out"</code> for into its stdout, <code>"null"</code>, or a file path) go.</p>
+<div class="table"><table><thead><tr><th>Call</th><th>What it does</th></tr></thead><tbody><tr><td><code>p.ok() bool</code></td><td>false if it couldn't be started; <code>os.error()</code> says why</td></tr><tr><td><code>p.write(text) bool</code></td><td>writes to its stdin (false once it stopped reading)</td></tr><tr><td><code>p.close_input()</code></td><td>closes its stdin, so a program reading to the end finishes</td></tr><tr><td><code>p.out_line() str</code></td><td>the next line of its stdout, with its <code>"\n"</code> (<code>""</code> once it closed it)</td></tr><tr><td><code>p.out_all() str</code></td><td>the rest of its stdout (waits for it to close it)</td></tr><tr><td><code>p.wait() int</code></td><td>waits for it to end; its exit status (128 + n if signal n ended it)</td></tr><tr><td><code>p.wait_ms(ms) int</code></td><td>the same, or -1 if it's still running after <code>ms</code> milliseconds</td></tr><tr><td><code>p.kill(sig) bool</code></td><td>sends signal <code>sig</code> (15 TERM, 9 KILL, 2 INT) to it and to the programs it started</td></tr><tr><td><code>p.pid() int</code></td><td>its process id</td></tr></tbody></table></div>
+<p>Each child gets its own process group, so <code>kill</code> also stops what it started (the program behind a <code>tern run</code>, the commands of a <code>sh -c</code>). In a task, reading and writing park only the task.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+
+<span class="k">fn</span> <span class="f">main</span>():
+    p <span class="o">=</span> os.<span class="f">spawn</span>(<span class="s">"cat"</span>, [])
+    p.<span class="f">write</span>(<span class="s">"hello\n"</span>)
+    <span class="f">print</span>(p.<span class="f">out_line</span>().<span class="f">trim</span>())
+    p.<span class="f">close_input</span>()
+    <span class="f">print</span>(p.<span class="f">wait</span>())
+    sh <span class="o">=</span> os.<span class="f">spawn_with</span>(<span class="s">"sh"</span>, [<span class="s">"-c"</span>, <span class="s">"echo $GREETING; echo oops &gt;&amp;2; exit 3"</span>],
+                       os.<span class="t">ProcOpts</span>(<span class="s">""</span>, [<span class="s">"GREETING=hi"</span>], <span class="s">"pipe"</span>, <span class="s">"out"</span>))
+    <span class="f">print</span>(sh.<span class="f">out_all</span>().<span class="f">trim</span>().<span class="f">replace</span>(<span class="s">"\n"</span>, <span class="s">" "</span>), sh.<span class="f">wait</span>())
+    slow <span class="o">=</span> os.<span class="f">spawn</span>(<span class="s">"sleep"</span>, [<span class="s">"10"</span>])
+    <span class="f">print</span>(slow.<span class="f">wait_ms</span>(<span class="n">20</span>), slow.<span class="f">kill</span>(<span class="n">15</span>), slow.<span class="f">wait</span>())
+    <span class="f">print</span>(os.<span class="f">spawn</span>(<span class="s">"no-such-command"</span>, []).<span class="f">ok</span>(), os.<span class="f">error</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>hello
+0
+hi oops 3
+-1 true 143
+false os.spawn: can't run no-such-command: No such file or directory</code></pre></div>
+<h2 id="cwd-chdir-setenv-error"><a class="anchor" href="#cwd-chdir-setenv-error" aria-hidden="true">#</a>cwd, chdir, setenv, error</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">cwd</span>() <span class="t">str</span>
+<span class="k">fn</span> <span class="f">chdir</span>(dir: <span class="t">str</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">setenv</span>(name: <span class="t">str</span>, value: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">error</span>() <span class="t">str</span></code></pre></div>
+<p><code>cwd</code> is the working directory; <code>chdir</code> changes it for the whole program (false if it can't, and <code>os.error()</code> says why). <code>setenv</code> sets a variable in the program's environment, which the programs it starts inherit (an empty value removes it). <code>error</code> says why the last <code>spawn</code> or <code>chdir</code> on this thread failed (<code>""</code> after a success).</p>
+<h2 id="wait_signal"><a class="anchor" href="#wait_signal" aria-hidden="true">#</a>wait_signal</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">wait_signal</span>() <span class="t">str</span></code></pre></div>
+<p>Waits for one of SIGINT (Ctrl-C), SIGTERM (what <code>kill</code> and container runtimes send), SIGHUP, SIGUSR1 or SIGUSR2 and returns its name. The first call makes those signals events for the program instead of ending it, so call it early (from a task) when you want to clean up before exiting. Each signal goes to one waiter.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+<span class="k">import</span> task
+
+<span class="k">fn</span> <span class="f">on_signal</span>():
+    name <span class="o">=</span> os.<span class="f">wait_signal</span>()
+    os.<span class="f">eprint</span>(<span class="s">"got "</span> <span class="o">+</span> name <span class="o">+</span> <span class="s">", saving state"</span>)
+    os.<span class="f">exit</span>(<span class="n">0</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    task.<span class="f">spawn</span>(<span class="k">fn</span>() <span class="f">on_signal</span>())
+    <span class="c"># ... the program's work ...</span></code></pre></div>
+<p><code>roost.serve</code> handles SIGINT and SIGTERM itself: it stops accepting connections, lets the requests in progress finish (up to <code>TERN_WEB_DRAIN_SEC</code> seconds, default 10), and returns.</p>
+<h2 id="on_error-last_error_report"><a class="anchor" href="#on_error-last_error_report" aria-hidden="true">#</a>on_error, last_error_report</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">ErrorReport</span>: message: <span class="t">str</span>, file: <span class="t">str</span>, line: <span class="t">int</span>, function: <span class="t">str</span>, frames: [<span class="t">Frame</span>],
+                    image_base: <span class="t">int</span>, slide: <span class="t">int</span>, build_id: <span class="t">str</span>, task_id: <span class="t">int</span>, thread_id: <span class="t">int</span>, time: <span class="t">int</span>,
+                    locals: {<span class="t">str</span>: <span class="t">str</span>}
+<span class="k">struct</span> <span class="t">Frame</span>: function: <span class="t">str</span>, pc: <span class="t">int</span>
+<span class="k">fn</span> <span class="f">on_error</span>(f: <span class="k">fn</span>(<span class="t">ErrorReport</span>))
+<span class="k">fn</span> <span class="f">last_error_report</span>() <span class="t">ErrorReport</span></code></pre></div>
+<p>For error trackers (Sentry and the like): after <code>os.on_error(f)</code>, every runtime error calls <code>f</code> with a report, including the ones something catches: a task that fails, a web handler's error that became a <code>500</code>, an error inside <code>parallel:</code>. A report has the message as printed, the file, line and Tern function where it happened, the frames it came through (innermost first; each a Tern function name, or the C symbol, and its address), what's needed to symbolicate the addresses elsewhere (where the executable was loaded, and its build id: the Mach-O UUID or the ELF GNU build id, in hex), the task and thread, the time (nanoseconds since the Unix epoch), and the failing task's task-locals (<code>task.local_set</code>, up to about 4KB): the request id or trace context it was working on. <code>f</code> runs on a thread of its own, one report at a time, so a slow reporter never delays the code that failed; a runtime error inside <code>f</code> is dropped rather than reported. The error that ends the program is reported before it exits (waiting up to 3 seconds). Stack overflows aren't reported.</p>
+<p><code>last_error_report()</code> returns the most recent report (message <code>""</code> when there is none), for code that learns about an error through <code>h.join()</code>. Reports are recorded from the first call to either function on, so programs that use neither pay nothing.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+<span class="k">import</span> task
+
+<span class="k">fn</span> <span class="f">average</span>(xs: [<span class="t">int</span>]) <span class="t">int</span>:
+    <span class="k">return</span> <span class="n">10</span> <span class="o">/</span> <span class="f">len</span>(xs)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    reports: chan[os.<span class="t">ErrorReport</span>] <span class="o">=</span> task.<span class="f">channel</span>(<span class="n">0</span>)
+    os.<span class="f">on_error</span>(<span class="k">fn</span>(r: os.<span class="t">ErrorReport</span>) reports.<span class="f">send</span>(r))
+    h <span class="o">=</span> task.<span class="f">spawn</span>(<span class="k">fn</span>() <span class="f">average</span>([]))
+    <span class="k">while</span> <span class="k">not</span> h.<span class="f">done</span>():
+        task.<span class="f">sleep</span>(<span class="n">1</span>)
+    h.<span class="f">cancel</span>()                                <span class="c"># (this failure is expected)</span>
+    r <span class="o">=</span> reports.<span class="f">recv</span>()
+    <span class="f">print</span>(r.function, r.line, <span class="f">len</span>(r.frames) <span class="o">&gt;</span> <span class="n">0</span>, r.task_id <span class="o">&gt;</span> <span class="n">0</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>average 5 true true</code></pre></div>
+<h2 id="a-complete-example"><a class="anchor" href="#a-complete-example" aria-hidden="true">#</a>A complete example</h2>
+<p>A small command-line tool that counts lines, words, and bytes in the files it is given, and exits with status 1 if any file can't be read (usage: <code>./wc file...</code>):</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+<span class="k">import</span> fs
+
+<span class="k">fn</span> <span class="f">main</span>():
+    args <span class="o">=</span> os.<span class="f">args</span>()
+    <span class="k">if</span> <span class="f">len</span>(args) <span class="o">&lt;</span> <span class="n">2</span>:
+        <span class="f">print</span>(<span class="s">"usage: wc FILE..."</span>)
+        os.<span class="f">exit</span>(<span class="n">64</span>)
+    failed <span class="o">=</span> <span class="k">false</span>
+    total_lines <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> path <span class="k">in</span> args[<span class="n">1</span><span class="o">..</span>]:
+        <span class="k">if</span> <span class="k">not</span> fs.<span class="f">exists</span>(path):
+            <span class="f">print</span>(<span class="s">f"wc: {path}: no such file"</span>)
+            failed <span class="o">=</span> <span class="k">true</span>
+            <span class="k">continue</span>
+        text <span class="o">=</span> fs.<span class="f">read</span>(path)
+        lines <span class="o">=</span> <span class="f">len</span>(text.<span class="f">split</span>(<span class="s">"\n"</span>)) <span class="o">-</span> <span class="n">1</span>
+        words <span class="o">=</span> <span class="n">0</span>
+        <span class="k">for</span> w <span class="k">in</span> text.<span class="f">replace</span>(<span class="s">"\n"</span>, <span class="s">" "</span>).<span class="f">replace</span>(<span class="s">"\t"</span>, <span class="s">" "</span>).<span class="f">split</span>(<span class="s">" "</span>):
+            <span class="k">if</span> w <span class="o">!=</span> <span class="s">""</span>:
+                words <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+        total_lines <span class="o">+</span><span class="o">=</span> lines
+        <span class="f">print</span>(<span class="s">f"{lines} {words} {len(text)} {path}"</span>)
+    <span class="k">if</span> <span class="f">len</span>(args) <span class="o">&gt;</span> <span class="n">2</span>:
+        <span class="f">print</span>(<span class="s">f"{total_lines} total"</span>)
+    <span class="k">if</span> failed:
+        os.<span class="f">exit</span>(<span class="n">1</span>)</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../std/time.html"><span>Previous</span>time</a><a class="next" href="../std/fs.html"><span>Next</span>fs</a></div>
+<footer>Source: <code>docs/std/os.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#args">args</a></li><li class="l2"><a href="#env">env</a></li><li class="l2"><a href="#exit">exit</a></li><li class="l2"><a href="#eprint-read_line-read_all">eprint, read_line, read_all</a></li><li class="l2"><a href="#run">run</a></li><li class="l2"><a href="#spawn">spawn</a></li><li class="l2"><a href="#cwd-chdir-setenv-error">cwd, chdir, setenv, error</a></li><li class="l2"><a href="#wait_signal">wait_signal</a></li><li class="l2"><a href="#on_error-last_error_report">on_error, last_error_report</a></li><li class="l2"><a href="#a-complete-example">A complete example</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>term · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/term.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html" class="cur" aria-current="page">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="term"><a class="anchor" href="#term" aria-hidden="true">#</a>term</h1>
+<p>The <code>term</code> module is for programs that talk to a person at a terminal: whether output goes to one, its size, colors that turn themselves off when they shouldn't show, aligned tables, a progress line, and reading a password without echoing it.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> term
+
+<span class="k">fn</span> <span class="f">main</span>():
+    term.<span class="f">set_color</span>(<span class="k">false</span>)                  <span class="c"># (the docs' output isn't a terminal anyway)</span>
+    <span class="f">print</span>(term.<span class="f">green</span>(<span class="s">"ok"</span>), term.<span class="f">bold</span>(<span class="s">"3 files"</span>))
+    <span class="f">print</span>(term.<span class="f">table</span>([[<span class="s">"NAME"</span>, <span class="s">"SIZE"</span>], [<span class="s">"a.txt"</span>, <span class="s">"12"</span>], [<span class="s">"notes.md"</span>, <span class="s">"3401"</span>]]))
+    <span class="f">print</span>(term.<span class="f">display_width</span>(<span class="s">"héllo"</span>), term.<span class="f">strip_ansi</span>(<span class="s">"\x1b[31mred\x1b[0m"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>ok 3 files
+NAME      SIZE
+a.txt     12
+notes.md  3401
+
+5 red</code></pre></div>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">is_tty</span>() <span class="t">bool</span>              stdout is a terminal
+<span class="k">fn</span> <span class="f">stderr_is_tty</span>() <span class="t">bool</span>       <span class="k">fn</span> <span class="f">stdin_is_tty</span>() <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">width</span>() <span class="t">int</span>                the terminal's columns ($<span class="t">COLUMNS</span>, <span class="k">else</span> <span class="n">80</span>, when there's none)
+<span class="k">fn</span> <span class="f">height</span>() <span class="t">int</span>               its rows ($<span class="t">LINES</span>, <span class="k">else</span> <span class="n">24</span>)
+<span class="k">fn</span> <span class="f">color</span>() <span class="t">bool</span>               whether the color functions add color
+<span class="k">fn</span> <span class="f">set_color</span>(on: <span class="t">bool</span>)        decide that yourself (a <span class="o">-</span><span class="o">-</span>color flag)
+<span class="k">fn</span> <span class="f">red</span>(s: <span class="t">str</span>) <span class="t">str</span>            also green, yellow, blue, magenta, cyan, gray,
+                              bold, dim, italic, underline
+<span class="k">fn</span> <span class="f">strip_ansi</span>(s: <span class="t">str</span>) <span class="t">str</span>     s without escape sequences (colors, cursor moves, links)
+<span class="k">fn</span> <span class="f">display_width</span>(s: <span class="t">str</span>) <span class="t">int</span>  the columns s takes: escapes none, each character one
+<span class="k">fn</span> <span class="f">pad</span>(s: <span class="t">str</span>, width: <span class="t">int</span>) <span class="t">str</span>      s <span class="k">and</span> spaces up to width columns
+<span class="k">fn</span> <span class="f">table</span>(rows: [[<span class="t">str</span>]]) <span class="t">str</span>   columns lined up two spaces apart, a line per row
+<span class="k">fn</span> <span class="f">progress</span>(done: <span class="t">int</span>, total: <span class="t">int</span>, label: <span class="t">str</span>)   a progress line on stderr
+<span class="k">fn</span> <span class="f">clear_line</span>() <span class="t">str</span>           <span class="s">"\r\x1b[2K"</span>: the start of the line, cleared
+<span class="k">fn</span> <span class="f">secret</span>(prompt: <span class="t">str</span>) <span class="t">str</span>    prompt on stderr, then a line read without echo
+<span class="k">fn</span> <span class="f">read_line</span>(prompt: <span class="t">str</span>) <span class="t">str</span> prompt on stderr, then a line the person can edit, with history</code></pre></div>
+<h2 id="colors"><a class="anchor" href="#colors" aria-hidden="true">#</a>Colors</h2>
+<p>The color functions wrap text in ANSI escapes only when they would show: stdout is a terminal, <code>NO_COLOR</code> is unset, and <code>TERM</code> isn't <code>dumb</code>. <code>FORCE_COLOR=1</code> turns them on regardless (CI logs that render color), and <code>term.set_color(on)</code> overrides both. The decision is made once, on the first use. Styles nest: <code>term.bold(term.red("x"))</code>.</p>
+<h2 id="progress-and-passwords"><a class="anchor" href="#progress-and-passwords" aria-hidden="true">#</a>Progress and passwords</h2>
+<p><code>term.progress(done, total, label)</code> draws <code>label [######--------]  42% 21/50</code> on stderr, over the previous one, and ends the line when <code>done == total</code>. It draws nothing when stderr isn't a terminal, so a program can call it unconditionally and still have clean logs when piped.</p>
+<p><code>term.secret(prompt)</code> turns echo off while the person types (when stdin is a terminal) and returns the line without its line end, for a password or a token. On WebAssembly, which has no terminal control, it reads a plain line.</p>
+<h2 id="reading-a-line"><a class="anchor" href="#reading-a-line" aria-hidden="true">#</a>Reading a line</h2>
+<p><code>term.read_line(prompt)</code> is <code>os.read_line</code> with a prompt and line editing: when stdin and stderr are terminals, the arrow keys, Home/End, Backspace/Delete and Ctrl-A/E/K/U/W edit the line, and Up/Down bring back the lines it returned before, as in a shell. It returns the line with its <code>"\n"</code>, <code>""</code> at the end of input (Ctrl-D on an empty line), and <code>"\x03"</code> for Ctrl-C. Piped input is read as a plain line. <code>tern repl</code> reads with it.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> term
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">while</span> <span class="k">true</span>:
+        line <span class="o">=</span> term.<span class="f">read_line</span>(<span class="s">"&gt; "</span>)
+        <span class="k">if</span> line <span class="o">==</span> <span class="s">""</span> <span class="k">or</span> line <span class="o">==</span> <span class="s">"\x03"</span>:
+            <span class="k">break</span>
+        <span class="f">print</span>(line.<span class="f">trim</span>().<span class="f">upper</span>())</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../std/flag.html"><span>Previous</span>flag</a><a class="next" href="../std/url.html"><span>Next</span>url</a></div>
+<footer>Source: <code>docs/std/term.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#functions">Functions</a></li><li class="l2"><a href="#colors">Colors</a></li><li class="l2"><a href="#progress-and-passwords">Progress and passwords</a></li><li class="l2"><a href="#reading-a-line">Reading a line</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sentry · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/packages/sentry.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html" class="cur" aria-current="page">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="sentry"><a class="anchor" href="#sentry" aria-hidden="true">#</a>sentry</h1>
+<p>The <code>sentry</code> package reports errors and messages to <a href="https://sentry.io">Sentry</a>, the hosted service or a self-hosted install. Runtime errors come with native stack traces, and errors inside web handlers come with the request and route they happened in. It's a package of its own (<code>import sentry</code>), so programs that don't report errors don't carry it.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> os
+<span class="k">import</span> sentry
+<span class="k">import</span> tls
+<span class="k">import</span> roost
+
+<span class="k">fn</span> <span class="f">main</span>():
+    o <span class="o">=</span> sentry.<span class="f">options</span>()
+    o.release <span class="o">=</span> <span class="s">"shop@1.4.2"</span>
+    c <span class="o">=</span> sentry.<span class="f">init</span>(os.<span class="f">env</span>(<span class="s">"SENTRY_DSN"</span>, <span class="s">""</span>), o)   <span class="c"># no DSN: capturing does nothing</span>
+    sentry.<span class="f">install</span>(c)                             <span class="c"># every runtime error becomes an event</span>
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    r.<span class="f">get</span>(<span class="s">"/orders/{id}"</span>, <span class="k">fn</span>(req) roost.<span class="f">text</span>(<span class="s">"order "</span> <span class="o">+</span> req.<span class="f">param</span>(<span class="s">"id"</span>)))
+    r.<span class="f">layer</span>(sentry.<span class="f">middleware</span>(c))                 <span class="c"># events from a request carry it</span>
+    c.<span class="f">capture_message</span>(<span class="s">"shop starting"</span>, <span class="s">"info"</span>)
+    roost.<span class="f">serve</span>(r, <span class="n">8080</span>)                            <span class="c"># SIGINT/SIGTERM: drain, then return</span>
+    c.<span class="f">close</span>()                                     <span class="c"># send what's still queued</span></code></pre></div>
+<p>A DSN that starts with <code>https://</code> needs <code>import tls</code>, as for any HTTPS request. Without a DSN, or with a bad one, <code>c.ok()</code> is false and <code>c.error()</code> says why. Capturing then does nothing, so the same program runs in development without Sentry.</p>
+<h2 id="setting-up"><a class="anchor" href="#setting-up" aria-hidden="true">#</a>Setting up</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">options</span>() <span class="t">Options</span>
+<span class="k">fn</span> <span class="f">init</span>(dsn: <span class="t">str</span>, o: <span class="t">Options</span>) <span class="t">Client</span>
+<span class="k">fn</span> <span class="f">ok</span>(c: <span class="t">Client</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">error</span>(c: <span class="t">Client</span>) <span class="t">str</span></code></pre></div>
+<p><code>sentry.options()</code> fills in the defaults; change the fields you need before calling <code>init</code>:</p>
+<div class="table"><table><thead><tr><th>field</th><th>default</th><th></th></tr></thead><tbody><tr><td><code>release</code></td><td><code>$SENTRY_RELEASE</code></td><td>the version, e.g. <code>"shop@1.4.2"</code> (Sentry tracks regressions by release)</td></tr><tr><td><code>environment</code></td><td><code>$SENTRY_ENVIRONMENT</code>, else <code>"production"</code></td><td></td></tr><tr><td><code>server_name</code></td><td><code>$HOSTNAME</code></td><td></td></tr><tr><td><code>sample_rate</code></td><td><code>1.0</code></td><td>the share of events sent</td></tr><tr><td><code>max_queue</code></td><td><code>100</code></td><td>events waiting to be sent; more are dropped</td></tr><tr><td><code>breadcrumbs</code></td><td><code>50</code></td><td>recent log records sent with each event</td></tr><tr><td><code>timeout_ms</code></td><td><code>10000</code></td><td>per request to Sentry</td></tr><tr><td><code>scrub</code></td><td>see <a href="#scrubbing">Scrubbing</a></td><td>names whose values are hidden</td></tr></tbody></table></div>
+<h2 id="capturing"><a class="anchor" href="#capturing" aria-hidden="true">#</a>Capturing</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">capture_message</span>(c: <span class="t">Client</span>, message: <span class="t">str</span>, level: <span class="t">str</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">capture_error</span>(c: <span class="t">Client</span>, r: os.<span class="t">ErrorReport</span>) <span class="t">str</span>
+<span class="k">fn</span> capture_result[<span class="t">T</span>](c: <span class="t">Client</span>, r: <span class="t">Result</span>[<span class="t">T</span>, <span class="t">str</span>]) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">install</span>(c: <span class="t">Client</span>)</code></pre></div>
+<p>Each returns the event's id (32 hex digits), or <code>""</code> if nothing was queued: sending is off, the event wasn't sampled, the queue is full, or Sentry asked us to wait. Levels are <code>"fatal"</code>, <code>"error"</code>, <code>"warning"</code> (or <code>"warn"</code>), <code>"info"</code>, and <code>"debug"</code>.</p>
+<p><code>capture_result</code> sends an <code>Err</code> as an error event whose message is the error text, and ignores an <code>Ok</code>. It fits the library's error format (<code>"pg: query failed: timeout"</code>):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>users: Result[[User], str] = db.fetch("SELECT id, name FROM users", [])
+c.capture_result(users)</code></pre></div>
+<p><code>sentry.install(c)</code> hands every runtime error to <code>c</code> through <code>os.on_error</code>. That includes a failed task, a web handler that answered 500, and the error that ends the program. Each one is sent before the hook returns, so the last error of a program that's crashing is reported too. The event holds the error's message, its stack (innermost frame with its file and line), and the executable's identity for symbolication (see <a href="#stack-traces">Stack traces</a>).</p>
+<h2 id="scope-tags-user-request"><a class="anchor" href="#scope-tags-user-request" aria-hidden="true">#</a>Scope: tags, user, request</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">set_tag</span>(key: <span class="t">str</span>, value: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">set_extra</span>(key: <span class="t">str</span>, value: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">set_user</span>(id: <span class="t">str</span>, email: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">clear_scope</span>()
+<span class="k">fn</span> <span class="f">middleware</span>(c: <span class="t">Client</span>) <span class="k">fn</span>(roost.<span class="t">Request</span>, <span class="k">fn</span>(roost.<span class="t">Request</span>) roost.<span class="t">Response</span>) roost.<span class="t">Response</span></code></pre></div>
+<p>Tags, extra values, and the user apply to the events of the task that set them, including a runtime error in that task, and to tasks it spawns. They're kept in <a href="../reference.html#15-parallelism">task-locals</a>, so concurrent requests don't see each other's.</p>
+<p><code>sentry.middleware(c)</code> records the request for each event from inside a handler: method, URL, query string, headers, and the client's IP. It also sets the transaction to the matched route (<code>GET /orders/{id}</code>), so Sentry groups events by route rather than by URL. A panic inside the handler arrives with that request data too, since error reports carry the failing task's locals. Put it on the router after the routes (<code>r.layer</code>), like any middleware.</p>
+<h2 id="scrubbing"><a class="anchor" href="#scrubbing" aria-hidden="true">#</a>Scrubbing</h2>
+<p>The values of headers, query parameters, <code>set_extra</code> keys, and log fields are replaced with <code>"[Filtered]"</code> when the name, lowercased, contains one of <code>o.scrub</code>. By default those are <code>auth</code>, <code>cookie</code>, <code>password</code>, <code>passwd</code>, <code>secret</code>, <code>token</code>, <code>key</code>, <code>session</code>, and <code>credential</code>. That covers <code>Authorization</code>, <code>Cookie</code>, <code>Set-Cookie</code>, <code>X-Api-Key</code>, <code>?token=</code>, <code>api_key=</code>, and the like. Add your own before <code>init</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>o = sentry.options()
+o.scrub.push("ssn")
+o.scrub.push("card")</code></pre></div>
+<h2 id="breadcrumbs"><a class="anchor" href="#breadcrumbs" aria-hidden="true">#</a>Breadcrumbs</h2>
+<p>Each event carries the last <code>o.breadcrumbs</code> records from <a href="../std/log.html">log</a>'s memory (<code>log.recent</code>), with their fields scrubbed. By default the log keeps records at <code>warn</code> and up; <code>log.keep("info")</code> keeps info records too.</p>
+<h2 id="sending"><a class="anchor" href="#sending" aria-hidden="true">#</a>Sending</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">flush</span>(c: <span class="t">Client</span>, timeout_ms: <span class="t">int</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">close</span>(c: <span class="t">Client</span>)
+<span class="k">fn</span> <span class="f">sent</span>(c: <span class="t">Client</span>) <span class="t">int</span>
+<span class="k">fn</span> <span class="f">dropped</span>(c: <span class="t">Client</span>) <span class="t">int</span></code></pre></div>
+<p>Capturing builds the event, puts it on a queue, and returns; one background task per client sends the queue, so a slow or unreachable Sentry never holds up a request. The sender works like Sentry's own SDKs:</p>
+<ul><li>It retries after a network error or a 5xx answer, 1 s, 2 s, and 4 s later, then drops the event.</li><li>A 429 answer, or an <code>X-Sentry-Rate-Limits</code> header covering error events, makes the client drop new events until the time Sentry gave has passed.</li><li>The <code>X-Sentry-Auth</code> header and the envelope format are Sentry's current ones (protocol version 7).</li></ul>
+<p><code>flush</code> waits, parking only the calling task, until the queue is empty and nothing is being sent, and returns false if <code>timeout_ms</code> passes first. <code>close</code> flushes for up to two seconds and stops the sender. Call it before <code>main</code> returns, since the program ends when <code>main</code> does.</p>
+<h2 id="stack-traces"><a class="anchor" href="#stack-traces" aria-hidden="true">#</a>Stack traces</h2>
+<p>Frames are sent as native addresses, with the function names Tern already knows (Tern names like <code>load</code> or <code>roost._limited</code>, and C symbols for the runtime). Each event also describes the executable: its build id (Mach-O UUID or ELF GNU build id), load address, and path. Sentry uses these to symbolicate the addresses, giving file names and lines for every frame, from a debug file you upload:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>tern build app.tn -o app                        # keep this unstripped file
+sentry-cli debug-files upload --org ORG --project PROJECT app
+strip -o app.deploy app                         # deploy the stripped one if you like</code></pre></div>
+<p>For source lines in every frame, build with <code>tern build -g</code> (no optimization), or upload the file that <code>dsymutil app</code> makes on macOS. Frames from your own code are marked in-app; frames from the runtime, the standard library, and packages like <code>roost</code> and <code>pg</code> aren't.</p>
+</article>
+<div class="pn"><a class="prev" href="../packages/openapi.html"><span>Previous</span>openapi</a><a class="next" href="../reference.html"><span>Next</span>Language reference</a></div>
+<footer>Source: <code>docs/packages/sentry.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#setting-up">Setting up</a></li><li class="l2"><a href="#capturing">Capturing</a></li><li class="l2"><a href="#scope-tags-user-request">Scope: tags, user, request</a></li><li class="l2"><a href="#scrubbing">Scrubbing</a></li><li class="l2"><a href="#breadcrumbs">Breadcrumbs</a></li><li class="l2"><a href="#sending">Sending</a></li><li class="l2"><a href="#stack-traces">Stack traces</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

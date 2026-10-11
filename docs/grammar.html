@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern grammar · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/grammar.html">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="tour/01-getting-started.html">1. Getting started</a></li><li><a href="tour/02-values-and-types.html">2. Values and types</a></li><li><a href="tour/03-control-flow.html">3. Control flow</a></li><li><a href="tour/04-functions.html">4. Functions</a></li><li><a href="tour/05-structs.html">5. Structs</a></li><li><a href="tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="tour/07-strings.html">7. Strings</a></li><li><a href="tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="tour/10-closures.html">10. Functions as values</a></li><li><a href="tour/11-parallelism.html">11. Parallelism</a></li><li><a href="tour/12-modules.html">12. Modules and packages</a></li><li><a href="tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="guides/web-apps.html">Building web apps</a></li><li><a href="guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="guides/parallelism.html">Parallel programming</a></li><li><a href="guides/memory.html">How memory works</a></li><li><a href="guides/performance.html">Performance tips</a></li><li><a href="guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="guides/mobile.html">iOS and Android</a></li><li><a href="guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="std/index.html">Overview</a></li><li><a href="std/fmt.html">fmt</a></li><li><a href="std/math.html">math</a></li><li><a href="std/random.html">random</a></li><li><a href="std/time.html">time</a></li><li><a href="std/os.html">os</a></li><li><a href="std/fs.html">fs</a></li><li><a href="std/path.html">path</a></li><li><a href="std/flag.html">flag</a></li><li><a href="std/term.html">term</a></li><li><a href="std/url.html">url</a></li><li><a href="std/toml.html">toml</a></li><li><a href="std/binary.html">binary</a></li><li><a href="std/heap.html">heap</a></li><li><a href="std/pqueue.html">pqueue</a></li><li><a href="std/deque.html">deque</a></li><li><a href="std/bitset.html">bitset</a></li><li><a href="std/json.html">json</a></li><li><a href="std/re.html">re</a></li><li><a href="std/simd.html">simd</a></li><li><a href="std/http.html">http</a></li><li><a href="std/crypto.html">crypto</a></li><li><a href="std/compress.html">compress</a></li><li><a href="std/tls.html">tls</a></li><li><a href="std/log.html">log</a></li><li><a href="std/html.html">html</a></li><li><a href="std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="packages/index.html">Overview</a></li><li><a href="packages/roost.html">roost</a></li><li><a href="packages/sqlite.html">sqlite</a></li><li><a href="packages/pg.html">pg</a></li><li><a href="packages/redis.html">redis</a></li><li><a href="packages/migrate.html">migrate</a></li><li><a href="packages/sqlgen.html">sqlgen</a></li><li><a href="packages/auth.html">auth</a></li><li><a href="packages/openapi.html">openapi</a></li><li><a href="packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="reference.html">Language reference</a></li><li><a href="builtins.html">Builtin functions</a></li><li><a href="grammar.html" class="cur" aria-current="page">Grammar</a></li><li><a href="errors.html">Compiler errors</a></li><li><a href="cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="tern-grammar"><a class="anchor" href="#tern-grammar" aria-hidden="true">#</a>Tern grammar</h1>
+<p>The exact syntax accepted by the compiler (<code>compiler/syntax/lexer.tn</code>, <code>compiler/syntax/parser.tn</code>), in EBNF. <code>{ x }</code> means zero or more, <code>[ x ]</code> optional, <code>|</code> alternatives, quoted text is literal. For what the constructs mean, see <a href="reference.html">reference.md</a>.</p>
+<h2 id="tokens"><a class="anchor" href="#tokens" aria-hidden="true">#</a>Tokens</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>NEWLINE   end of a line (not inside ( ) [ ] { }, and not after a trailing `\`)
+INDENT    a line indented more than the one before; DEDENT: less (must match an earlier level)
+          (a tab counts as 4 spaces; blank lines and comment-only lines are ignored)
+comment   "#" up to the end of the line
+NAME      letter or "_", then letters, digits, "_"   (not a keyword)
+INT       digit { digit | "_" }                       e.g. 42  1_000_000  (at most 9223372036854775807)
+          | "0" ("x"|"X") hexdigit { hexdigit | "_" }  e.g. 0xff  (hex, binary, octal: up to 64 bits;
+          | "0" ("b"|"B") bindigit { bindigit | "_" }       above the largest int they are negative)
+          | "0" ("o"|"O") octdigit { octdigit | "_" }
+FLOAT     INT [ "." digit { digit } ] [ exponent ]    with a "." or an exponent: 3.14  1e9  2.5e-3
+exponent  ("e"|"E") [ "+" | "-" ] digit { digit }     (not "1." or ".5")
+STR       '"' { char | escape } '"'                   one line; escapes \n \t \r \0 \" \\
+                                                      \xHH (a byte), \uHHHH and \u{H..} (UTF-8)
+          | '"""' { char | newline | escape } '"""'    over lines; drops a blank first and last line
+                                                      and the indentation the lines share
+          | "`" { char | newline } "`"                 raw: every character as written, no escapes
+FSTR      'f"' { char | "{{" | "}}" | "{" expr "}" } '"'
+          | 'f"""' ... '"""'                           an f-string over lines, like """
+keywords  and break const continue do elif else enum export extern false fn for from if import
+          in mut not null or parallel pass return struct take true while
+soft      match (a keyword only at the start of a statement followed by an expression),
+          is (only after an expression)
+symbols   -&gt; == != &lt;= &gt;= .. += -= *= /= %= &amp;= |= ^= &lt;&lt;= &gt;&gt;= &gt;&gt;&gt;= &lt;&lt; &gt;&gt; &gt;&gt;&gt;
+          ( ) [ ] { } , : . = + - * / % &lt; &gt; &amp; | ^ ~ ?</code></pre></div>
+<h2 id="program"><a class="anchor" href="#program" aria-hidden="true">#</a>Program</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>program     = { import | struct | enum | alias | const | fn | "export" fn | extern | NEWLINE } EOF
+alias       = "type" NAME "=" type NEWLINE                      ("type" is a soft keyword here)
+import      = "import" NAME NEWLINE
+            | "from" NAME "import" NAME { "," NAME } NEWLINE
+struct      = "struct" NAME [ tparams ] ":" NEWLINE INDENT field_line { field_line } DEDENT
+field_line  = NAME { "," NAME } ":" type NEWLINE
+enum        = "enum" NAME [ tparams ] ":" NEWLINE INDENT variant { variant } DEDENT
+variant     = NAME [ "(" [ NAME ":" type { "," NAME ":" type } ] ")" ] NEWLINE
+const       = "const" NAME [ ":" type ] "=" expr NEWLINE           (int, float, str, or bool, computed
+                                                                  from literals, constants, operators)
+fn          = "fn" NAME [ tparams ] "(" [ param { "," param } ] ")" [ [ "-&gt;" ] type ] block
+param       = NAME ":" [ "mut" | "take" ] type
+tparams     = "[" tparam { "," tparam } "]"                  (generic: fn first[T], struct Pair[A, B])
+tparam      = NAME [ ":" NAME { "+" NAME } ]                  (constraints: Eq, Ord, Hash)
+extern      = "extern" [ STR ] { ( "source" | "link" ) STR } ":" NEWLINE
+              INDENT { "fn" NAME "(" [ param { "," param } ] ")" [ type ] [ "=" STR ] NEWLINE } DEDENT</code></pre></div>
+<h2 id="types"><a class="anchor" href="#types" aria-hidden="true">#</a>Types</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>type        = "int" | "float" | "bool" | "str" | "byte" | "ptr"
+            | NAME [ "." NAME ] [ "[" type { "," type } "]" ]   (a struct or enum, maybe from a module:
+                                                 http.Request; with type arguments: Pair[int, str])
+            | "[" type "]"                         (array)
+            | "{" type ":" type "}"                (map; keys: int, str, bool, or arrays, structs, enums,
+                                                 tuples of those)
+            | "(" type "," type { "," type } ")"   (tuple)
+            | "fn" "(" [ fparam { "," fparam } ] ")" [ type ]    (function; no type = returns nothing)
+fparam      = [ "mut" | "take" ] type</code></pre></div>
+<h2 id="statements"><a class="anchor" href="#statements" aria-hidden="true">#</a>Statements</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>block       = ":" ( NEWLINE INDENT stmt { stmt } DEDENT | simple NEWLINE )
+stmt        = if | while | for | parallel | match | "do" block | fn | simple NEWLINE
+if          = "if" expr block { "elif" expr block } [ "else" block ]
+while       = "while" expr block
+for         = "for" NAME "in" expr ".." expr block              (range: start inclusive, end exclusive)
+            | "for" NAME [ "," NAME ] "in" expr block             (array: element or index, element;
+                                                                  map: key or key, value; str: bytes)
+parallel    = "parallel" block                                   (each statement is a task; `do` groups)
+            | "parallel" "for" NAME "in" expr ".." expr block
+match       = "match" expr ":" NEWLINE INDENT arm { arm } DEDENT
+arm         = pattern { "|" pattern } block                  (alternatives bind no names)
+pattern     = "_" | INT | FLOAT | STR | "-" INT | "true" | "false"
+            | NAME { "." NAME } [ "(" [ NAME { "," NAME } ] ")" ]    (variant; "_" skips a value)
+simple      = "return" [ exprs ] | "break" | "continue" | "pass"
+            | NAME ":" type "=" expr                              (typed declaration)
+            | place "=" exprs                                     (declaration or assignment)
+            | target "," target { "," target } "=" exprs          (unpacks a tuple)
+            | place ( "+=" | "-=" | "*=" | "/=" | "%=" | "&amp;=" | "|=" | "^=" | "&lt;&lt;=" | "&gt;&gt;=" | "&gt;&gt;&gt;=" ) expr
+            | expr                                                (a call, for its effect)
+place       = NAME { "." ( NAME | INT ) | "[" expr "]" }
+target      = place | "_"
+exprs       = expr { "," expr }                                   (two or more make a tuple)</code></pre></div>
+<h2 id="expressions"><a class="anchor" href="#expressions" aria-hidden="true">#</a>Expressions</h2>
+<p>Lowest to highest precedence; all binary operators are left-associative.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>expr        = or_expr [ "if" or_expr "else" expr ]              (conditional: only one side runs)
+or_expr     = and_expr { "or" and_expr }
+and_expr    = cmp { "and" cmp }
+cmp         = bor { ( "==" | "!=" | "&lt;" | "&lt;=" | "&gt;" | "&gt;=" | "in" ) bor | "is" pattern }
+                                                          (`is` binds names only in if/while conditions)
+bor         = bxor { "|" bxor }
+bxor        = band { "^" band }
+band        = shift { "&amp;" shift }                            (binary `&amp;`: only after an operand)
+shift       = sum { ( "&lt;&lt;" | "&gt;&gt;" | "&gt;&gt;&gt;" ) sum }
+sum         = term { ( "+" | "-" ) term }
+term        = unary { ( "*" | "/" | "%" ) unary }
+unary       = "-" unary | "not" unary | "~" unary | "&amp;" place | postfix
+postfix     = primary { "." NAME [ args ] | "." INT | "[" index "]" | args | "?" }
+                                              (t.0: a tuple's value; x?: unwrap an Option / Result or return early)
+index       = expr | expr ".." [ expr ] | ".." [ expr ]
+            | expr "," expr { "," expr }              (type arguments: f[int, str](...), after a generic name)
+args        = "(" [ arg { "," arg } ] ")"
+arg         = expr | NAME "=" expr                               (named: only when building a struct/variant)
+primary     = INT | FLOAT | STR | FSTR | "true" | "false" | "null"
+            | NAME
+            | "[" [ expr { "," expr } ] "]"                      ([v] * n repeats v n times)
+            | "{" [ expr ":" expr { "," expr ":" expr } ] "}"
+            | "(" expr ")" | "(" expr "," expr { "," expr } [ "," ] ")"    (a tuple)
+            | "fn" "(" [ lparam { "," lparam } ] ")" expr        (lambda: one expression)
+lparam      = NAME [ ":" [ "mut" | "take" ] type ]</code></pre></div>
+<p>Notes:</p>
+<ul><li><code>not</code> binds tighter than <code>in</code> and <code>==</code>, so write <code>not (k in m)</code> and <code>not (a == b)</code>.</li><li><code>Name(...)</code> where <code>Name</code> is a struct builds a struct; <code>Enum.Variant(...)</code> builds a variant.</li><li><code>x.f(args)</code> calls <code>f(x, args)</code> (or a function-valued field <code>f</code> of struct <code>x</code>).</li><li><code>&amp;</code> before an operand is the <code>mut</code>-argument marker (<code>f(&amp;x)</code>); between two operands it is bitwise and.</li><li>There is no <code>c ? a : b</code> (write <code>a if c else b</code>), no <code>**</code>, no <code>//</code>, no <code>not in</code>, no <code>is not</code>.</li></ul>
+</article>
+<div class="pn"><a class="prev" href="builtins.html"><span>Previous</span>Builtin functions</a><a class="next" href="errors.html"><span>Next</span>Compiler errors</a></div>
+<footer>Source: <code>docs/grammar.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#tokens">Tokens</a></li><li class="l2"><a href="#program">Program</a></li><li class="l2"><a href="#types">Types</a></li><li class="l2"><a href="#statements">Statements</a></li><li class="l2"><a href="#expressions">Expressions</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="";</script>
+<script src="search.js"></script>
+<script src="site.js"></script>
+</body>
+</html>

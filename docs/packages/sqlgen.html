@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sqlgen · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/packages/sqlgen.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html" class="cur" aria-current="page">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="sqlgen"><a class="anchor" href="#sqlgen" aria-hidden="true">#</a>sqlgen</h1>
+<p>The <code>sqlgen</code> package turns SQL queries into typed Tern functions, like Go's sqlc. You write each query in plain SQL under a <code>-- name:</code> line. <code>sqlgen</code> asks PostgreSQL or SQLite for the types of its parameters and columns, and writes a module with a struct per result and a function per query. A misspelled column, a missing parameter, or a nullable column read as if it couldn't be <code>NULL</code> then fails when you generate or compile, not when the query runs in production.</p>
+<p>It is a first-party package: <code>import sqlgen</code>, nothing to install. It pairs with <a href="migrate.html">migrate</a>: point it at your migrations and it checks the queries against a scratch database built from them.</p>
+<h2 id="queries"><a class="anchor" href="#queries" aria-hidden="true">#</a>Queries</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- name: get_user :one
+-- One user by id.
+SELECT id, name, email FROM users WHERE id = @id;
+
+-- name: list_users :many
+SELECT id, name FROM users WHERE active = @active ORDER BY id LIMIT @max;
+
+-- name: rename_user :exec
+UPDATE users SET name = @name WHERE id = @id;</code></pre></div>
+<div class="table"><table><thead><tr><th>After the name</th><th>Generated function returns (PostgreSQL)</th><th>(SQLite)</th></tr></thead><tbody><tr><td><code>:one</code></td><td><code>Result[Option[Row], str]</code>: the first row, or <code>None</code></td><td><code>Option[Row]</code></td></tr><tr><td><code>:many</code></td><td><code>Result[[Row], str]</code></td><td><code>[Row]</code></td></tr><tr><td><code>:exec</code></td><td><code>Result[int, str]</code>: the rows changed</td><td><code>int</code></td></tr></tbody></table></div>
+<ul><li>Comment lines right under the <code>-- name:</code> line become the function's comment.</li><li>Parameters are <code>@name</code>; using a name twice passes one value. Numbered parameters work too (<code>$1</code> in PostgreSQL, <code>?1</code> or <code>?</code> in SQLite) and are called <code>arg1</code>, <code>arg2</code>, ...</li><li>A query that returns one column gives that column's values (<code>Option[int]</code>, <code>[str]</code>) instead of a one-field struct.</li><li>A query that returns every column of one table, in the table's order (<code>SELECT * FROM users</code>), uses that table's struct, <code>User</code>, and every such query shares it. Others get a struct of their own, named after the query: <code>GetUserRow</code>.</li><li>The function's first parameter is the database: <code>pool: pg.Pool</code> or <code>conn: sqlite.Db</code>. SQLite functions return plain values because <code>sqlite</code> errors are runtime errors.</li></ul>
+<h2 id="types-and-null"><a class="anchor" href="#types-and-null" aria-hidden="true">#</a>Types and NULL</h2>
+<div class="table"><table><thead><tr><th>PostgreSQL</th><th>SQLite (declared type)</th><th>Tern</th></tr></thead><tbody><tr><td><code>int2</code>, <code>int4</code>, <code>int8</code>, <code>oid</code></td><td>contains <code>INT</code></td><td><code>int</code></td></tr><tr><td><code>float4</code>, <code>float8</code>, <code>numeric</code></td><td><code>REAL</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>NUMERIC</code>, <code>DECIMAL</code></td><td><code>float</code></td></tr><tr><td><code>bool</code></td><td>contains <code>BOOL</code></td><td><code>bool</code></td></tr><tr><td><code>timestamptz</code>, <code>timestamp</code></td><td></td><td><code>float</code>: seconds since 1970, UTC, like <code>time.now()</code> (parameters too)</td></tr><tr><td>an enum type (<code>CREATE TYPE mood AS ENUM ...</code>)</td><td></td><td>a Tern <code>enum</code> sqlgen writes for it (parameters too)</td></tr><tr><td><code>int8[]</code>, <code>text[]</code>, ... (arrays of the types above)</td><td></td><td><code>[int]</code>, <code>[str]</code>, ... (parameters too)</td></tr><tr><td>everything else: <code>text</code>, <code>date</code>, <code>uuid</code>, <code>json</code>, enums</td><td>everything else (SQLite timestamps too)</td><td><code>str</code> (as the database writes it)</td></tr></tbody></table></div>
+<p>A column is an <code>Option</code> unless it is a table column declared <code>NOT NULL</code>. In a query with a <code>LEFT</code>, <code>RIGHT</code>, or <code>FULL</code> join, every column is an <code>Option</code>, because the join can fill it with <code>NULL</code>. When you know better, say so in the column's name, in double quotes:</p>
+<div class="table"><table><thead><tr><th>Name</th><th>Means</th></tr></thead><tbody><tr><td><code>count(*) AS "total!"</code></td><td>never <code>NULL</code>: a plain <code>int</code></td></tr><tr><td><code>u.email AS "email?"</code></td><td>may be <code>NULL</code>: an <code>Option</code></td></tr><tr><td><code>count(*) AS "n!: int"</code></td><td>the type too (SQLite, where an expression has no declared type and is read as <code>str</code>)</td></tr></tbody></table></div>
+<p>The notes are removed from the SQL that runs, so the column is called <code>total</code>, <code>email</code>, <code>n</code>.</p>
+<h2 id="enums"><a class="anchor" href="#enums" aria-hidden="true">#</a>Enums</h2>
+<p>A PostgreSQL enum type becomes a Tern enum in the generated module, with a function giving each variant's label:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>CREATE TYPE order_status AS ENUM ('pending', 'in_progress', 'shipped');
+
+# the PostgreSQL enum order_status
+enum OrderStatus:
+    Pending
+    InProgress
+    Shipped
+
+# the label PostgreSQL knows a OrderStatus by
+fn order_status_label(v: OrderStatus) str</code></pre></div>
+<p>Columns of the type read into it (<code>Option[OrderStatus]</code> when they can be <code>NULL</code>), and parameters of the type take it: <code>orders_with(pool, orders_db.OrderStatus.Shipped)</code>. A <code>match</code> on it must cover every variant, so adding a label and regenerating shows every place that needs to handle it. Labels become variant names by capitalizing their words (<code>in_progress</code>, <code>in progress</code> and <code>in-progress</code> are all <code>InProgress</code>); a label with other characters (<code>a.b</code>) or starting with a digit is an error that names it.</p>
+<p>Your own enums work in rows too, without sqlgen: <code>pg.fetch</code> and <code>sqlite.query_into</code> fill an enum field from a text column, matching the text to a variant name the same way (so a <code>TEXT</code> column holding <code>shipped</code> fills <code>OrderStatus.Shipped</code>).</p>
+<p>PostgreSQL knows its parameters' types. SQLite doesn't, so <code>sqlgen</code> reads them from where each one is used: compared with a column (<code>id = @id</code>), inserted into one (<code>INSERT INTO posts (user_id) VALUES (@user_id)</code>), or after <code>LIMIT</code> / <code>OFFSET</code>. Anything else is a <code>str</code>; write <code>@min:float</code> to say otherwise.</p>
+<p>A parameter that may be <code>NULL</code> ends in <code>?</code>: <code>UPDATE users SET email = @email? WHERE id = @id</code> makes <code>email</code> an <code>Option[str]</code>, and <code>None</code> sends <code>NULL</code> (through <code>pg.NULL</code> / <code>sqlite.NULL</code>).</p>
+<h2 id="what-it-writes"><a class="anchor" href="#what-it-writes" aria-hidden="true">#</a>What it writes</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sqlite
+<span class="k">import</span> fs
+<span class="k">import</span> sqlgen
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    dir <span class="o">=</span> fs.<span class="f">temp_dir</span>(<span class="s">"sqlgen_doc"</span>)
+    d <span class="o">=</span> sqlite.<span class="f">open</span>(dir <span class="o">+</span> <span class="s">"/app.db"</span>)
+    d.<span class="f">run_script</span>(<span class="s">"CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT, active BOOLEAN NOT NULL DEFAULT 1)"</span>)?
+    fs.<span class="f">write</span>(dir <span class="o">+</span> <span class="s">"/queries.sql"</span>, <span class="s">"-- name: get_user :one\nSELECT id, name, email FROM users WHERE id = @id;\n\n-- name: count_active :one\nSELECT count(*) AS \"n!: int\" FROM users WHERE active = @active;\n\n-- name: rename_user :exec\nUPDATE users SET name = @name WHERE id = @id;\n"</span>)
+    code <span class="o">=</span> sqlgen.<span class="f">generate</span>(sqlgen.<span class="f">sqlite</span>(d), [dir <span class="o">+</span> <span class="s">"/queries.sql"</span>])?
+    <span class="f">print</span>(code)
+    fs.<span class="f">remove_all</span>(dir)
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="n">0</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code># Code generated by sqlgen from queries.sql. DO NOT EDIT.
+
+import sqlite
+
+struct GetUserRow:
+    id: int
+    name: str
+    email: Option[str]
+
+fn get_user(conn: sqlite.Db, id: int) Option[GetUserRow]:
+    _rows: [GetUserRow] = []
+    conn.query_into("SELECT id, name, email FROM users WHERE id = ?1", [str(id)], &amp;_rows)
+    if len(_rows) == 0:
+        return None
+    return Some(_rows[0])
+
+struct _CountActiveRow:
+    n: int
+
+fn count_active(conn: sqlite.Db, active: bool) Option[int]:
+    _rows: [_CountActiveRow] = []
+    conn.query_into("SELECT count(*) AS \"n\" FROM users WHERE active = ?1", ["1" if active else "0"], &amp;_rows)
+    if len(_rows) == 0:
+        return None
+    return Some(_rows[0].n)
+
+fn rename_user(conn: sqlite.Db, name: str, id: int) int:
+    conn.exec("UPDATE users SET name = ?1 WHERE id = ?2", [name, str(id)])
+    return conn.query("SELECT changes() AS n", [])[0]["n"].to_int(0)
+</code></pre></div>
+<p>For PostgreSQL, the same queries become functions on a <code>pg.Pool</code> that return <code>Result</code>s:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">get_user</span>(pool: pg.<span class="t">Pool</span>, id: <span class="t">int</span>) <span class="t">Result</span>[<span class="t">Option</span>[<span class="t">GetUserRow</span>], <span class="t">str</span>]:
+    <span class="k">return</span> pool.fetch_one[<span class="t">GetUserRow</span>](<span class="s">"SELECT id, name, email FROM users WHERE id = $1"</span>, [<span class="t">str</span>(id)])</code></pre></div>
+<h2 id="running-it"><a class="anchor" href="#running-it" aria-hidden="true">#</a>Running it</h2>
+<p><code>tern sqlgen</code> is the command. The database is <code>--db URL</code>, or <code>$DATABASE_URL</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$ tern sqlgen --db sqlite:app.db queries.sql -o users_db.tn
+wrote users_db.tn
+$ export DATABASE_URL=postgres://app:secret@localhost/app
+$ tern sqlgen queries.sql -o users_db.tn --migrations migrations
+wrote users_db.tn
+$ tern sqlgen queries.sql -o users_db.tn --migrations migrations --check
+users_db.tn is up to date</code></pre></div>
+<p>The same command is a function too, for a build script of your own: <code>sqlgen.command(url, ["queries.sql", "-o", "users_db.tn"])</code>, or <code>sqlgen.cli(url)</code> to take the arguments from the program's.</p>
+<ul><li>Without <code>--migrations</code>, the queries are checked against the database as it is.</li><li>With <code>--migrations DIR</code>, <code>sqlgen</code> creates a scratch database, applies the migrations with <a href="migrate.html">migrate</a>, generates, and drops it. For PostgreSQL this needs permission to create databases; for SQLite it's a temporary file. Nothing needs a schema set up beforehand, so it works in CI.</li><li><code>--check</code> writes nothing, and fails if the file isn't what <code>sqlgen</code> would write: run it in CI so the generated code never falls behind the SQL.</li><li>Several <code>.sql</code> files make one module.</li></ul>
+<p>Then import the module like any other and call its functions:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> pg
+<span class="k">import</span> users_db                  <span class="c"># the generated module</span>
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    pool <span class="o">=</span> pg.<span class="f">pool</span>(<span class="s">"postgres://app:secret@localhost/app"</span>, <span class="n">16</span>)
+    <span class="k">if</span> users_db.<span class="f">get_user</span>(pool, <span class="n">7</span>)? is <span class="t">Some</span>(u):
+        <span class="f">print</span>(u.name, u.email.<span class="f">unwrap_or</span>(<span class="s">"(no email)"</span>))
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="n">0</span>)</code></pre></div>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">cli</span>(url: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]                        the command: <span class="t">QUERIES</span>.sql <span class="o">..</span>. <span class="o">-</span>o <span class="t">OUT</span>.tn [<span class="o">-</span><span class="o">-</span>migrations <span class="t">DIR</span>] [<span class="o">-</span><span class="o">-</span>check]
+<span class="k">fn</span> <span class="f">postgres</span>(p: pg.<span class="t">Pool</span>) <span class="t">Database</span>
+<span class="k">fn</span> <span class="f">sqlite</span>(d: sqlite.<span class="t">Db</span>) <span class="t">Database</span>
+<span class="k">fn</span> <span class="f">generate</span>(dbase: <span class="t">Database</span>, files: [<span class="t">str</span>]) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]              the module's text
+<span class="k">fn</span> <span class="f">generate_at</span>(url: <span class="t">str</span>, files: [<span class="t">str</span>], migrations: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]   what cli runs
+<span class="k">fn</span> <span class="f">parse_queries</span>(file: <span class="t">str</span>, text: <span class="t">str</span>) <span class="t">Result</span>[[<span class="t">Query</span>], <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">describe_query</span>(dbase: <span class="t">Database</span>, q: <span class="t">Query</span>, cols: {<span class="t">str</span>: <span class="t">str</span>}) <span class="t">Result</span>[<span class="t">Described</span>, <span class="t">str</span>]</code></pre></div>
+<p>Errors name the file, line, and query:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>queries.sql:12: get_user: ERROR 42703: column "emial" does not exist
+queries.sql:20: totals: column `sum(x)` can't be a field name; name it with AS, like `count(*) AS n`</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../packages/migrate.html"><span>Previous</span>migrate</a><a class="next" href="../packages/auth.html"><span>Next</span>auth</a></div>
+<footer>Source: <code>docs/packages/sqlgen.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#queries">Queries</a></li><li class="l2"><a href="#types-and-null">Types and NULL</a></li><li class="l2"><a href="#enums">Enums</a></li><li class="l2"><a href="#what-it-writes">What it writes</a></li><li class="l2"><a href="#running-it">Running it</a></li><li class="l2"><a href="#functions">Functions</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

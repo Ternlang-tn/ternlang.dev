@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>crypto · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/crypto.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html" class="cur" aria-current="page">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="crypto"><a class="anchor" href="#crypto" aria-hidden="true">#</a>crypto</h1>
+<p>The <code>crypto</code> module has the pieces a web service needs to handle secrets: SHA-256 and SHA-512, HMAC signatures, password hashing with Argon2id, PBKDF2, secure random bytes and numbers, constant-time comparison, hex and base64, and UUIDs (v4 random, v7 time-ordered). It is self-contained C inside the Tern runtime (no OpenSSL), works on every target including WebAssembly, and is compiled into a program only when it imports <code>crypto</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(crypto.<span class="f">hex</span>(crypto.<span class="f">sha256</span>(<span class="s">"hello"</span>)))
+    token <span class="o">=</span> crypto.<span class="f">base64url</span>(crypto.<span class="f">random_bytes</span>(<span class="n">32</span>))
+    <span class="f">print</span>(<span class="f">len</span>(token))
+    h <span class="o">=</span> crypto.<span class="f">hash_password</span>(<span class="s">"hunter2"</span>)
+    <span class="f">print</span>(crypto.<span class="f">verify_password</span>(<span class="s">"hunter2"</span>, h), crypto.<span class="f">verify_password</span>(<span class="s">"hunter3"</span>, h))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+43
+true false</code></pre></div>
+<h2 id="bytes-in-strings"><a class="anchor" href="#bytes-in-strings" aria-hidden="true">#</a>Bytes in strings</h2>
+<p>Hashes, MACs, keys and random bytes are <strong>raw bytes</strong>, returned in a <code>str</code> (Tern strings hold any bytes, including zeros). Printing one shows unreadable characters; turn it into text with <code>crypto.hex</code> or <code>crypto.base64</code> first, and back with <code>crypto.unhex</code> or <code>crypto.base64_decode</code>. <code>len(s)</code> is the number of bytes.</p>
+<h2 id="hashes-and-macs"><a class="anchor" href="#hashes-and-macs" aria-hidden="true">#</a>Hashes and MACs</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sha256</span>(data: <span class="t">str</span>) <span class="t">str</span>                     <span class="n">32</span> bytes
+<span class="k">fn</span> <span class="f">sha512</span>(data: <span class="t">str</span>) <span class="t">str</span>                     <span class="n">64</span> bytes
+<span class="k">fn</span> <span class="f">hmac_sha256</span>(key: <span class="t">str</span>, msg: <span class="t">str</span>) <span class="t">str</span>       <span class="n">32</span> bytes
+<span class="k">fn</span> <span class="f">hmac_sha512</span>(key: <span class="t">str</span>, msg: <span class="t">str</span>) <span class="t">str</span>       <span class="n">64</span> bytes
+<span class="k">fn</span> <span class="f">sha1</span>(data: <span class="t">str</span>) <span class="t">str</span>                       <span class="n">20</span> bytes
+<span class="k">fn</span> <span class="f">hmac_sha1</span>(key: <span class="t">str</span>, msg: <span class="t">str</span>) <span class="t">str</span>         <span class="n">20</span> bytes</code></pre></div>
+<p>SHA-1 is broken for collision resistance: don't use it for signatures or content addressing. HMAC-SHA1 is still sound, and it's what TOTP codes (RFC 6238, every authenticator app) and some older protocols require.</p>
+<p>SHA-256 uses the CPU's SHA instructions where it has them (Apple silicon and other ARMv8 chips). To check a signature someone sent you, compute the expected MAC and compare with <code>crypto.equal</code>, never <code>==</code>: <code>==</code> stops at the first differing byte, which leaks through timing how much of a forged signature was right.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">sign</span>(secret: <span class="t">str</span>, body: <span class="t">str</span>) <span class="t">str</span>:
+    <span class="k">return</span> crypto.<span class="f">hex</span>(crypto.<span class="f">hmac_sha256</span>(secret, body))
+
+<span class="k">fn</span> <span class="f">verify</span>(secret: <span class="t">str</span>, body: <span class="t">str</span>, sig: <span class="t">str</span>) <span class="t">bool</span>:
+    <span class="k">return</span> crypto.<span class="f">equal</span>(<span class="f">sign</span>(secret, body), sig)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="f">sign</span>(<span class="s">"key"</span>, <span class="s">"The quick brown fox jumps over the lazy dog"</span>)
+    <span class="f">print</span>(s)
+    <span class="f">print</span>(<span class="f">verify</span>(<span class="s">"key"</span>, <span class="s">"The quick brown fox jumps over the lazy dog"</span>, s))
+    <span class="f">print</span>(<span class="f">verify</span>(<span class="s">"key"</span>, <span class="s">"The quick brown fox jumps over the lazy cat"</span>, s))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8
+true
+false</code></pre></div>
+<h2 id="passwords"><a class="anchor" href="#passwords" aria-hidden="true">#</a>Passwords</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">hash_password</span>(pw: <span class="t">str</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">verify_password</span>(pw: <span class="t">str</span>, hash: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p><code>hash_password</code> hashes with <strong>Argon2id</strong> (RFC 9106), the algorithm OWASP recommends, using a fresh 16-byte random salt and OWASP's cost settings (19 MiB of memory, 2 passes, 1 lane). The result is a PHC string that records the algorithm, the cost and the salt, so it is all you need to store:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$argon2id$v=19$m=19456,t=2,p=1$&lt;salt in base64&gt;$&lt;hash in base64&gt;</code></pre></div>
+<p>It is the same format the argon2 libraries of other languages use (Rust's <code>argon2</code>, Go's <code>alexedwards/argon2id</code>, Python's <code>argon2-cffi</code>), so hashes move between them. <code>verify_password</code> reads the cost from the string, so hashes made with other settings still verify; it returns <code>false</code> for a wrong password and for a string it can't parse.</p>
+<p>Hashing a password takes about 20-40 ms of CPU on purpose. Called from a task (a web handler, say), the work runs on the blocking-thread pool like <code>task.blocking</code>, so the other tasks on that core keep serving requests meanwhile.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    stored <span class="o">=</span> crypto.<span class="f">hash_password</span>(<span class="s">"correct horse battery staple"</span>)
+    <span class="f">print</span>(stored.<span class="f">starts_with</span>(<span class="s">"$argon2id$v=19$m=19456,t=2,p=1$"</span>))
+    <span class="f">print</span>(crypto.<span class="f">verify_password</span>(<span class="s">"correct horse battery staple"</span>, stored))
+    <span class="f">print</span>(crypto.<span class="f">verify_password</span>(<span class="s">"Tr0ub4dor&amp;3"</span>, stored))
+    <span class="f">print</span>(crypto.<span class="f">hash_password</span>(<span class="s">"same"</span>) <span class="o">!=</span> crypto.<span class="f">hash_password</span>(<span class="s">"same"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true
+true
+false
+true</code></pre></div>
+<h2 id="key-derivation"><a class="anchor" href="#key-derivation" aria-hidden="true">#</a>Key derivation</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">argon2id</span>(pw: <span class="t">str</span>, salt: <span class="t">str</span>, t: <span class="t">int</span>, m_kib: <span class="t">int</span>, p: <span class="t">int</span>, length: <span class="t">int</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">pbkdf2_sha256</span>(pw: <span class="t">str</span>, salt: <span class="t">str</span>, iterations: <span class="t">int</span>, length: <span class="t">int</span>) <span class="t">str</span></code></pre></div>
+<p>The raw functions, for deriving encryption keys or talking to a protocol that fixes the parameters (PostgreSQL's SCRAM login uses PBKDF2). <code>argon2id</code> needs a salt of at least 8 bytes, <code>t &gt;= 1</code> passes, <code>m_kib</code> KiB of memory (at least <code>8 * p</code>), and <code>p</code> lanes; the result has <code>length</code> bytes. Bad parameters are a runtime error.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(crypto.<span class="f">hex</span>(crypto.<span class="f">pbkdf2_sha256</span>(<span class="s">"password"</span>, <span class="s">"salt"</span>, <span class="n">4096</span>, <span class="n">32</span>)))
+    <span class="f">print</span>(crypto.<span class="f">hex</span>(crypto.<span class="f">argon2id</span>(<span class="s">"password"</span>, <span class="s">"somesalt"</span>, <span class="n">2</span>, <span class="n">65536</span>, <span class="n">1</span>, <span class="n">32</span>)))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a
+09316115d5cf24ed5a15a31a3ba326e5cf32edc24702987c02b6566f61913cf7</code></pre></div>
+<h2 id="random-numbers"><a class="anchor" href="#random-numbers" aria-hidden="true">#</a>Random numbers</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">random_bytes</span>(n: <span class="t">int</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">random_int</span>(lo: <span class="t">int</span>, hi: <span class="t">int</span>) <span class="t">int</span>          lo<span class="o">..</span>hi, both included</code></pre></div>
+<p>From the operating system's secure generator (<code>arc4random_buf</code> on macOS, iOS, Android and the BSDs, <code>getrandom</code> on Linux, WASI <code>random_get</code> on WebAssembly). Use these, not the <code>random</code> module, for tokens, keys, salts and anything an attacker must not guess. <code>random_int</code> has no modulo bias.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    session <span class="o">=</span> crypto.<span class="f">hex</span>(crypto.<span class="f">random_bytes</span>(<span class="n">16</span>))
+    <span class="f">print</span>(<span class="f">len</span>(session))
+    code <span class="o">=</span> crypto.<span class="f">random_int</span>(<span class="n">100000</span>, <span class="n">999999</span>)      <span class="c"># a 6-digit one-time code</span>
+    <span class="f">print</span>(code <span class="o">&gt;=</span> <span class="n">100000</span> <span class="k">and</span> code <span class="o">&lt;=</span> <span class="n">999999</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>32
+true</code></pre></div>
+<h2 id="uuids"><a class="anchor" href="#uuids" aria-hidden="true">#</a>UUIDs</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">uuid4</span>() <span class="t">str</span>        random
+<span class="k">fn</span> <span class="f">uuid7</span>() <span class="t">str</span>        <span class="t">Unix</span> milliseconds, then random bits (<span class="t">RFC</span> <span class="n">9562</span>)</code></pre></div>
+<p>Both return the 36-character text form. Version 7 UUIDs sort in the order they were made (within one millisecond, a thread's UUIDs count up), so they make good database keys: new rows land at the end of the index instead of all over it.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    a <span class="o">=</span> crypto.<span class="f">uuid7</span>()
+    b <span class="o">=</span> crypto.<span class="f">uuid7</span>()
+    <span class="f">print</span>(<span class="f">len</span>(a), a[<span class="n">14</span>], a <span class="o">&lt;</span> b)
+    <span class="f">print</span>(crypto.<span class="f">uuid4</span>()[<span class="n">14</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>36 7 true
+4</code></pre></div>
+<h2 id="encryption"><a class="anchor" href="#encryption" aria-hidden="true">#</a>Encryption</h2>
+<p><code>seal</code> encrypts with ChaCha20-Poly1305 (RFC 8439), which is authenticated: <code>unseal</code> fails if a single byte of the sealed data was changed, or if the key is wrong, instead of returning garbage. The key is 32 random bytes; keep it outside the data it protects (an environment variable, a secrets manager, a file readable only by the service).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    key <span class="o">=</span> crypto.<span class="f">random_bytes</span>(<span class="n">32</span>)
+    sealed <span class="o">=</span> crypto.<span class="f">seal</span>(key, <span class="s">"sk-ant-api03-secret"</span>)
+    <span class="f">print</span>(<span class="f">len</span>(sealed), crypto.<span class="f">unseal</span>(key, sealed))
+    tampered <span class="o">=</span> sealed[<span class="o">..</span><span class="n">20</span>] <span class="o">+</span> <span class="s">"!"</span> <span class="o">+</span> sealed[<span class="n">21</span><span class="o">..</span>]
+    <span class="f">print</span>(crypto.<span class="f">unseal</span>(key, tampered) <span class="o">==</span> <span class="s">""</span>, crypto.<span class="f">error</span>())
+    <span class="f">print</span>(crypto.<span class="f">try_unseal</span>(crypto.<span class="f">random_bytes</span>(<span class="n">32</span>), sealed).<span class="f">is_err</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>47 sk-ant-api03-secret
+true crypto: open: the data was changed, or the key is wrong
+true</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">seal</span>(key: <span class="t">str</span>, plaintext: <span class="t">str</span>) <span class="t">str</span>          a random <span class="n">12</span><span class="o">-</span>byte nonce <span class="o">+</span> ciphertext <span class="o">+</span> <span class="n">16</span><span class="o">-</span>byte tag
+<span class="k">fn</span> <span class="f">unseal</span>(key: <span class="t">str</span>, sealed: <span class="t">str</span>) <span class="t">str</span>           <span class="s">""</span> <span class="k">and</span> crypto.<span class="f">error</span>() <span class="k">if</span> it doesn't check out
+<span class="k">fn</span> <span class="f">try_unseal</span>(key: <span class="t">str</span>, sealed: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]
+<span class="k">fn</span> <span class="f">chacha20_poly1305</span>(key: <span class="t">str</span>, nonce: <span class="t">str</span>, aad: <span class="t">str</span>, plaintext: <span class="t">str</span>) <span class="t">str</span>      ciphertext <span class="o">+</span> tag
+<span class="k">fn</span> <span class="f">chacha20_poly1305_open</span>(key: <span class="t">str</span>, nonce: <span class="t">str</span>, aad: <span class="t">str</span>, sealed: <span class="t">str</span>) <span class="t">str</span></code></pre></div>
+<p>The raw forms take your own 12-byte nonce, which must never repeat under the same key (a counter works; <code>seal</code>'s random nonces are safe for billions of messages per key), and additional data that is authenticated but not encrypted (a record id, so a sealed value can't be moved to another record).</p>
+<h2 id="comparing-secrets"><a class="anchor" href="#comparing-secrets" aria-hidden="true">#</a>Comparing secrets</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">equal</span>(a: <span class="t">str</span>, b: <span class="t">str</span>) <span class="t">bool</span></code></pre></div>
+<p>True when <code>a</code> and <code>b</code> are the same bytes. It takes the same time wherever they differ (only the lengths can be learned from timing), so use it for MACs, tokens and API keys.</p>
+<h2 id="hex-and-base64"><a class="anchor" href="#hex-and-base64" aria-hidden="true">#</a>Hex and base64</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">hex</span>(data: <span class="t">str</span>) <span class="t">str</span>                 lowercase
+<span class="k">fn</span> <span class="f">unhex</span>(s: <span class="t">str</span>) <span class="t">str</span>                  either case
+<span class="k">fn</span> <span class="f">base64</span>(data: <span class="t">str</span>) <span class="t">str</span>              standard alphabet, with <span class="o">=</span> padding
+<span class="k">fn</span> <span class="f">base64_decode</span>(s: <span class="t">str</span>) <span class="t">str</span>          padding optional; spaces <span class="k">and</span> newlines skipped
+<span class="k">fn</span> <span class="f">base64url</span>(data: <span class="t">str</span>) <span class="t">str</span>           <span class="o">-</span> <span class="k">and</span> _ instead of <span class="o">+</span> <span class="k">and</span> <span class="o">/</span>, no padding (<span class="t">URLs</span>, <span class="t">JWTs</span>)
+<span class="k">fn</span> <span class="f">base64url_decode</span>(s: <span class="t">str</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">error</span>() <span class="t">str</span></code></pre></div>
+<p>A decoder given bad input returns <code>""</code> and <code>crypto.error()</code> says why; after a successful call <code>crypto.error()</code> is <code>""</code> (so you can tell a bad input from an empty one).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> crypto
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(crypto.<span class="f">base64</span>(<span class="s">"hello?"</span>), crypto.<span class="f">base64url</span>(<span class="s">"hello?"</span>))
+    <span class="f">print</span>(crypto.<span class="f">base64_decode</span>(<span class="s">"aGVsbG8/"</span>))
+    <span class="f">print</span>(crypto.<span class="f">hex</span>(<span class="s">"AZ"</span>), crypto.<span class="f">unhex</span>(<span class="s">"415a"</span>))
+    bad <span class="o">=</span> crypto.<span class="f">unhex</span>(<span class="s">"xyz"</span>)
+    <span class="f">print</span>(bad <span class="o">==</span> <span class="s">""</span>, crypto.<span class="f">error</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>aGVsbG8/ aGVsbG8_
+hello?
+415a AZ
+true crypto.unhex: odd number of hex digits</code></pre></div>
+<h2 id="with-result"><a class="anchor" href="#with-result" aria-hidden="true">#</a>With Result</h2>
+<p><code>try_unhex(s)</code>, <code>try_base64_decode(s)</code> and <code>try_base64url_decode(s)</code> return <code>Result[str, str]</code>: <code>key = crypto.try_base64_decode(env_key)?</code>, with errors like <code>"crypto: base64_decode: not base64"</code>.</p>
+<h2 id="performance"><a class="anchor" href="#performance" aria-hidden="true">#</a>Performance</h2>
+<p>Single core, Apple M-series, against Rust (<code>sha2</code>, <code>hmac</code>, <code>argon2</code> crates) and Go (<code>crypto/sha256</code>, <code>golang.org/x/crypto/argon2</code>); the programs are in <code>bench/std/</code>:</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Go</th><th>Rust</th></tr></thead><tbody><tr><td>SHA-256, 64 MiB</td><td>1937 MB/s</td><td>2042 MB/s</td><td>1930 MB/s</td></tr><tr><td>HMAC-SHA256 of 64 bytes</td><td>140 ns</td><td>416 ns</td><td>140 ns</td></tr><tr><td>Argon2id, m=19 MiB t=2 p=1 (<code>hash_password</code>)</td><td>20.7 ms</td><td>40.5 ms</td><td>21.6 ms</td></tr><tr><td>PBKDF2-SHA256, 600,000 iterations</td><td>38.1 ms</td><td>68.2 ms</td><td>47.2 ms</td></tr><tr><td>ChaCha20-Poly1305, 1 MiB messages</td><td>678 MB/s</td><td>1238 MB/s (assembly)</td><td>713 MB/s (<code>chacha20poly1305</code>)</td></tr></tbody></table></div>
+</article>
+<div class="pn"><a class="prev" href="../std/http.html"><span>Previous</span>http</a><a class="next" href="../std/compress.html"><span>Next</span>compress</a></div>
+<footer>Source: <code>docs/std/crypto.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#bytes-in-strings">Bytes in strings</a></li><li class="l2"><a href="#hashes-and-macs">Hashes and MACs</a></li><li class="l2"><a href="#passwords">Passwords</a></li><li class="l2"><a href="#key-derivation">Key derivation</a></li><li class="l2"><a href="#random-numbers">Random numbers</a></li><li class="l2"><a href="#uuids">UUIDs</a></li><li class="l2"><a href="#encryption">Encryption</a></li><li class="l2"><a href="#comparing-secrets">Comparing secrets</a></li><li class="l2"><a href="#hex-and-base64">Hex and base64</a></li><li class="l2"><a href="#with-result">With Result</a></li><li class="l2"><a href="#performance">Performance</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

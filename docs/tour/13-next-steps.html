@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13. Where to go next · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/13-next-steps.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html" class="cur" aria-current="page">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="13-where-to-go-next"><a class="anchor" href="#13-where-to-go-next" aria-hidden="true">#</a>13. Where to go next</h1>
+<p>You have now seen all of Tern: values and types, control flow, functions, structs, arrays and maps, strings, enums, the value rules with <code>mut</code> and <code>&amp;</code>, closures, parallelism, and modules. This last chapter puts everything together in one complete program, then points you to the rest of the documentation, depending on what you want to build.</p>
+<h2 id="a-complete-program"><a class="anchor" href="#a-complete-program" aria-hidden="true">#</a>A complete program</h2>
+<p>This program reads a small warehouse log, applies it to an inventory, and prints a report. It uses almost every feature from the tour: structs and an enum for the data, <code>match</code> to apply events, <code>mut</code> to update the inventory in place, a map to index items by SKU, string parsing for the input, a <code>parallel:</code> block for two independent summaries, closures with <code>filter</code> and <code>sort_by</code>, and the <code>fmt</code> module for the table.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fmt
+
+<span class="k">struct</span> <span class="t">Item</span>:
+    sku: <span class="t">str</span>
+    name: <span class="t">str</span>
+    qty: <span class="t">int</span>
+    cents: <span class="t">int</span>
+
+<span class="k">enum</span> <span class="t">Event</span>:
+    <span class="t">Received</span>(sku: <span class="t">str</span>, n: <span class="t">int</span>)
+    <span class="t">Shipped</span>(sku: <span class="t">str</span>, n: <span class="t">int</span>)
+    <span class="t">Bad</span>(line: <span class="t">str</span>)
+
+<span class="k">fn</span> <span class="f">parse</span>(line: <span class="t">str</span>) <span class="t">Event</span>:
+    parts <span class="o">=</span> line.<span class="f">split</span>(<span class="s">" "</span>)
+    n <span class="o">=</span> <span class="o">-</span><span class="n">1</span>
+    <span class="k">if</span> <span class="f">len</span>(parts) <span class="o">==</span> <span class="n">3</span>:
+        n <span class="o">=</span> parts[<span class="n">2</span>].<span class="f">to_int</span>(<span class="o">-</span><span class="n">1</span>)
+    <span class="k">if</span> n <span class="o">&lt;</span> <span class="n">0</span>:
+        <span class="k">return</span> <span class="t">Event</span>.<span class="t">Bad</span>(line)
+    <span class="k">match</span> parts[<span class="n">0</span>]:
+        <span class="s">"in"</span>:
+            <span class="k">return</span> <span class="t">Event</span>.<span class="t">Received</span>(parts[<span class="n">1</span>], n)
+        <span class="s">"out"</span>:
+            <span class="k">return</span> <span class="t">Event</span>.<span class="t">Shipped</span>(parts[<span class="n">1</span>], n)
+        _:
+            <span class="k">return</span> <span class="t">Event</span>.<span class="t">Bad</span>(line)
+
+<span class="k">fn</span> <span class="f">apply</span>(items: <span class="k">mut</span> [<span class="t">Item</span>], index: {<span class="t">str</span>: <span class="t">int</span>}, e: <span class="t">Event</span>) <span class="t">str</span>:
+    <span class="k">match</span> e:
+        <span class="t">Received</span>(sku, n):
+            <span class="k">if</span> <span class="k">not</span> (sku <span class="k">in</span> index):
+                <span class="k">return</span> <span class="s">"unknown sku "</span> <span class="o">+</span> sku
+            items[index[sku]].qty <span class="o">+</span><span class="o">=</span> n
+        <span class="t">Shipped</span>(sku, n):
+            <span class="k">if</span> <span class="k">not</span> (sku <span class="k">in</span> index):
+                <span class="k">return</span> <span class="s">"unknown sku "</span> <span class="o">+</span> sku
+            i <span class="o">=</span> index[sku]
+            <span class="k">if</span> items[i].qty <span class="o">&lt;</span> n:
+                <span class="k">return</span> <span class="s">f"only {items[i].qty} of {sku} left, can't ship {n}"</span>
+            items[i].qty <span class="o">-</span><span class="o">=</span> n
+        <span class="t">Bad</span>(line):
+            <span class="k">return</span> <span class="s">"can't read: "</span> <span class="o">+</span> line
+    <span class="k">return</span> <span class="s">""</span>
+
+<span class="k">fn</span> <span class="f">value</span>(items: [<span class="t">Item</span>]) <span class="t">int</span>:
+    t <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> it <span class="k">in</span> items:
+        t <span class="o">+</span><span class="o">=</span> it.qty <span class="o">*</span> it.cents
+    <span class="k">return</span> t
+
+<span class="k">fn</span> <span class="f">main</span>():
+    items <span class="o">=</span> [<span class="t">Item</span>(<span class="s">"A1"</span>, <span class="s">"lamp"</span>, <span class="n">4</span>, <span class="n">2500</span>), <span class="t">Item</span>(<span class="s">"B2"</span>, <span class="s">"rope"</span>, <span class="n">12</span>, <span class="n">899</span>), <span class="t">Item</span>(<span class="s">"C3"</span>, <span class="s">"tent"</span>, <span class="n">1</span>, <span class="n">15900</span>)]
+    index: {<span class="t">str</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">for</span> i, it <span class="k">in</span> items:
+        index[it.sku] <span class="o">=</span> i
+    log <span class="o">=</span> <span class="s">"in A1 6\nout B2 10\nout C3 2\nin Z9 1\nout A1 x\nout C3 1"</span>
+    problems: [<span class="t">str</span>] <span class="o">=</span> []
+    <span class="k">for</span> line <span class="k">in</span> log.<span class="f">split</span>(<span class="s">"\n"</span>):
+        msg <span class="o">=</span> <span class="f">apply</span>(<span class="o">&amp;</span>items, index, <span class="f">parse</span>(line))
+        <span class="k">if</span> msg <span class="o">!=</span> <span class="s">""</span>:
+            problems.<span class="f">push</span>(msg)
+    <span class="k">parallel</span>:
+        total <span class="o">=</span> <span class="f">value</span>(items)
+        low <span class="o">=</span> items.<span class="f">filter</span>(<span class="k">fn</span>(it) it.qty <span class="o">&lt;</span> <span class="n">3</span>).<span class="f">map</span>(<span class="k">fn</span>(it) it.name)
+    <span class="k">for</span> it <span class="k">in</span> items.<span class="f">sort_by</span>(<span class="k">fn</span>(it) <span class="o">-</span>it.qty <span class="o">*</span> it.cents):
+        cost <span class="o">=</span> fmt.<span class="f">cents</span>(it.qty <span class="o">*</span> it.cents)
+        <span class="f">print</span>(fmt.<span class="f">pad_right</span>(it.name, <span class="n">6</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(<span class="t">str</span>(it.qty), <span class="n">4</span>, <span class="s">" "</span>) <span class="o">+</span> fmt.<span class="f">pad_left</span>(cost, <span class="n">10</span>, <span class="s">" "</span>))
+    <span class="f">print</span>(<span class="s">"total $"</span> <span class="o">+</span> fmt.<span class="f">cents</span>(total), <span class="s">"| low stock:"</span>, <span class="s">", "</span>.<span class="f">join</span>(low))
+    <span class="k">for</span> p <span class="k">in</span> problems:
+        <span class="f">print</span>(<span class="s">"warning:"</span>, p)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>lamp    10    250.00
+rope     2     17.98
+tent     0      0.00
+total $267.98 | low stock: rope, tent
+warning: only 1 of C3 left, can't ship 2
+warning: unknown sku Z9
+warning: can't read: out A1 x</code></pre></div>
+<p>Things to notice:</p>
+<ul><li><code>apply</code> takes <code>items</code> as <code>mut</code> and <code>index</code> read-only, so the call <code>apply(&amp;items, index, ...)</code> tells you exactly what can change.</li><li>Errors are ordinary values: <code>parse</code> returns a <code>Bad</code> variant and <code>apply</code> returns a message. Nothing is thrown, and the <code>match</code> in <code>apply</code> must handle <code>Bad</code>.</li><li>The two tasks in the <code>parallel:</code> block only read <code>items</code>, so the compiler accepts them.</li><li>Items are found by SKU through a map of indexes into the array, the usual Tern way to "point" at something.</li></ul>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Extend the program: add a <code>Price(sku: str, cents: int)</code> event, written <code>price A1 2750</code> in the log, that changes an item's price. The compiler will point at the <code>match</code> in <code>apply</code> until you handle the new variant. Then add a second report line with the most valuable item.</p>
+<h2 id="the-rest-of-the-documentation"><a class="anchor" href="#the-rest-of-the-documentation" aria-hidden="true">#</a>The rest of the documentation</h2>
+<p><strong>Guides</strong> explain one topic in depth:</p>
+<ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a>: a translation table for your habits, and the mistakes people make most often.</li><li><a href="../guides/memory.html">How memory works</a>: copy-on-write, ownership, and why there is no garbage collector.</li><li><a href="../guides/parallelism.html">Parallel programming</a>: more patterns for <code>parallel</code> and <code>parallel for</code>, and how the race checker thinks.</li><li><a href="../guides/performance.html">Performance tips</a>: how to write fast Tern, and how to measure.</li><li><a href="../guides/web-apps.html">Building web apps</a>: HTTP servers, JSON, and SQLite.</li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a>: <code>extern</code> blocks, <code>ptr</code>, and <code>build --lib</code>.</li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a> and <a href="../guides/mobile.html">iOS and Android</a>: other targets.</li><li><a href="../guides/cookbook.html">Cookbook</a>: short recipes for everyday tasks.</li></ul>
+<p><strong>The standard library</strong> is small and documented module by module, starting from the <a href="../std/index.html">overview</a>: <a href="../std/fmt.html">fmt</a>, <a href="../std/math.html">math</a>, <a href="../std/random.html">random</a>, <a href="../std/time.html">time</a>, <a href="../std/os.html">os</a>, <a href="../std/fs.html">fs</a>, <a href="../std/json.html">json</a>, <a href="../packages/sqlite.html">sqlite</a>, and <a href="../std/http.html">http</a>.</p>
+<p><strong>Reference pages</strong> are for looking things up:</p>
+<ul><li><a href="../reference.html">Language reference</a>: the complete, precise description of the language, with a table of what Tern has instead of features from other languages. You can also print it with <code>tern guide</code>, or one topic with <code>tern guide maps</code>.</li><li><a href="../builtins.html">Builtin functions</a>: every function available without an import.</li><li><a href="../grammar.html">Grammar</a>: the exact syntax, in EBNF.</li><li><a href="../errors.html">Compiler errors</a>: what each error message means and how to fix it.</li><li><a href="../cli.html">Command line</a>: every <code>tern</code> command and flag.</li></ul>
+<h2 id="some-small-projects-to-try"><a class="anchor" href="#some-small-projects-to-try" aria-hidden="true">#</a>Some small projects to try</h2>
+<ul><li>A word-frequency counter: read a file with <code>fs.read</code>, split it into words, count them in a map, and print the top 10 with <code>sort_by</code>.</li><li>A to-do list on the command line: store tasks as JSON with <code>json.encode</code> and <code>json.decode</code>, and take commands from <code>os.args()</code>.</li><li>A Mandelbrot or Game of Life renderer that prints ASCII art, then speed it up with <code>parallel for</code> over the rows.</li><li>A small JSON API with <code>http</code> and <code>sqlite</code>, following the <a href="../guides/web-apps.html">web apps guide</a>.</li></ul>
+<p>Whatever you build, run <code>tern check</code> often. The compiler's messages, and their hints, are the fastest teacher Tern has.</p>
+<p>Back to the start: <a href="01-getting-started.html">1. Getting started</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/12-modules.html"><span>Previous</span>12. Modules and packages</a><a class="next" href="../guides/coming-from.html"><span>Next</span>Coming from Python, Go, Rust, or JavaScript</a></div>
+<footer>Source: <code>docs/tour/13-next-steps.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#a-complete-program">A complete program</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l2"><a href="#the-rest-of-the-documentation">The rest of the documentation</a></li><li class="l2"><a href="#some-small-projects-to-try">Some small projects to try</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

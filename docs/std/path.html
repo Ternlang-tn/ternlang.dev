@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>path · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/path.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html" class="cur" aria-current="page">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="path"><a class="anchor" href="#path" aria-hidden="true">#</a>path</h1>
+<p>The <code>path</code> module works with file paths as text: joining, cleaning, taking them apart, extensions, relative paths, and shell-style patterns. Paths use <code>/</code>, as on Linux, macOS and WebAssembly. Only <code>path.abs</code> (which reads the working directory) and <code>path.glob</code> (which lists directories) look at the disk; everything else is string work, the same as Go's <code>path</code>.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> path
+
+<span class="k">fn</span> <span class="f">main</span>():
+    p <span class="o">=</span> path.<span class="f">join</span>(<span class="s">"assets"</span>, <span class="s">"img/logo.png"</span>)
+    <span class="f">print</span>(p, path.<span class="f">dir</span>(p), path.<span class="f">base</span>(p), path.<span class="f">ext</span>(p), path.<span class="f">stem</span>(p))
+    <span class="f">print</span>(path.<span class="f">with_ext</span>(p, <span class="s">".webp"</span>))
+    <span class="f">print</span>(path.<span class="f">clean</span>(<span class="s">"a//b/./c/../d/"</span>))
+    <span class="f">print</span>(path.<span class="f">rel</span>(<span class="s">"/srv/app"</span>, <span class="s">"/srv/app/static/x.css"</span>))
+    <span class="f">print</span>(path.<span class="f">matches</span>(<span class="s">"*.tn"</span>, <span class="s">"main.tn"</span>), path.<span class="f">parts</span>(<span class="s">"/usr/local/bin"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>assets/img/logo.png assets/img logo.png .png logo
+assets/img/logo.webp
+a/b/d
+Ok("static/x.css")
+true ["/", "usr", "local", "bin"]</code></pre></div>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">join</span>(a: <span class="t">str</span>, b: <span class="t">str</span>) <span class="t">str</span>          a <span class="k">and</span> b with one <span class="s">"/"</span> between, cleaned; <span class="s">""</span> parts are skipped
+<span class="k">fn</span> <span class="f">join_all</span>(parts: [<span class="t">str</span>]) <span class="t">str</span>        the same <span class="k">for</span> any number of parts
+<span class="k">fn</span> <span class="f">resolve</span>(base: <span class="t">str</span>, p: <span class="t">str</span>) <span class="t">str</span>    p <span class="k">if</span> it's absolute, <span class="k">else</span> <span class="f">join</span>(base, p)
+<span class="k">fn</span> <span class="f">clean</span>(p: <span class="t">str</span>) <span class="t">str</span>                 the shortest path naming the same file, by text alone
+<span class="k">fn</span> <span class="f">dir</span>(p: <span class="t">str</span>) <span class="t">str</span>                   everything before the last name, cleaned
+<span class="k">fn</span> <span class="f">base</span>(p: <span class="t">str</span>) <span class="t">str</span>                  the last name (a trailing <span class="s">"/"</span> is ignored)
+<span class="k">fn</span> <span class="f">split</span>(p: <span class="t">str</span>) (<span class="t">str</span>, <span class="t">str</span>)          (up to <span class="k">and</span> including the last <span class="s">"/"</span>, the rest)
+<span class="k">fn</span> <span class="f">ext</span>(p: <span class="t">str</span>) <span class="t">str</span>                   the last name's extension, with its dot (<span class="s">""</span> <span class="k">if</span> none)
+<span class="k">fn</span> <span class="f">stem</span>(p: <span class="t">str</span>) <span class="t">str</span>                  the last name without its extension
+<span class="k">fn</span> <span class="f">with_ext</span>(p: <span class="t">str</span>, ext: <span class="t">str</span>) <span class="t">str</span>    p with its extension replaced, added, <span class="k">or</span> (ext <span class="s">""</span>) removed
+<span class="k">fn</span> <span class="f">parts</span>(p: <span class="t">str</span>) [<span class="t">str</span>]               the names <span class="k">in</span> <span class="f">clean</span>(p), <span class="s">"/"</span> first <span class="k">for</span> an absolute path
+<span class="k">fn</span> <span class="f">is_abs</span>(p: <span class="t">str</span>) <span class="t">bool</span>               starts with <span class="s">"/"</span>
+<span class="k">fn</span> <span class="f">abs</span>(p: <span class="t">str</span>) <span class="t">str</span>                   <span class="f">resolve</span>(os.<span class="f">cwd</span>(), p)
+<span class="k">fn</span> <span class="f">rel</span>(base: <span class="t">str</span>, target: <span class="t">str</span>) <span class="t">Result</span>[<span class="t">str</span>, <span class="t">str</span>]   a path to target <span class="k">from</span> base
+<span class="k">fn</span> <span class="f">matches</span>(pattern: <span class="t">str</span>, name: <span class="t">str</span>) <span class="t">bool</span>          shell<span class="o">-</span>style pattern <span class="k">match</span>
+<span class="k">fn</span> <span class="f">glob</span>(pattern: <span class="t">str</span>) [<span class="t">str</span>]          the existing files <span class="k">and</span> directories that <span class="k">match</span>, sorted</code></pre></div>
+<h2 id="joining"><a class="anchor" href="#joining" aria-hidden="true">#</a>Joining</h2>
+<p><code>join</code> puts one <code>/</code> between its parts and cleans the result. Like Go's <code>filepath.Join</code>, an absolute second part does not start over: <code>join("/a", "/b")</code> is <code>/a/b</code>. When the second part may be absolute and should win (a path from a config file, relative to the config's directory unless it's absolute), use <code>resolve</code>, which works like Python's <code>os.path.join</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> path
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(path.<span class="f">join</span>(<span class="s">"/a"</span>, <span class="s">"/b"</span>), path.<span class="f">resolve</span>(<span class="s">"/a"</span>, <span class="s">"/b"</span>), path.<span class="f">resolve</span>(<span class="s">"/a"</span>, <span class="s">"b"</span>))
+    <span class="f">print</span>(path.<span class="f">join</span>(<span class="s">""</span>, <span class="s">"x"</span>), path.<span class="f">join_all</span>([<span class="s">"a"</span>, <span class="s">""</span>, <span class="s">"b/"</span>, <span class="s">"../c"</span>]))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>/a/b /b /a/b
+x a/c</code></pre></div>
+<h2 id="cleaning"><a class="anchor" href="#cleaning" aria-hidden="true">#</a>Cleaning</h2>
+<p><code>clean</code> applies Go's rules by text alone, without looking at the disk (so <code>a/..</code> is removed even when <code>a</code> is a symlink): one <code>/</code> between names, no <code>.</code> names, each <code>name/..</code> removed, no trailing <code>/</code>. A <code>..</code> that would go above the start of a relative path stays, one above <code>/</code> is dropped. The empty path is <code>.</code>. A path that is already clean is returned as it is, after one pass over its bytes.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> path
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> p <span class="k">in</span> [<span class="s">"a//b/./c/../d/"</span>, <span class="s">""</span>, <span class="s">"./"</span>, <span class="s">"//"</span>, <span class="s">"../../x/.."</span>, <span class="s">"/../x"</span>]:
+        <span class="f">print</span>(<span class="s">f"[{p}] -&gt; [{path.clean(p)}]"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[a//b/./c/../d/] -&gt; [a/b/d]
+[] -&gt; [.]
+[./] -&gt; [.]
+[//] -&gt; [/]
+[../../x/..] -&gt; [../..]
+[/../x] -&gt; [/x]</code></pre></div>
+<h2 id="names-and-extensions"><a class="anchor" href="#names-and-extensions" aria-hidden="true">#</a>Names and extensions</h2>
+<p><code>dir</code> and <code>base</code> follow Go: <code>dir("a")</code> is <code>.</code>, <code>dir("/a")</code> is <code>/</code>, <code>base("a/b/")</code> is <code>b</code>. <code>ext</code> is from the last <code>.</code> of the last name, but a name's first byte doesn't count, so <code>.bashrc</code> has no extension (as in Python, unlike Go):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> path
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> p <span class="k">in</span> [<span class="s">"x.tar.gz"</span>, <span class="s">".bashrc"</span>, <span class="s">"dir/.env.local"</span>, <span class="s">"a/b/"</span>]:
+        <span class="f">print</span>(p, path.<span class="f">dir</span>(p), path.<span class="f">base</span>(p), path.<span class="f">ext</span>(p), path.<span class="f">stem</span>(p))
+    <span class="f">print</span>(path.<span class="f">with_ext</span>(<span class="s">"a/b.md"</span>, <span class="s">".html"</span>), path.<span class="f">with_ext</span>(<span class="s">"a.d/b"</span>, <span class="s">".o"</span>), path.<span class="f">with_ext</span>(<span class="s">"b.tar.gz"</span>, <span class="s">""</span>))
+    <span class="f">print</span>(path.<span class="f">split</span>(<span class="s">"a/b.txt"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>x.tar.gz . x.tar.gz .gz x.tar
+.bashrc . .bashrc  .bashrc
+dir/.env.local dir .env.local .local .env
+a/b/ a/b b  b
+a/b.html a.d/b.o b.tar
+("a/", "b.txt")</code></pre></div>
+<p><code>with_ext</code> is the replacement for writing <code>p[..len(p) - 3] + ".o"</code> by hand: it leaves a dot in a directory name alone.</p>
+<h2 id="relative-paths"><a class="anchor" href="#relative-paths" aria-hidden="true">#</a>Relative paths</h2>
+<p><code>rel(base, target)</code> is a path that names <code>target</code> when joined to <code>base</code>, both cleaned first. It is an <code>Err</code> when one is absolute and the other isn't, or when <code>base</code> climbs out with <code>..</code> further than <code>target</code> (there is no way back down without knowing the directory names):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> path
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(path.<span class="f">rel</span>(<span class="s">"a/b"</span>, <span class="s">"a/c/d"</span>), path.<span class="f">rel</span>(<span class="s">"a"</span>, <span class="s">"a"</span>), path.<span class="f">rel</span>(<span class="s">"/x"</span>, <span class="s">"/x/y/z"</span>))
+    <span class="f">print</span>(path.<span class="f">rel</span>(<span class="s">"a"</span>, <span class="s">"/b"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Ok("../c/d") Ok(".") Ok("y/z")
+Err("path: can't make /b relative to a")</code></pre></div>
+<h2 id="patterns-and-glob"><a class="anchor" href="#patterns-and-glob" aria-hidden="true">#</a>Patterns and glob</h2>
+<p><code>matches(pattern, name)</code> matches the whole name:</p>
+<div class="table"><table><thead><tr><th>Pattern</th><th>Matches</th></tr></thead><tbody><tr><td><code>*</code></td><td>any run of bytes, except <code>/</code></td></tr><tr><td><code>?</code></td><td>one byte, except <code>/</code></td></tr><tr><td><code>[abc]</code>, <code>[a-z]</code></td><td>one byte in the set (<code>]</code> first, or <code>-</code> first or last, is itself)</td></tr><tr><td><code>[!a-z]</code>, <code>[^a-z]</code></td><td>one byte not in the set (and not <code>/</code>)</td></tr><tr><td><code>\x</code></td><td><code>x</code> itself (<code>\*</code> is a star)</td></tr></tbody></table></div>
+<p>A malformed pattern (a <code>[</code> with no <code>]</code>, a <code>\</code> at the end) matches nothing. <code>*</code> never makes matching slow: it keeps one place to retry from, so the work is at most the pattern's length times the name's.</p>
+<p><code>glob(pattern)</code> lists the paths that exist and match, sorted. Each <code>/</code>-separated piece of the pattern is matched against one name, and a piece that is just <code>**</code> matches any number of directories, none included. A name starting with <code>.</code> matches only a piece that starts with <code>.</code>, as in a shell, so <code>**</code> doesn't wander into <code>.git</code>:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>path.glob("src/**/*.tn")          every .tn file below src (src/a.tn, src/x/y/b.tn)
+path.glob("*.md")                 the .md files here (relative patterns give relative paths)
+path.glob("/etc/*.conf")
+path.glob("**/.github/*.yml")     a piece starting with "." may match hidden names</code></pre></div>
+<p>Directories reached through a symlink are followed, like <code>fs.walk</code>.</p>
+<h2 id="speed"><a class="anchor" href="#speed" aria-hidden="true">#</a>Speed</h2>
+<p><code>bench/std</code> runs the same work in Go (<code>path</code>, <code>path/filepath</code>, and <code>doublestar</code> for <code>**</code>) and Rust (<code>std::path</code>, plus the <code>path-clean</code>, <code>pathdiff</code> and <code>glob</code> crates) on a million paths, a quarter of them needing cleaning. Tern is the fastest of the three at each operation and uses the least memory:</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Go</th><th>Rust</th></tr></thead><tbody><tr><td><code>clean</code></td><td><strong>37 ns</strong></td><td>75 ns</td><td>200 ns</td></tr><tr><td><code>dir</code> + <code>base</code> + <code>ext</code> + <code>stem</code></td><td><strong>45 ns</strong></td><td>62 ns</td><td>51 ns</td></tr><tr><td><code>join</code></td><td><strong>46 ns</strong></td><td>140 ns</td><td>455 ns</td></tr><tr><td><code>rel</code></td><td><strong>120 ns</strong></td><td>170 ns</td><td>190 ns</td></tr><tr><td><code>matches</code>, 4 patterns</td><td><strong>18 ns</strong></td><td>62 ns</td><td>28 ns (a compiled <code>glob::Pattern</code>)</td></tr><tr><td><code>glob("**/*.tn")</code>, 20,000 files</td><td><strong>17.5 ms</strong></td><td>40 ms</td><td>20 ms</td></tr><tr><td>peak memory</td><td><strong>122 MB</strong></td><td>216 MB</td><td>232 MB</td></tr></tbody></table></div>
+<p><code>clean</code> and the name functions are C in the runtime: an already-clean path (the usual case) is recognised 8 bytes at a time and returned without a copy. <code>glob</code> lists each directory once with <code>fs.list_marked</code>, which knows which entries are directories without a <code>stat</code>. The answers agree with Go's on 200,000 random paths built from <code>a</code>, <code>b</code>, <code>.</code> and <code>/</code>, for <code>clean</code>, <code>dir</code>, <code>base</code>, <code>join</code> and <code>rel</code>.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/fs.html"><span>Previous</span>fs</a><a class="next" href="../std/flag.html"><span>Next</span>flag</a></div>
+<footer>Source: <code>docs/std/path.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#functions">Functions</a></li><li class="l2"><a href="#joining">Joining</a></li><li class="l2"><a href="#cleaning">Cleaning</a></li><li class="l2"><a href="#names-and-extensions">Names and extensions</a></li><li class="l2"><a href="#relative-paths">Relative paths</a></li><li class="l2"><a href="#patterns-and-glob">Patterns and glob</a></li><li class="l2"><a href="#speed">Speed</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

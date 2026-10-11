@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>roost · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/packages/roost.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html" class="cur" aria-current="page">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="roost"><a class="anchor" href="#roost" aria-hidden="true">#</a>roost</h1>
+<p>The <code>roost</code> module is an axum-style web framework on Tern's tasks: a router with path parameters, middleware, WebSockets, server-sent events, and (covered on this page) static files, file uploads, streamed request bodies, HTTPS, connection limits and graceful shutdown. It is plain Tern on the server engine in <a href="../std/http.html">http</a>: <code>roost.Request</code> and <code>roost.Response</code> are <code>http.Request</code> and <code>http.Response</code> under another name, so the request and response functions on that page work on them too. Every function is listed at the top of <code>library/roost/roost.tn</code>; the <a href="../reference.html">reference</a> has the one-line summary.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> roost
+
+<span class="k">fn</span> <span class="f">main</span>():
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    r.<span class="f">get</span>(<span class="s">"/hello/{name}"</span>, <span class="k">fn</span>(req) roost.<span class="f">text</span>(<span class="s">"hello "</span> <span class="o">+</span> req.<span class="f">param</span>(<span class="s">"name"</span>)))
+    r.<span class="f">files</span>(<span class="s">"/"</span>, <span class="s">"./public"</span>)                  <span class="c"># everything else: files from ./public</span>
+    roost.<span class="f">serve</span>(r, <span class="n">8080</span>)</code></pre></div>
+<h2 id="static-files"><a class="anchor" href="#static-files" aria-hidden="true">#</a>Static files</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">files</span>(r: <span class="k">mut</span> <span class="t">Router</span>, prefix: <span class="t">str</span>, dir: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">file_response</span>(path: <span class="t">str</span>, req: <span class="t">Request</span>) <span class="t">Response</span></code></pre></div>
+<p><code>r.files("/assets", "./public")</code> answers <code>GET /assets/css/app.css</code> with <code>./public/css/app.css</code> (and <code>GET /assets/</code> with <code>./public/index.html</code>). It sets <code>Content-Type</code> from the file extension, sends <code>ETag</code> and <code>Last-Modified</code> and answers <code>304 Not Modified</code> to a client that already has the file, serves single byte ranges (<code>206</code>, for video seeking and resumed downloads), and streams big files from disk instead of reading them into memory. Paths containing <code>..</code>, and dot files other than <code>.well-known</code>, are <code>404</code>, so a request can't reach outside <code>dir</code> or read <code>.env</code>. <code>roost.file_response(path, req)</code> sends one file from a handler, with the same headers; <code>path</code> is relative to the working directory (or absolute), and a path with <code>..</code> is refused the same way. <code>r.files("/", dir)</code> serves a whole site, including <code>/</code> itself (from <code>dir/index.html</code>).</p>
+<h2 id="file-uploads"><a class="anchor" href="#file-uploads" aria-hidden="true">#</a>File uploads</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">parts</span>(req: <span class="t">Request</span>) [<span class="t">Part</span>]
+<span class="k">fn</span> <span class="f">part</span>(req: <span class="t">Request</span>, name: <span class="t">str</span>) <span class="t">Part</span></code></pre></div>
+<p>An HTML form with <code>enctype="multipart/form-data"</code> (any form with a file input) sends its fields as parts. <code>req.parts()</code> returns them all; <code>Part</code> has <code>name</code> (the form field), <code>filename</code> (<code>""</code> for a plain field), <code>content_type</code> and <code>data</code>. These read the request's buffered body, which is limited to <code>TERN_WEB_MAX_BODY_MB</code> (16 MB by default).</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> fs
+<span class="k">import</span> roost
+
+<span class="k">fn</span> <span class="f">upload</span>(req: roost.<span class="t">Request</span>) roost.<span class="t">Response</span>:
+    f <span class="o">=</span> req.<span class="f">part</span>(<span class="s">"photo"</span>)
+    <span class="k">if</span> f.filename <span class="o">==</span> <span class="s">""</span>:
+        <span class="k">return</span> roost.<span class="f">status</span>(<span class="n">400</span>, <span class="s">"no file"</span>)
+    fs.<span class="f">write</span>(<span class="s">"uploads/"</span> <span class="o">+</span> f.filename.<span class="f">replace</span>(<span class="s">"/"</span>, <span class="s">"_"</span>), f.data)
+    <span class="k">return</span> roost.<span class="f">text</span>(<span class="s">f"saved {len(f.data)} bytes"</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    r.<span class="f">post</span>(<span class="s">"/upload"</span>, upload)
+    roost.<span class="f">serve</span>(r, <span class="n">8080</span>)</code></pre></div>
+<h2 id="streamed-request-bodies"><a class="anchor" href="#streamed-request-bodies" aria-hidden="true">#</a>Streamed request bodies</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">post_stream</span>(r: <span class="k">mut</span> <span class="t">Router</span>, path: <span class="t">str</span>, h: <span class="k">fn</span>(<span class="t">Request</span>) <span class="t">Response</span>)
+<span class="k">fn</span> <span class="f">put_stream</span>(r: <span class="k">mut</span> <span class="t">Router</span>, path: <span class="t">str</span>, h: <span class="k">fn</span>(<span class="t">Request</span>) <span class="t">Response</span>)
+<span class="k">fn</span> <span class="f">read_body</span>(req: <span class="t">Request</span>, max: <span class="t">int</span>) <span class="t">str</span>          the next piece (<span class="s">""</span> at the end)
+<span class="k">fn</span> <span class="f">save_body</span>(req: <span class="t">Request</span>, path: <span class="t">str</span>) <span class="t">int</span>         the rest into a file: bytes, <span class="k">or</span> <span class="o">-</span><span class="n">1</span>
+<span class="k">fn</span> <span class="f">next_part</span>(req: <span class="t">Request</span>, p: <span class="k">mut</span> <span class="t">Part</span>) <span class="t">bool</span>      multipart: the next part (its data is <span class="s">""</span>)
+<span class="k">fn</span> <span class="f">read_part</span>(req: <span class="t">Request</span>, max: <span class="t">int</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">save_part</span>(req: <span class="t">Request</span>, path: <span class="t">str</span>) <span class="t">int</span></code></pre></div>
+<p>For uploads of any size in constant memory, register the route with <code>post_stream</code> (or <code>put_stream</code>). Its handler runs as soon as the request's headers arrive, with <code>req.body</code> empty, and reads the body itself, a piece at a time; <code>Content-Length</code> and chunked bodies both work, and the size limit doesn't apply. Whatever the handler doesn't read is skipped before the next request on the connection. Read the body in the handler's own task (not in a task it spawns).</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> roost
+
+<span class="k">fn</span> <span class="f">upload</span>(req: roost.<span class="t">Request</span>) roost.<span class="t">Response</span>:
+    saved <span class="o">=</span> <span class="s">""</span>
+    p <span class="o">=</span> roost.<span class="t">Part</span>(<span class="s">""</span>, <span class="s">""</span>, <span class="s">""</span>, <span class="s">""</span>)
+    <span class="k">while</span> req.<span class="f">next_part</span>(<span class="o">&amp;</span>p):
+        <span class="k">if</span> p.filename <span class="o">!=</span> <span class="s">""</span>:
+            n <span class="o">=</span> req.<span class="f">save_part</span>(<span class="s">"/tmp/upload-"</span> <span class="o">+</span> p.name)
+            saved <span class="o">+</span><span class="o">=</span> <span class="s">f"{p.filename}: {n} bytes\n"</span>
+    <span class="k">return</span> roost.<span class="f">text</span>(saved)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    r.<span class="f">post_stream</span>(<span class="s">"/upload"</span>, upload)
+    roost.<span class="f">serve</span>(r, <span class="n">8080</span>)</code></pre></div>
+<h2 id="validating-input"><a class="anchor" href="#validating-input" aria-hidden="true">#</a>Validating input</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">check</span>() <span class="t">Check</span>
+<span class="k">fn</span> <span class="f">required</span>(v: <span class="k">mut</span> <span class="t">Check</span>, field: <span class="t">str</span>, value: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">min_len</span>(v: <span class="k">mut</span> <span class="t">Check</span>, field: <span class="t">str</span>, value: <span class="t">str</span>, n: <span class="t">int</span>)        <span class="k">fn</span> <span class="f">max_len</span>(<span class="o">..</span>.)
+<span class="k">fn</span> <span class="f">between</span>(v: <span class="k">mut</span> <span class="t">Check</span>, field: <span class="t">str</span>, value: <span class="t">int</span>, lo: <span class="t">int</span>, hi: <span class="t">int</span>)
+<span class="k">fn</span> <span class="f">one_of</span>(v: <span class="k">mut</span> <span class="t">Check</span>, field: <span class="t">str</span>, value: <span class="t">str</span>, options: [<span class="t">str</span>])
+<span class="k">fn</span> <span class="f">email</span>(v: <span class="k">mut</span> <span class="t">Check</span>, field: <span class="t">str</span>, value: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">fail</span>(v: <span class="k">mut</span> <span class="t">Check</span>, field: <span class="t">str</span>, message: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">valid</span>(v: <span class="t">Check</span>) <span class="t">bool</span>
+<span class="k">fn</span> <span class="f">problems</span>(v: <span class="t">Check</span>) <span class="t">Response</span></code></pre></div>
+<p>A <code>Check</code> collects every problem with a request (each field keeps its first), so the client learns about all of them at once; <code>v.problems()</code> answers <code>422</code> with <code>{"errors": {"name": "is required", "age": "must be between 13 and 120"}}</code>.</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> roost
+
+<span class="k">struct</span> <span class="t">Signup</span>:
+    name: <span class="t">str</span>
+    email: <span class="t">str</span>
+    age: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">signup</span>(req: roost.<span class="t">Request</span>) roost.<span class="t">Response</span>:
+    s <span class="o">=</span> <span class="t">Signup</span>(<span class="s">""</span>, <span class="s">""</span>, <span class="n">0</span>)
+    <span class="k">if</span> <span class="k">not</span> req.<span class="f">json</span>(<span class="o">&amp;</span>s):
+        <span class="k">return</span> roost.<span class="f">status</span>(<span class="n">400</span>, <span class="s">"expected JSON"</span>)
+    v <span class="o">=</span> roost.<span class="f">check</span>()
+    v.<span class="f">required</span>(<span class="s">"name"</span>, s.name)
+    v.<span class="f">max_len</span>(<span class="s">"name"</span>, s.name, <span class="n">100</span>)
+    v.<span class="f">email</span>(<span class="s">"email"</span>, s.email)
+    v.<span class="f">between</span>(<span class="s">"age"</span>, s.age, <span class="n">13</span>, <span class="n">120</span>)
+    <span class="k">if</span> <span class="k">not</span> v.<span class="f">valid</span>():
+        <span class="k">return</span> v.<span class="f">problems</span>()
+    <span class="k">return</span> roost.<span class="f">text</span>(<span class="s">"welcome, "</span> <span class="o">+</span> s.name)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    r <span class="o">=</span> roost.<span class="f">router</span>()
+    r.<span class="f">post</span>(<span class="s">"/signup"</span>, signup)
+    roost.<span class="f">serve</span>(r, <span class="n">8080</span>)</code></pre></div>
+<h2 id="rate-limiting-and-client-addresses"><a class="anchor" href="#rate-limiting-and-client-addresses" aria-hidden="true">#</a>Rate limiting and client addresses</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">rate_limit</span>(per_second: <span class="t">float</span>, burst: <span class="t">int</span>) middleware
+<span class="k">fn</span> <span class="f">rate_limit_by</span>(per_second: <span class="t">float</span>, burst: <span class="t">int</span>, key: <span class="k">fn</span>(<span class="t">Request</span>) <span class="t">str</span>) middleware
+<span class="k">fn</span> <span class="f">peer</span>(req: <span class="t">Request</span>) <span class="t">str</span>               <span class="s">"1.2.3.4:5678"</span>
+<span class="k">fn</span> <span class="f">client_ip</span>(req: <span class="t">Request</span>) <span class="t">str</span>
+<span class="k">fn</span> <span class="f">trust_proxies</span>(n: <span class="t">int</span>)
+<span class="k">fn</span> <span class="f">matched_route</span>(req: <span class="t">Request</span>) <span class="t">str</span>      <span class="s">"/users/{id}"</span>, once <span class="f">track_routes</span>() was called
+<span class="k">fn</span> <span class="f">track_routes</span>()</code></pre></div>
+<p><code>roost.rate_limit(5.0, 20)</code> gives each client IP a token bucket that holds 20 requests and refills at 5 a second; past it, requests get <code>429 Too Many Requests</code> with <code>Retry-After</code>. <code>rate_limit_by</code> buckets by your own key instead (an API key header, a user id). Buckets are shared by all threads and idle ones are forgotten.</p>
+<p><code>req.client_ip()</code> is the connection's address. Behind a load balancer or reverse proxy, call <code>roost.trust_proxies(n)</code> with the number of proxies in front of the server: <code>client_ip</code> then takes the <code>X-Forwarded-For</code> entry those proxies added, counting n from the right. The entries further left were sent by the client and can't be trusted.</p>
+<p><code>req.matched_route()</code> is the pattern of the route that matched (<code>"/users/{id}"</code>), for error trackers and logs that group requests by route; <code>""</code> when none matched. The server records it only after <code>roost.track_routes()</code> was called, so servers that don't ask pay nothing (<code>sentry.middleware</code> calls it).</p>
+<h2 id="metrics"><a class="anchor" href="#metrics" aria-hidden="true">#</a>Metrics</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">metrics</span>(r: <span class="k">mut</span> <span class="t">Router</span>, path: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">metric_add</span>(name: <span class="t">str</span>, labels: <span class="t">str</span>, value: <span class="t">float</span>)     a counter
+<span class="k">fn</span> <span class="f">metric_set</span>(name: <span class="t">str</span>, labels: <span class="t">str</span>, value: <span class="t">float</span>)     a gauge</code></pre></div>
+<p><code>r.metrics("/metrics")</code> serves Prometheus' text format: <code>tern_http_requests_total</code> and a <code>tern_http_request_duration_seconds</code> histogram by route pattern, method and status, <code>tern_http_connections</code>, and the process's CPU seconds, peak memory and uptime, plus whatever the program records with <code>roost.metric_add("jobs_total", "queue=\"email\"", 1.0)</code> and <code>roost.metric_set("queue_depth", "", 42.0)</code>. Counting starts when a router asks for metrics, and costs a timer read and a short lock per request.</p>
+<h2 id="https"><a class="anchor" href="#https" aria-hidden="true">#</a>HTTPS</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">serve_tls</span>(r: <span class="t">Router</span>, port: <span class="t">int</span>, cert: <span class="t">str</span>, key: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">start_tls</span>(r: <span class="t">Router</span>, host: <span class="t">str</span>, port: <span class="t">int</span>, cert: <span class="t">str</span>, key: <span class="t">str</span>) <span class="t">Server</span></code></pre></div>
+<p>With <code>import tls</code>, a server can speak HTTPS: <code>cert</code> is the PEM certificate chain and <code>key</code> its private key. See <a href="../std/tls.html">tls</a>, which also covers <code>https://</code> URLs in the client (<code>http.get</code>).</p>
+<h2 id="connection-limits-and-shutdown"><a class="anchor" href="#connection-limits-and-shutdown" aria-hidden="true">#</a>Connection limits and shutdown</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">max_connections</span>(r: <span class="k">mut</span> <span class="t">Router</span>, n: <span class="t">int</span>)</code></pre></div>
+<p><code>r.max_connections(n)</code> (or <code>TERN_WEB_MAX_CONNS=n</code>) caps the connections open at once; at the cap the server stops accepting until one closes, and new clients wait in the kernel's queue instead of being refused.</p>
+<p><code>roost.serve</code> shuts down gracefully on SIGINT (Ctrl-C) and SIGTERM (what <code>kill</code>, systemd and container runtimes send): it stops accepting, closes idle keep-alive connections, lets the requests in progress finish for up to <code>TERN_WEB_DRAIN_SEC</code> seconds (default 10; a second signal cuts it short), then returns, so code after <code>roost.serve</code> runs and the program exits 0.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$ ./app
+tern: serving http://localhost:8080 on 14 threads
+^Ctern: SIGINT: shutting down (finishing 3 connections, up to 10s)</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../packages/index.html"><span>Previous</span>Overview</a><a class="next" href="../packages/sqlite.html"><span>Next</span>sqlite</a></div>
+<footer>Source: <code>docs/packages/roost.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#static-files">Static files</a></li><li class="l2"><a href="#file-uploads">File uploads</a></li><li class="l2"><a href="#streamed-request-bodies">Streamed request bodies</a></li><li class="l2"><a href="#validating-input">Validating input</a></li><li class="l2"><a href="#rate-limiting-and-client-addresses">Rate limiting and client addresses</a></li><li class="l2"><a href="#metrics">Metrics</a></li><li class="l2"><a href="#https">HTTPS</a></li><li class="l2"><a href="#connection-limits-and-shutdown">Connection limits and shutdown</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

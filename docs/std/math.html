@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>math · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/math.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html" class="cur" aria-current="page">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="math"><a class="anchor" href="#math" aria-hidden="true">#</a>math</h1>
+<p>The <code>math</code> module has the floating-point functions: square root, rounding, logarithms and exponentials, powers, trigonometry, and pi, and <code>popcount</code> for bits. Every float function takes and returns <code>float</code>; this page shows how to get an <code>int</code> back out, and what happens at the edges (negative square roots, logarithms of zero, halfway rounding).</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(math.<span class="f">sqrt</span>(<span class="n">16.0</span>), math.<span class="f">pow</span>(<span class="n">2.0</span>, <span class="n">10.0</span>), math.<span class="f">round</span>(<span class="n">2.5</span>), math.<span class="f">floor</span>(<span class="o">-</span><span class="n">2.5</span>), math.<span class="f">pi</span>())</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>4.0 1024.0 3.0 -3.0 3.141592653589793</code></pre></div>
+<p>All of them take <code>float</code> arguments. Tern never converts an <code>int</code> for you, so write <code>math.sqrt(float(n))</code>. To turn the result back into an <code>int</code>, use <code>int(...)</code>, which cuts off the fraction: <code>int(math.round(x))</code>, <code>int(math.floor(x))</code>.</p>
+<p>The functions map directly to the C library (<code>sqrt</code>, <code>floor</code>, <code>round</code>, ...), so they are as fast as in C and follow IEEE 754: a result that doesn't exist is NaN ("not a number"), and one that is too big is infinity. Neither is an error, and neither stops the program.</p>
+<h2 id="sqrt"><a class="anchor" href="#sqrt" aria-hidden="true">#</a>sqrt</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sqrt</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p>The square root of <code>x</code>. The builtin <code>sqrt(x)</code> is the same function without the import. <code>sqrt</code> of a negative number is NaN.</p>
+<h2 id="pow"><a class="anchor" href="#pow" aria-hidden="true">#</a>pow</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">pow</span>(x: <span class="t">float</span>, y: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p><code>x</code> raised to the power <code>y</code>. Tern has no <code>**</code> operator; this is it. <code>pow(0.0, 0.0)</code> is <code>1.0</code>, and a negative <code>x</code> with a fractional <code>y</code> is NaN. For integer powers of integers, a loop is exact where <code>pow</code> may not be for results above 2&lt;sup&gt;53&lt;/sup&gt;.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(math.<span class="f">sqrt</span>(<span class="n">2.0</span>), <span class="f">sqrt</span>(<span class="n">9.0</span>), math.<span class="f">pow</span>(<span class="n">2.0</span>, <span class="n">0.5</span>), math.<span class="f">pow</span>(<span class="n">10.0</span>, <span class="o">-</span><span class="n">2.0</span>), math.<span class="f">pow</span>(<span class="n">0.0</span>, <span class="n">0.0</span>))
+    n <span class="o">=</span> <span class="n">49</span>
+    <span class="f">print</span>(<span class="t">int</span>(math.<span class="f">sqrt</span>(<span class="t">float</span>(n))))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1.4142135623730951 3.0 1.4142135623730951 0.01 1.0
+7</code></pre></div>
+<h2 id="floor"><a class="anchor" href="#floor" aria-hidden="true">#</a>floor</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">floor</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p>The largest whole number not greater than <code>x</code> (rounds toward minus infinity).</p>
+<h2 id="ceil"><a class="anchor" href="#ceil" aria-hidden="true">#</a>ceil</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">ceil</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p>The smallest whole number not less than <code>x</code> (rounds toward plus infinity).</p>
+<h2 id="round"><a class="anchor" href="#round" aria-hidden="true">#</a>round</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">round</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p><code>x</code> rounded to the nearest whole number. Halfway cases round <strong>away from zero</strong>: <code>2.5</code> becomes <code>3.0</code> and <code>-2.5</code> becomes <code>-3.0</code>. (This is C's <code>round</code>, not the "banker's rounding" of Python's <code>round</code>.)</p>
+<p>The three rounding functions return a <code>float</code>. <code>int(x)</code> on its own truncates toward zero, which differs from <code>floor</code> for negative numbers:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> x <span class="k">in</span> [<span class="n">2.5</span>, <span class="o">-</span><span class="n">2.5</span>, <span class="n">2.4</span>, <span class="o">-</span><span class="n">0.5</span>]:
+        <span class="f">print</span>(x, math.<span class="f">floor</span>(x), math.<span class="f">ceil</span>(x), math.<span class="f">round</span>(x), <span class="t">int</span>(x))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2.5 2.0 3.0 3.0 2
+-2.5 -3.0 -2.0 -3.0 -2
+2.4 2.0 3.0 2.0 2
+-0.5 -1.0 -0.0 -1.0 0</code></pre></div>
+<p>Note <code>-0.0</code>: IEEE floats have a negative zero, which compares equal to <code>0.0</code> and prints with its sign. To round to a number of decimal places for display, use <a href="fmt.html#fixed"><code>fmt.fixed</code></a> instead.</p>
+<h2 id="log"><a class="anchor" href="#log" aria-hidden="true">#</a>log</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">log</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p>The natural logarithm (base <em>e</em>) of <code>x</code>. <code>log(0.0)</code> is minus infinity and the log of a negative number is NaN. For other bases divide: <code>log(x) / log(10.0)</code> is log base 10.</p>
+<h2 id="exp"><a class="anchor" href="#exp" aria-hidden="true">#</a>exp</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">exp</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p><em>e</em> raised to the power <code>x</code>; the inverse of <code>log</code>. Large arguments give infinity.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(math.<span class="f">log</span>(math.<span class="f">exp</span>(<span class="n">1.0</span>)), math.<span class="f">exp</span>(<span class="n">0.0</span>), math.<span class="f">log</span>(<span class="n">1000.0</span>) <span class="o">/</span> math.<span class="f">log</span>(<span class="n">10.0</span>))
+    <span class="f">print</span>(math.<span class="f">log</span>(<span class="n">0.0</span>), math.<span class="f">exp</span>(<span class="n">1000.0</span>))
+    bad <span class="o">=</span> math.<span class="f">log</span>(<span class="o">-</span><span class="n">1.0</span>)
+    <span class="f">print</span>(bad <span class="o">==</span> bad, bad <span class="o">!=</span> bad)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>1.0 1.0 2.9999999999999996
+-inf inf
+false true</code></pre></div>
+<p>NaN is the one value that is not equal to itself, so <code>x != x</code> tests for it. Print such a value and you see <code>nan</code> (or <code>-nan</code> on some machines).</p>
+<h2 id="sin"><a class="anchor" href="#sin" aria-hidden="true">#</a>sin</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">sin</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<h2 id="cos"><a class="anchor" href="#cos" aria-hidden="true">#</a>cos</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">cos</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<h2 id="tan"><a class="anchor" href="#tan" aria-hidden="true">#</a>tan</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">tan</span>(x: <span class="t">float</span>) <span class="t">float</span></code></pre></div>
+<p>The sine, cosine, and tangent of an angle in <strong>radians</strong>. To convert from degrees, multiply by <code>pi() / 180.0</code>. There are no inverse functions (<code>asin</code>, <code>atan2</code>, ...) or hyperbolic ones; call C's <code>libm</code> through <code>extern</code> if you need them (see <a href="../guides/c-interop.html">Calling C</a>).</p>
+<h2 id="pi"><a class="anchor" href="#pi" aria-hidden="true">#</a>pi</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">pi</span>() <span class="t">float</span></code></pre></div>
+<p>The constant π, 3.141592653589793. It is a function because Tern has no global constants.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">fn</span> <span class="f">main</span>():
+    deg <span class="o">=</span> <span class="n">30.0</span>
+    rad <span class="o">=</span> deg <span class="o">*</span> math.<span class="f">pi</span>() <span class="o">/</span> <span class="n">180.0</span>
+    <span class="f">print</span>(math.<span class="f">sin</span>(rad), math.<span class="f">cos</span>(<span class="n">0.0</span>), math.<span class="f">tan</span>(math.<span class="f">pi</span>() <span class="o">/</span> <span class="n">4.0</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>0.49999999999999994 1.0 0.9999999999999999</code></pre></div>
+<h2 id="popcount"><a class="anchor" href="#popcount" aria-hidden="true">#</a>popcount</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">popcount</span>(x: <span class="t">int</span>) <span class="t">int</span></code></pre></div>
+<p>How many of <code>x</code>'s 64 bits are set (a negative number counts its sign bits too: <code>-1</code> has 64). One CPU instruction; for comparing bit codes (Hamming distance is <code>popcount(a ^ b)</code>), bit sets and hashes. <code>simd.popcount</code> counts 16 bytes at once.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(math.<span class="f">popcount</span>(0b1011), math.<span class="f">popcount</span>(<span class="o">-</span><span class="n">1</span>), math.<span class="f">popcount</span>(0xF0 ^ 0x3C))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3 64 4</code></pre></div>
+<h2 id="a-complete-example"><a class="anchor" href="#a-complete-example" aria-hidden="true">#</a>A complete example</h2>
+<p>Summary statistics for a list of readings, and the approximate distance between two points on Earth (the equirectangular approximation, accurate to well under 1% at city scale):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+<span class="k">import</span> fmt
+
+<span class="k">fn</span> <span class="f">mean</span>(xs: [<span class="t">float</span>]) <span class="t">float</span>:
+    total <span class="o">=</span> <span class="n">0.0</span>
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        total <span class="o">+</span><span class="o">=</span> x
+    <span class="k">return</span> total <span class="o">/</span> <span class="t">float</span>(<span class="f">len</span>(xs))
+
+<span class="k">fn</span> <span class="f">stddev</span>(xs: [<span class="t">float</span>]) <span class="t">float</span>:
+    m <span class="o">=</span> <span class="f">mean</span>(xs)
+    sq <span class="o">=</span> <span class="n">0.0</span>
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        sq <span class="o">+</span><span class="o">=</span> math.<span class="f">pow</span>(x <span class="o">-</span> m, <span class="n">2.0</span>)
+    <span class="k">return</span> math.<span class="f">sqrt</span>(sq <span class="o">/</span> <span class="t">float</span>(<span class="f">len</span>(xs)))
+
+<span class="k">fn</span> <span class="f">radians</span>(deg: <span class="t">float</span>) <span class="t">float</span>:
+    <span class="k">return</span> deg <span class="o">*</span> math.<span class="f">pi</span>() <span class="o">/</span> <span class="n">180.0</span>
+
+<span class="k">fn</span> <span class="f">distance_km</span>(lat1: <span class="t">float</span>, lon1: <span class="t">float</span>, lat2: <span class="t">float</span>, lon2: <span class="t">float</span>) <span class="t">float</span>:
+    x <span class="o">=</span> <span class="f">radians</span>(lon2 <span class="o">-</span> lon1) <span class="o">*</span> math.<span class="f">cos</span>(<span class="f">radians</span>((lat1 <span class="o">+</span> lat2) <span class="o">/</span> <span class="n">2.0</span>))
+    y <span class="o">=</span> <span class="f">radians</span>(lat2 <span class="o">-</span> lat1)
+    <span class="k">return</span> <span class="n">6371.0</span> <span class="o">*</span> math.<span class="f">sqrt</span>(x <span class="o">*</span> x <span class="o">+</span> y <span class="o">*</span> y)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    temps <span class="o">=</span> [<span class="n">21.5</span>, <span class="n">23.0</span>, <span class="n">19.8</span>, <span class="n">25.1</span>, <span class="n">22.4</span>]
+    <span class="f">print</span>(<span class="s">"mean"</span>, fmt.<span class="f">fixed</span>(<span class="f">mean</span>(temps), <span class="n">2</span>), <span class="s">"stddev"</span>, fmt.<span class="f">fixed</span>(<span class="f">stddev</span>(temps), <span class="n">2</span>))
+    km <span class="o">=</span> <span class="f">distance_km</span>(<span class="n">51.5074</span>, <span class="o">-</span><span class="n">0.1278</span>, <span class="n">48.8566</span>, <span class="n">2.3522</span>)
+    <span class="f">print</span>(<span class="s">"London to Paris:"</span>, <span class="t">int</span>(math.<span class="f">round</span>(km)), <span class="s">"km"</span>)
+    <span class="f">print</span>(<span class="s">"rounded up to 50:"</span>, <span class="t">int</span>(math.<span class="f">ceil</span>(km <span class="o">/</span> <span class="n">50.0</span>)) <span class="o">*</span> <span class="n">50</span>, <span class="s">"km"</span>)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>mean 22.36 stddev 1.74
+London to Paris: 344 km
+rounded up to 50: 350 km</code></pre></div>
+</article>
+<div class="pn"><a class="prev" href="../std/fmt.html"><span>Previous</span>fmt</a><a class="next" href="../std/random.html"><span>Next</span>random</a></div>
+<footer>Source: <code>docs/std/math.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#sqrt">sqrt</a></li><li class="l2"><a href="#pow">pow</a></li><li class="l2"><a href="#floor">floor</a></li><li class="l2"><a href="#ceil">ceil</a></li><li class="l2"><a href="#round">round</a></li><li class="l2"><a href="#log">log</a></li><li class="l2"><a href="#exp">exp</a></li><li class="l2"><a href="#sin">sin</a></li><li class="l2"><a href="#cos">cos</a></li><li class="l2"><a href="#tan">tan</a></li><li class="l2"><a href="#pi">pi</a></li><li class="l2"><a href="#popcount">popcount</a></li><li class="l2"><a href="#a-complete-example">A complete example</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

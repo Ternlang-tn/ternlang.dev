@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8. Enums and match · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/tour/08-enums-and-match.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html" class="cur" aria-current="page">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="8-enums-and-match"><a class="anchor" href="#8-enums-and-match" aria-hidden="true">#</a>8. Enums and match</h1>
+<p>An enum is a type whose value is one of a fixed set of variants, each of which can carry its own data. Together with <code>match</code>, enums replace several features from other languages: constants, <code>None</code>/<code>null</code>, exceptions for expected failures, and class hierarchies. This chapter shows how to define enums, take them apart with <code>match</code>, and use <code>match</code> on plain numbers and strings.</p>
+<h2 id="a-simple-enum"><a class="anchor" href="#a-simple-enum" aria-hidden="true">#</a>A simple enum</h2>
+<p>The simplest enum is a list of names:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Suit</span>:
+    <span class="t">Hearts</span>
+    <span class="t">Diamonds</span>
+    <span class="t">Clubs</span>
+    <span class="t">Spades</span>
+
+<span class="k">fn</span> <span class="f">is_red</span>(s: <span class="t">Suit</span>) <span class="t">bool</span>:
+    <span class="k">return</span> s <span class="o">==</span> <span class="t">Suit</span>.<span class="t">Hearts</span> <span class="k">or</span> s <span class="o">==</span> <span class="t">Suit</span>.<span class="t">Diamonds</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    hand <span class="o">=</span> [<span class="t">Suit</span>.<span class="t">Spades</span>, <span class="t">Suit</span>.<span class="t">Hearts</span>, <span class="t">Suit</span>.<span class="t">Clubs</span>]
+    <span class="k">for</span> s <span class="k">in</span> hand:
+        <span class="f">print</span>(s, <span class="f">is_red</span>(s))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Suit.Spades false
+Suit.Hearts true
+Suit.Clubs false</code></pre></div>
+<p>You write a variant as <code>Enum.Variant</code>. Variants without data can be compared with <code>==</code> and <code>!=</code>, and they print as <code>Suit.Hearts</code>.</p>
+<p>Compared with using strings (<code>"hearts"</code>) or numbers (<code>1</code>), an enum can't be misspelled and can't hold a value outside the set, and the compiler can check that you handled every case.</p>
+<h2 id="match"><a class="anchor" href="#match" aria-hidden="true">#</a>match</h2>
+<p><code>match</code> picks a block by the variant of a value. Each arm names a variant and has its own block; there is no fallthrough and no <code>case</code> keyword:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Light</span>:
+    <span class="t">Red</span>
+    <span class="t">Yellow</span>
+    <span class="t">Green</span>
+
+<span class="k">fn</span> <span class="f">after</span>(l: <span class="t">Light</span>) <span class="t">Light</span>:
+    <span class="k">match</span> l:
+        <span class="t">Red</span>:
+            <span class="k">return</span> <span class="t">Light</span>.<span class="t">Green</span>
+        <span class="t">Green</span>:
+            <span class="k">return</span> <span class="t">Light</span>.<span class="t">Yellow</span>
+        <span class="t">Yellow</span>:
+            <span class="k">return</span> <span class="t">Light</span>.<span class="t">Red</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    l <span class="o">=</span> <span class="t">Light</span>.<span class="t">Red</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">4</span>:
+        <span class="f">print</span>(l)
+        l <span class="o">=</span> <span class="f">after</span>(l)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Light.Red
+Light.Green
+Light.Yellow
+Light.Red</code></pre></div>
+<p>In a pattern you can write the bare variant name (<code>Red</code>) or the full one (<code>Light.Red</code>).</p>
+<p>A <code>match</code> on an enum must handle every variant. If you forget one, the compiler lists what is missing. That is what makes enums safe to extend: add a variant, and the compiler shows you every <code>match</code> that needs updating.</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Light</span>:
+    <span class="t">Red</span>
+    <span class="t">Yellow</span>
+    <span class="t">Green</span>
+
+<span class="k">fn</span> <span class="f">after</span>(l: <span class="t">Light</span>) <span class="t">Light</span>:
+    <span class="k">match</span> l:
+        <span class="t">Red</span>:
+            <span class="k">return</span> <span class="t">Light</span>.<span class="t">Green</span>
+        <span class="t">Green</span>:
+            <span class="k">return</span> <span class="t">Light</span>.<span class="t">Yellow</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="f">print</span>(<span class="f">after</span>(<span class="t">Light</span>.<span class="t">Red</span>))</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>6: error: function `after` must end with a `return`
+7: error: match on Light doesn't handle Yellow (add them, or a `_:` arm)</code></pre></div>
+<p>When you really do want to treat the rest alike, end with a <code>_:</code> arm, which matches anything.</p>
+<h2 id="variants-that-carry-data"><a class="anchor" href="#variants-that-carry-data" aria-hidden="true">#</a>Variants that carry data</h2>
+<p>Each variant can have its own fields, written like function parameters. <code>match</code> binds them to names, by position:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> math
+
+<span class="k">enum</span> <span class="t">Shape</span>:
+    <span class="t">Circle</span>(radius: <span class="t">float</span>)
+    <span class="t">Rect</span>(w: <span class="t">float</span>, h: <span class="t">float</span>)
+    <span class="t">Point</span>
+
+<span class="k">fn</span> <span class="f">area</span>(s: <span class="t">Shape</span>) <span class="t">float</span>:
+    <span class="k">match</span> s:
+        <span class="t">Circle</span>(r):
+            <span class="k">return</span> math.<span class="f">pi</span>() <span class="o">*</span> r <span class="o">*</span> r
+        <span class="t">Rect</span>(w, h):
+            <span class="k">return</span> w <span class="o">*</span> h
+        <span class="t">Point</span>:
+            <span class="k">return</span> <span class="n">0.0</span>
+
+<span class="k">fn</span> <span class="f">describe</span>(s: <span class="t">Shape</span>) <span class="t">str</span>:
+    <span class="k">match</span> s:
+        <span class="t">Rect</span>(w, _):
+            <span class="k">return</span> <span class="s">f"a rectangle {w} wide"</span>
+        _:
+            <span class="k">return</span> <span class="s">"not a rectangle"</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    shapes <span class="o">=</span> [<span class="t">Shape</span>.<span class="t">Circle</span>(<span class="n">1.0</span>), <span class="t">Shape</span>.<span class="t">Rect</span>(w<span class="o">=</span><span class="n">2.0</span>, h<span class="o">=</span><span class="n">3.0</span>), <span class="t">Shape</span>.<span class="t">Point</span>]
+    <span class="k">for</span> s <span class="k">in</span> shapes:
+        <span class="f">print</span>(<span class="f">area</span>(s), <span class="f">describe</span>(s))
+    <span class="f">print</span>(shapes[<span class="n">1</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>3.141592653589793 not a rectangle
+6.0 a rectangle 2.0 wide
+0.0 not a rectangle
+Shape.Rect(w: 2.0, h: 3.0)</code></pre></div>
+<ul><li>Build a variant like a struct: <code>Shape.Circle(1.0)</code> or with names, <code>Shape.Rect(w=2.0, h=3.0)</code>.</li><li>In a pattern, <code>_</code> skips a value you don't need (<code>Rect(w, _)</code>).</li><li>The names in the pattern are yours to choose: <code>Circle(r)</code> binds the radius to <code>r</code>.</li></ul>
+<p>The data inside a variant can only be read with <code>match</code>, never with a dot. That is the point: a <code>Shape</code> might not be a circle, so <code>s.radius</code> would be a bug waiting to happen. <code>==</code> compares the variant and then its values:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Shape</span>:
+    <span class="t">Circle</span>(radius: <span class="t">float</span>)
+    <span class="t">Square</span>(side: <span class="t">float</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="t">Shape</span>.<span class="t">Circle</span>(<span class="n">1.0</span>)
+    <span class="f">print</span>(s.radius)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>7: error: Shape is an enum: use `match` to get at its values</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Shape</span>:
+    <span class="t">Circle</span>(radius: <span class="t">float</span>)
+    <span class="t">Square</span>(side: <span class="t">float</span>)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="t">Shape</span>.<span class="t">Circle</span>(<span class="n">1.0</span>)
+    <span class="f">print</span>(s <span class="o">==</span> <span class="t">Shape</span>.<span class="t">Circle</span>(<span class="n">1.0</span>), s <span class="o">==</span> <span class="t">Shape</span>.<span class="t">Square</span>(<span class="n">1.0</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>true false</code></pre></div>
+<h2 id="maybe-values-without-null"><a class="anchor" href="#maybe-values-without-null" aria-hidden="true">#</a>"Maybe" values without null</h2>
+<p>Tern has no <code>null</code>. When a result may be missing, say so with an enum. The caller then <em>has</em> to handle the missing case, because <code>match</code> must be complete:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">User</span>:
+    id: <span class="t">int</span>
+    name: <span class="t">str</span>
+
+<span class="k">enum</span> <span class="t">Lookup</span>:
+    <span class="t">Found</span>(u: <span class="t">User</span>)
+    <span class="t">Missing</span>
+
+<span class="k">fn</span> <span class="f">find_user</span>(users: [<span class="t">User</span>], id: <span class="t">int</span>) <span class="t">Lookup</span>:
+    <span class="k">for</span> u <span class="k">in</span> users:
+        <span class="k">if</span> u.id <span class="o">==</span> id:
+            <span class="k">return</span> <span class="t">Lookup</span>.<span class="t">Found</span>(u)
+    <span class="k">return</span> <span class="t">Lookup</span>.<span class="t">Missing</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    users <span class="o">=</span> [<span class="t">User</span>(<span class="n">1</span>, <span class="s">"ada"</span>), <span class="t">User</span>(<span class="n">2</span>, <span class="s">"grace"</span>)]
+    <span class="k">for</span> id <span class="k">in</span> [<span class="n">2</span>, <span class="n">7</span>]:
+        <span class="k">match</span> <span class="f">find_user</span>(users, id):
+            <span class="t">Found</span>(u):
+                <span class="f">print</span>(<span class="s">"found"</span>, u.name)
+            <span class="t">Missing</span>:
+                <span class="f">print</span>(<span class="s">"no user"</span>, id)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>found grace
+no user 7</code></pre></div>
+<p>This shape is so common that two generic enums are built in. <code>Option[T]</code> is <code>Some(value)</code> or <code>None</code>; <code>Result[T, E]</code> is <code>Ok(value)</code> or <code>Err(error)</code>, for operations that can fail with a reason. <code>x is Pattern</code> tests one variant and, in an <code>if</code> or <code>while</code> condition, names its values; <code>x?</code> gives the value inside <code>Some</code>/<code>Ok</code>, or returns the <code>None</code>/<code>Err</code> from the function right away:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">User</span>:
+    id: <span class="t">int</span>
+    name: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">find_user</span>(users: [<span class="t">User</span>], id: <span class="t">int</span>) <span class="t">Option</span>[<span class="t">User</span>]:
+    <span class="k">for</span> u <span class="k">in</span> users:
+        <span class="k">if</span> u.id <span class="o">==</span> id:
+            <span class="k">return</span> <span class="t">Some</span>(u)
+    <span class="k">return</span> <span class="t">None</span>
+
+<span class="k">fn</span> <span class="f">name_of</span>(users: [<span class="t">User</span>], id: <span class="t">int</span>) <span class="t">Option</span>[<span class="t">str</span>]:
+    u <span class="o">=</span> <span class="f">find_user</span>(users, id)?             <span class="c"># None: name_of returns None here</span>
+    <span class="k">return</span> <span class="t">Some</span>(u.name.<span class="f">upper</span>())
+
+<span class="k">fn</span> <span class="f">main</span>():
+    users <span class="o">=</span> [<span class="t">User</span>(<span class="n">1</span>, <span class="s">"ada"</span>), <span class="t">User</span>(<span class="n">2</span>, <span class="s">"grace"</span>)]
+    <span class="k">if</span> <span class="f">find_user</span>(users, <span class="n">1</span>) is <span class="t">Some</span>(u):
+        <span class="f">print</span>(<span class="s">"found"</span>, u.name)
+    <span class="f">print</span>(<span class="f">name_of</span>(users, <span class="n">2</span>), <span class="f">name_of</span>(users, <span class="n">7</span>), <span class="f">name_of</span>(users, <span class="n">7</span>).<span class="f">unwrap_or</span>(<span class="s">"?"</span>))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>found ada
+Some("GRACE") None ?</code></pre></div>
+<h2 id="recursive-enums"><a class="anchor" href="#recursive-enums" aria-hidden="true">#</a>Recursive enums</h2>
+<p>A variant can hold values of its own enum, which makes trees easy. Here is a tiny calculator:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Expr</span>:
+    <span class="t">Num</span>(v: <span class="t">int</span>)
+    <span class="t">Add</span>(l: <span class="t">Expr</span>, r: <span class="t">Expr</span>)
+    <span class="t">Mul</span>(l: <span class="t">Expr</span>, r: <span class="t">Expr</span>)
+
+<span class="k">fn</span> <span class="f">eval</span>(e: <span class="t">Expr</span>) <span class="t">int</span>:
+    <span class="k">match</span> e:
+        <span class="t">Num</span>(v):
+            <span class="k">return</span> v
+        <span class="t">Add</span>(l, r):
+            <span class="k">return</span> <span class="f">eval</span>(l) <span class="o">+</span> <span class="f">eval</span>(r)
+        <span class="t">Mul</span>(l, r):
+            <span class="k">return</span> <span class="f">eval</span>(l) <span class="o">*</span> <span class="f">eval</span>(r)
+
+<span class="k">fn</span> <span class="f">show</span>(e: <span class="t">Expr</span>) <span class="t">str</span>:
+    <span class="k">match</span> e:
+        <span class="t">Num</span>(v):
+            <span class="k">return</span> <span class="t">str</span>(v)
+        <span class="t">Add</span>(l, r):
+            <span class="k">return</span> <span class="s">"("</span> <span class="o">+</span> <span class="f">show</span>(l) <span class="o">+</span> <span class="s">" + "</span> <span class="o">+</span> <span class="f">show</span>(r) <span class="o">+</span> <span class="s">")"</span>
+        <span class="t">Mul</span>(l, r):
+            <span class="k">return</span> <span class="f">show</span>(l) <span class="o">+</span> <span class="s">" * "</span> <span class="o">+</span> <span class="f">show</span>(r)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    e <span class="o">=</span> <span class="t">Expr</span>.<span class="t">Mul</span>(<span class="t">Expr</span>.<span class="t">Num</span>(<span class="n">2</span>), <span class="t">Expr</span>.<span class="t">Add</span>(<span class="t">Expr</span>.<span class="t">Num</span>(<span class="n">3</span>), <span class="t">Expr</span>.<span class="t">Num</span>(<span class="n">4</span>)))
+    <span class="f">print</span>(<span class="f">show</span>(e), <span class="s">"="</span>, <span class="f">eval</span>(e))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2 * (3 + 4) = 14</code></pre></div>
+<h2 id="match-on-numbers-strings-and-bools"><a class="anchor" href="#match-on-numbers-strings-and-bools" aria-hidden="true">#</a>match on numbers, strings, and bools</h2>
+<p><code>match</code> also works on <code>int</code>, <code>str</code>, and <code>bool</code> values, with literal patterns. Like a match on an enum, it must handle every value, so it needs a <code>_:</code> arm for "anything else" (a bool match can list <code>true</code> and <code>false</code> instead). Write <code>_: pass</code> when the rest needs nothing:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">status_text</span>(code: <span class="t">int</span>) <span class="t">str</span>:
+    <span class="k">match</span> code:
+        <span class="n">200</span>:
+            <span class="k">return</span> <span class="s">"OK"</span>
+        <span class="n">404</span>:
+            <span class="k">return</span> <span class="s">"Not Found"</span>
+        <span class="n">500</span>:
+            <span class="k">return</span> <span class="s">"Internal Server Error"</span>
+        _:
+            <span class="k">return</span> <span class="s">"Unknown"</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    <span class="k">for</span> code <span class="k">in</span> [<span class="n">200</span>, <span class="n">404</span>, <span class="n">418</span>]:
+        <span class="f">print</span>(code, <span class="f">status_text</span>(code))
+    <span class="k">for</span> cmd <span class="k">in</span> [<span class="s">"go"</span>, <span class="s">"look"</span>, <span class="s">"dance"</span>]:
+        <span class="k">match</span> cmd:
+            <span class="s">"go"</span>:
+                <span class="f">print</span>(<span class="s">"you walk north"</span>)
+            <span class="s">"look"</span>:
+                <span class="f">print</span>(<span class="s">"you see a door"</span>)
+            _:
+                <span class="k">pass</span></code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>200 OK
+404 Not Found
+418 Unknown
+you walk north
+you see a door</code></pre></div>
+<p>There are no guards (<code>Circle(r) if r &gt; 1</code>); put an <code>if</code> inside the arm instead. There is no <code>switch</code>: <code>match</code> is the only multi-way branch besides <code>if</code>/<code>elif</code>.</p>
+<h2 id="try-it"><a class="anchor" href="#try-it" aria-hidden="true">#</a>Try it</h2>
+<p>Model a vending machine's state as an enum: <code>Idle</code>, <code>HasMoney(cents: int)</code>, and <code>Dispensing(item: str)</code>. Write <code>fn step(s: State, coin: int) State</code> that moves from <code>Idle</code> to <code>HasMoney</code> when a coin arrives, adds coins while in <code>HasMoney</code>, and switches to <code>Dispensing("soda")</code> once 150 cents or more have been put in; from <code>Dispensing</code> it goes back to <code>Idle</code>. Feed it the coins <code>[100, 25, 25, 0, 50]</code> and print each state.</p>
+<h3 id="solution"><a class="anchor" href="#solution" aria-hidden="true">#</a>Solution</h3>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">State</span>:
+    <span class="t">Idle</span>
+    <span class="t">HasMoney</span>(cents: <span class="t">int</span>)
+    <span class="t">Dispensing</span>(item: <span class="t">str</span>)
+
+<span class="k">fn</span> <span class="f">step</span>(s: <span class="t">State</span>, coin: <span class="t">int</span>) <span class="t">State</span>:
+    <span class="k">match</span> s:
+        <span class="t">Idle</span>:
+            <span class="k">if</span> coin <span class="o">&gt;</span> <span class="n">0</span>:
+                <span class="k">return</span> <span class="t">State</span>.<span class="t">HasMoney</span>(coin)
+            <span class="k">return</span> <span class="t">State</span>.<span class="t">Idle</span>
+        <span class="t">HasMoney</span>(c):
+            <span class="k">if</span> c <span class="o">+</span> coin <span class="o">&gt;=</span> <span class="n">150</span>:
+                <span class="k">return</span> <span class="t">State</span>.<span class="t">Dispensing</span>(<span class="s">"soda"</span>)
+            <span class="k">return</span> <span class="t">State</span>.<span class="t">HasMoney</span>(c <span class="o">+</span> coin)
+        <span class="t">Dispensing</span>(_):
+            <span class="k">return</span> <span class="t">State</span>.<span class="t">Idle</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    s <span class="o">=</span> <span class="t">State</span>.<span class="t">Idle</span>
+    <span class="k">for</span> coin <span class="k">in</span> [<span class="n">100</span>, <span class="n">25</span>, <span class="n">25</span>, <span class="n">0</span>, <span class="n">50</span>]:
+        s <span class="o">=</span> <span class="f">step</span>(s, coin)
+        <span class="f">print</span>(coin, s)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>100 State.HasMoney(cents: 100)
+25 State.HasMoney(cents: 125)
+25 State.Dispensing(item: "soda")
+0 State.Idle
+50 State.HasMoney(cents: 50)</code></pre></div>
+<p>Next: <a href="09-values-and-mut.html">9. Values, mut, and &amp;</a>. Reference: <a href="../reference.html#9-enums-and-match">§9 Enums and match</a>.</p>
+</article>
+<div class="pn"><a class="prev" href="../tour/07-strings.html"><span>Previous</span>7. Strings</a><a class="next" href="../tour/09-values-and-mut.html"><span>Next</span>9. Values, mut, and &amp;</a></div>
+<footer>Source: <code>docs/tour/08-enums-and-match.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#a-simple-enum">A simple enum</a></li><li class="l2"><a href="#match">match</a></li><li class="l2"><a href="#variants-that-carry-data">Variants that carry data</a></li><li class="l2"><a href="#maybe-values-without-null">"Maybe" values without null</a></li><li class="l2"><a href="#recursive-enums">Recursive enums</a></li><li class="l2"><a href="#match-on-numbers-strings-and-bools">match on numbers, strings, and bools</a></li><li class="l2"><a href="#try-it">Try it</a></li><li class="l3"><a href="#solution">Solution</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

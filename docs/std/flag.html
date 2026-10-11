@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>flag · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/flag.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html" class="cur" aria-current="page">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="flag"><a class="anchor" href="#flag" aria-hidden="true">#</a>flag</h1>
+<p>The <code>flag</code> module reads command-line flags into a struct. Each field is a flag, named after the field (<code>min_len</code> is <code>--min-len</code>), and its type says what the flag takes. The values the struct holds before parsing are the defaults, and <code>--help</code> is written for you.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> flag
+
+<span class="k">enum</span> <span class="t">Format</span>:
+    <span class="t">Text</span>
+    <span class="t">Json</span>
+
+<span class="k">struct</span> <span class="t">Opts</span>:
+    port: <span class="t">int</span>
+    verbose: <span class="t">bool</span>
+    tag: [<span class="t">str</span>]
+    format: <span class="t">Format</span>
+    config: <span class="t">Option</span>[<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    o <span class="o">=</span> <span class="t">Opts</span>(port<span class="o">=</span><span class="n">8080</span>, verbose<span class="o">=</span><span class="k">false</span>, tag<span class="o">=</span>[], format<span class="o">=</span><span class="t">Format</span>.<span class="t">Text</span>, config<span class="o">=</span><span class="t">None</span>)
+    c <span class="o">=</span> flag.<span class="f">cli</span>(<span class="s">"serve"</span>, <span class="s">"Serve files over HTTP."</span>)
+    c.<span class="f">flag</span>(<span class="s">"port"</span>, <span class="s">"p"</span>, <span class="s">"port to listen on"</span>)
+    c.<span class="f">flag</span>(<span class="s">"verbose"</span>, <span class="s">"v"</span>, <span class="s">"log every request"</span>)
+    c.exit_on_help <span class="o">=</span> <span class="k">false</span>
+    args <span class="o">=</span> [<span class="s">"-p"</span>, <span class="s">"9000"</span>, <span class="s">"public"</span>, <span class="s">"-v"</span>, <span class="s">"--tag"</span>, <span class="s">"a"</span>, <span class="s">"--tag=b"</span>, <span class="s">"--format"</span>, <span class="s">"json"</span>]
+    <span class="k">match</span> flag.<span class="f">parse_from</span>(c, args, <span class="o">&amp;</span>o):
+        <span class="t">Ok</span>(dirs):
+            <span class="f">print</span>(o.port, o.verbose, o.tag, o.format, o.config, dirs)
+        <span class="t">Err</span>(e):
+            <span class="f">print</span>(e)
+    <span class="f">print</span>(flag.<span class="f">parse_from</span>(c, [<span class="s">"--prot"</span>, <span class="s">"1"</span>], <span class="o">&amp;</span>o))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>9000 true ["a", "b"] Format.Json None ["public"]
+Err("unknown flag --prot (did you mean --port?); serve --help lists the flags")</code></pre></div>
+<p>In a program, <code>flag.parse(c, &amp;o)</code> reads <code>os.args()</code> (without the program's name) and returns the positional arguments. Make <code>main</code> return a <code>Result</code> so a mistake on the command line is printed as <code>error: ...</code> with exit status 1:</p>
+<div class="block code"><div class="label">Compiles (not run here)</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> flag
+
+<span class="k">struct</span> <span class="t">Opts</span>:
+    top: <span class="t">int</span>
+    min_len: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    o <span class="o">=</span> <span class="t">Opts</span>(top<span class="o">=</span><span class="n">10</span>, min_len<span class="o">=</span><span class="n">1</span>)
+    c <span class="o">=</span> flag.<span class="f">cli</span>(<span class="s">"wc"</span>, <span class="s">"count the words in files"</span>)
+    c.<span class="f">flag</span>(<span class="s">"top"</span>, <span class="s">"n"</span>, <span class="s">"how many words to print"</span>)
+    c.<span class="f">args</span>(<span class="s">"[FILE...]"</span>)
+    files <span class="o">=</span> flag.<span class="f">parse</span>(c, <span class="o">&amp;</span>o)?
+    <span class="f">print</span>(o.top, files)
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="n">0</span>)</code></pre></div>
+<h2 id="functions"><a class="anchor" href="#functions" aria-hidden="true">#</a>Functions</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">cli</span>(name: <span class="t">str</span>, about: <span class="t">str</span>) <span class="t">Cli</span>                   the program's name <span class="k">and</span> a one<span class="o">-</span>line description
+<span class="k">fn</span> <span class="f">flag</span>(c: <span class="k">mut</span> <span class="t">Cli</span>, field: <span class="t">str</span>, short: <span class="t">str</span>, help: <span class="t">str</span>)
+                                                    a one<span class="o">-</span>letter short form (<span class="s">""</span> <span class="k">for</span> none) <span class="k">and</span> help
+<span class="k">fn</span> <span class="f">env</span>(c: <span class="k">mut</span> <span class="t">Cli</span>, field: <span class="t">str</span>, var: <span class="t">str</span>)            an environment variable the field falls back to
+<span class="k">fn</span> <span class="f">require</span>(c: <span class="k">mut</span> <span class="t">Cli</span>, field: <span class="t">str</span>)                  the flag must be given (<span class="k">or</span> set by its variable)
+<span class="k">fn</span> <span class="f">args</span>(c: <span class="k">mut</span> <span class="t">Cli</span>, text: <span class="t">str</span>)                      the usage line's positional part (<span class="s">"[FILE...]"</span>)
+<span class="k">fn</span> <span class="f">stop_at_args</span>(c: <span class="k">mut</span> <span class="t">Cli</span>)                         flags end at the first positional (commands)
+<span class="k">fn</span> parse[<span class="t">T</span>](c: <span class="t">Cli</span>, out: <span class="k">mut</span> <span class="t">T</span>) <span class="t">Result</span>[[<span class="t">str</span>], <span class="t">str</span>]  os.<span class="f">args</span>() into out; the positionals
+<span class="k">fn</span> parse_from[<span class="t">T</span>](c: <span class="t">Cli</span>, args: [<span class="t">str</span>], out: <span class="k">mut</span> <span class="t">T</span>) <span class="t">Result</span>[[<span class="t">str</span>], <span class="t">str</span>]
+                                                    the same <span class="k">for</span> args you <span class="k">pass</span>
+<span class="k">fn</span> usage[<span class="t">T</span>](c: <span class="t">Cli</span>, out: <span class="t">T</span>) <span class="t">str</span>                     the <span class="o">-</span><span class="o">-</span>help text, out's values as defaults</code></pre></div>
+<p><code>c.flag(...)</code> changes <code>c</code> (its first parameter is <code>mut</code>), so <code>c</code> must be a variable.</p>
+<h2 id="what-a-flag-takes"><a class="anchor" href="#what-a-flag-takes" aria-hidden="true">#</a>What a flag takes</h2>
+<div class="table"><table><thead><tr><th>Field type</th><th>On the command line</th></tr></thead><tbody><tr><td><code>int</code>, <code>float</code></td><td><code>--port 80</code>, <code>--port=80</code>, <code>-p 80</code>, <code>-p80</code>, <code>-p=80</code></td></tr><tr><td><code>str</code></td><td>the same; the value may start with <code>-</code> (<code>--offset -5</code>)</td></tr><tr><td><code>bool</code></td><td><code>--verbose</code> (true), <code>--verbose=false</code>, <code>--no-verbose</code>; <code>-v</code>, and short ones together: <code>-vq</code></td></tr><tr><td>an enum without payloads</td><td>a variant's name in any case: <code>--format json</code></td></tr><tr><td><code>[T]</code> of one of those</td><td>repeated: <code>--tag a --tag b</code></td></tr><tr><td><code>Option[T]</code> of one of those</td><td><code>None</code> unless the flag is given</td></tr></tbody></table></div>
+<p><code>--</code> ends the flags (everything after it is positional), and <code>-</code> alone is a positional (by convention, standard input). Positionals may come before, between or after flags, unless <code>c.stop_at_args()</code> was called. A flag given twice keeps the last value, except for a list, which keeps them all. Booleans also accept <code>1</code>/<code>0</code>, <code>yes</code>/<code>no</code> and <code>on</code>/<code>off</code>.</p>
+<p>Errors name the flag and say what was expected:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> flag
+
+<span class="k">struct</span> <span class="t">Opts</span>:
+    port: <span class="t">int</span>
+    rate: <span class="t">float</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    o <span class="o">=</span> <span class="t">Opts</span>(port<span class="o">=</span><span class="n">1</span>, rate<span class="o">=</span><span class="n">1.0</span>)
+    c <span class="o">=</span> flag.<span class="f">cli</span>(<span class="s">"app"</span>, <span class="s">""</span>)
+    <span class="f">print</span>(flag.<span class="f">parse_from</span>(c, [<span class="s">"--port"</span>, <span class="s">"abc"</span>], <span class="o">&amp;</span>o))
+    <span class="f">print</span>(flag.<span class="f">parse_from</span>(c, [<span class="s">"--rate"</span>], <span class="o">&amp;</span>o))
+    <span class="f">print</span>(flag.<span class="f">parse_from</span>(c, [<span class="s">"-x"</span>], <span class="o">&amp;</span>o))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Err("--port: expected an integer, got `abc`")
+Err("--rate needs a value (a number)")
+Err("unknown flag -x; app --help lists the flags")</code></pre></div>
+<h2 id="environment-variables-and-required-flags"><a class="anchor" href="#environment-variables-and-required-flags" aria-hidden="true">#</a>Environment variables and required flags</h2>
+<p><code>c.env(field, var)</code> reads <code>var</code> when the flag isn't on the command line (a list's variable holds <code>a,b,c</code>); <code>c.require(field)</code> makes parsing fail unless the flag or its variable gives a value:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> flag
+<span class="k">import</span> os
+
+<span class="k">struct</span> <span class="t">Opts</span>:
+    port: <span class="t">int</span>
+    token: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    os.<span class="f">setenv</span>(<span class="s">"APP_PORT"</span>, <span class="s">"7000"</span>)
+    o <span class="o">=</span> <span class="t">Opts</span>(port<span class="o">=</span><span class="n">8080</span>, token<span class="o">=</span><span class="s">""</span>)
+    c <span class="o">=</span> flag.<span class="f">cli</span>(<span class="s">"app"</span>, <span class="s">""</span>)
+    c.<span class="f">env</span>(<span class="s">"port"</span>, <span class="s">"APP_PORT"</span>)
+    c.<span class="f">require</span>(<span class="s">"token"</span>)
+    <span class="f">print</span>(flag.<span class="f">parse_from</span>(c, [], <span class="o">&amp;</span>o))
+    <span class="f">print</span>(flag.<span class="f">parse_from</span>(c, [<span class="s">"--token"</span>, <span class="s">"t0k"</span>], <span class="o">&amp;</span>o), o.port)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Err("--token is required")
+Ok([]) 7000</code></pre></div>
+<h2 id="help"><a class="anchor" href="#help" aria-hidden="true">#</a>Help</h2>
+<p><code>-h</code> or <code>--help</code> prints the usage and exits with status 0. With <code>c.exit_on_help = false</code> it is an <code>Err</code> holding the usage instead (for tests). <code>flag.usage(c, o)</code> returns the same text:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> flag
+
+<span class="k">struct</span> <span class="t">Opts</span>:
+    port: <span class="t">int</span>
+    name: <span class="t">str</span>
+    verbose: <span class="t">bool</span>
+    tag: [<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    c <span class="o">=</span> flag.<span class="f">cli</span>(<span class="s">"serve"</span>, <span class="s">"Serve files over HTTP."</span>)
+    c.<span class="f">flag</span>(<span class="s">"port"</span>, <span class="s">"p"</span>, <span class="s">"port to listen on"</span>)
+    c.<span class="f">flag</span>(<span class="s">"verbose"</span>, <span class="s">"v"</span>, <span class="s">"log every request"</span>)
+    c.<span class="f">env</span>(<span class="s">"name"</span>, <span class="s">"SERVE_NAME"</span>)
+    c.<span class="f">args</span>(<span class="s">"[DIR]"</span>)
+    <span class="f">print</span>(flag.<span class="f">usage</span>(c, <span class="t">Opts</span>(port<span class="o">=</span><span class="n">8080</span>, name<span class="o">=</span><span class="s">"site"</span>, verbose<span class="o">=</span><span class="k">false</span>, tag<span class="o">=</span>[])))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>serve: Serve files over HTTP.
+
+usage: serve [flags] [DIR]
+
+flags:
+  -p, --port int    port to listen on (default 8080)
+      --name str    (default "site") [$SERVE_NAME]
+  -v, --verbose     log every request
+      --tag str...  (repeatable)
+  -h, --help        show this help
+</code></pre></div>
+<h2 id="commands"><a class="anchor" href="#commands" aria-hidden="true">#</a>Commands</h2>
+<p>For a tool with commands (<code>tool -v build --release</code>), parse the common flags with <code>stop_at_args()</code>, then the command's own flags from what's left:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> flag
+
+<span class="k">struct</span> <span class="t">Common</span>:
+    verbose: <span class="t">bool</span>
+
+<span class="k">struct</span> <span class="t">Build</span>:
+    release: <span class="t">bool</span>
+    jobs: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    top <span class="o">=</span> flag.<span class="f">cli</span>(<span class="s">"tool"</span>, <span class="s">""</span>)
+    top.<span class="f">flag</span>(<span class="s">"verbose"</span>, <span class="s">"v"</span>, <span class="s">""</span>)
+    top.<span class="f">stop_at_args</span>()
+    g <span class="o">=</span> <span class="t">Common</span>(verbose<span class="o">=</span><span class="k">false</span>)
+    rest <span class="o">=</span> flag.<span class="f">parse_from</span>(top, [<span class="s">"-v"</span>, <span class="s">"build"</span>, <span class="s">"--release"</span>, <span class="s">"--jobs"</span>, <span class="s">"4"</span>], <span class="o">&amp;</span>g).<span class="f">unwrap_or</span>([])
+    <span class="k">if</span> <span class="f">len</span>(rest) <span class="o">&gt;</span> <span class="n">0</span> <span class="k">and</span> rest[<span class="n">0</span>] <span class="o">==</span> <span class="s">"build"</span>:
+        b <span class="o">=</span> <span class="t">Build</span>(release<span class="o">=</span><span class="k">false</span>, jobs<span class="o">=</span><span class="n">1</span>)
+        <span class="f">print</span>(flag.<span class="f">parse_from</span>(flag.<span class="f">cli</span>(<span class="s">"tool build"</span>, <span class="s">""</span>), rest[<span class="n">1</span><span class="o">..</span>], <span class="o">&amp;</span>b), g.verbose, b)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Ok([]) true Build{release: true, jobs: 4}</code></pre></div>
+<h2 id="how-it-works-and-speed"><a class="anchor" href="#how-it-works-and-speed" aria-hidden="true">#</a>How it works, and speed</h2>
+<p>The compiler writes a small table of each struct's fields (name, type, an enum's variants) into the program as a constant, and a setter that stores an int, float, bool, string or enum variant into field number k. <code>flag</code> looks each flag up in the table (in C, without copying the argument), converts its value, and calls the setter: no reflection, and no text in between. On an error, and for <code>--help</code>, the struct is put back as it was.</p>
+<p><code>bench/std</code> builds the parser and parses a 16-argument command line into 8 fields, against Go's <code>flag</code> and Rust's <code>clap</code> (derive) and <code>lexopt</code> (a match written by hand, no help text):</p>
+<div class="table"><table><thead><tr><th></th><th>Tern</th><th>Go <code>flag</code></th><th>Rust <code>clap</code></th><th>Rust <code>lexopt</code></th></tr></thead><tbody><tr><td>one parse</td><td><strong>177 ns</strong></td><td>831 ns</td><td>7,442 ns</td><td>424 ns</td></tr><tr><td>a small CLI's binary</td><td><strong>149 KB</strong></td><td>1.7 MB</td><td>584 KB</td><td>319 KB</td></tr><tr><td>starting it (spawn to exit)</td><td>1.27 ms</td><td>1.77 ms</td><td>1.29 ms</td><td><strong>1.26 ms</strong></td></tr><tr><td>its peak memory</td><td>1.53 MB</td><td>3.98 MB</td><td>1.73 MB</td><td><strong>1.48 MB</strong></td></tr></tbody></table></div>
+<p>Start-up is mostly the process, not the parsing: a Tern hello world takes 1.20 ms against Rust's 1.25 ms.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/path.html"><span>Previous</span>path</a><a class="next" href="../std/term.html"><span>Next</span>term</a></div>
+<footer>Source: <code>docs/std/flag.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#functions">Functions</a></li><li class="l2"><a href="#what-a-flag-takes">What a flag takes</a></li><li class="l2"><a href="#environment-variables-and-required-flags">Environment variables and required flags</a></li><li class="l2"><a href="#help">Help</a></li><li class="l2"><a href="#commands">Commands</a></li><li class="l2"><a href="#how-it-works-and-speed">How it works, and speed</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>

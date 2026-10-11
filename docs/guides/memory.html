@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How memory works · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/guides/memory.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html" class="cur" aria-current="page">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="how-memory-works"><a class="anchor" href="#how-memory-works" aria-hidden="true">#</a>How memory works</h1>
+<p>Tern has no garbage collector and no lifetimes, yet every value is freed exactly once and nothing can dangle. This page explains how: value semantics, copy-on-write storage, reference counting inserted by the compiler, read-only parameters that cost nothing to pass, and <code>take</code> for handing a value off. It also shows how to see when copies really happen (<code>TERN_STATS=1</code>), which values live forever, and the limits of the heap.</p>
+<h2 id="every-value-is-a-copy"><a class="anchor" href="#every-value-is-a-copy" aria-hidden="true">#</a>Every value is a copy</h2>
+<p>Assigning a value, passing it, returning it, or storing it in an array always behaves as if the whole value were copied. There are no references, so changing one variable can never change another:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">struct</span> <span class="t">Point</span>:
+    x, y: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    a <span class="o">=</span> <span class="t">Point</span>(<span class="n">1</span>, <span class="n">2</span>)
+    b <span class="o">=</span> a                 <span class="c"># b is a copy of a</span>
+    b.x <span class="o">=</span> <span class="n">10</span>
+    xs <span class="o">=</span> [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+    ys <span class="o">=</span> xs               <span class="c"># ys is a copy of xs</span>
+    ys.<span class="f">push</span>(<span class="n">4</span>)
+    <span class="f">print</span>(a, b)
+    <span class="f">print</span>(xs, ys)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>Point{x: 1, y: 2} Point{x: 10, y: 2}
+[1, 2, 3] [1, 2, 3, 4]</code></pre></div>
+<p>This is the rule the rest of the language is built on. Because values can't point at each other, nothing can dangle (so there are no lifetimes to write) and nothing can form a cycle (so reference counting alone frees everything). The tour covers the rule from the programmer's side in <a href="../tour/09-values-and-mut.html">Values, mut, and &amp;</a>.</p>
+<h2 id="copies-are-lazy-copy-on-write"><a class="anchor" href="#copies-are-lazy-copy-on-write" aria-hidden="true">#</a>Copies are lazy: copy-on-write</h2>
+<p>Copying a big array on every assignment would be slow, so Tern doesn't. What a value looks like in memory depends on its type:</p>
+<div class="table"><table><thead><tr><th>Type</th><th>Stored as</th></tr></thead><tbody><tr><td><code>int</code>, <code>float</code>, <code>bool</code>, <code>ptr</code></td><td>the value itself</td></tr><tr><td>struct</td><td>its fields, side by side (a plain C struct)</td></tr><tr><td>enum</td><td>a tag plus the fields of its variant; recursive fields are boxed</td></tr><tr><td><code>[T]</code>, <code>str</code>, <code>{K: V}</code>, <code>fn(...)</code></td><td>a reference to a heap block with a reference count</td></tr></tbody></table></div>
+<p>So <code>b = a</code> on a struct copies its fields, and <code>ys = xs</code> on an array only copies a reference and adds one to the count. The array is really copied the first time one of the sharers writes to it while the count is above one. After that each side has its own block, and further writes go straight to it.</p>
+<p><code>TERN_STATS=1</code> prints a line of memory counters when the program ends. The last number is how many of these copies really happened:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    xs <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">1000</span>
+    ys <span class="o">=</span> xs               <span class="c"># no copy yet: xs and ys share one block</span>
+    <span class="f">print</span>(ys[<span class="n">999</span>])        <span class="c"># reading never copies</span>
+    ys[<span class="n">0</span>] <span class="o">=</span> <span class="n">1</span>             <span class="c"># the first write to a shared block copies it</span>
+    ys[<span class="n">1</span>] <span class="o">=</span> <span class="n">2</span>             <span class="c"># ys has its own block now: written in place</span>
+    <span class="f">print</span>(xs[<span class="n">0</span>], ys[<span class="n">0</span>], ys[<span class="n">1</span>])</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>0
+0 1 2</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$ TERN_STATS=1 tern run cow.tn
+0
+0 1 2
+-- memory: 2 allocations, 2 freed, 0 leaked, 1 copy-on-write copies; no GC</code></pre></div>
+<p>One copy, for the first write. See <a href="#reading-tern_stats">Reading TERN_STATS</a> below for what the other numbers mean.</p>
+<p>Strings and maps work the same way. Strings are immutable values, so they are never copied on write at all: operations like <code>+</code> build a new string, and <code>s += t</code> appends in place when <code>s</code> is the only holder of its block.</p>
+<h2 id="reference-counting"><a class="anchor" href="#reference-counting" aria-hidden="true">#</a>Reference counting</h2>
+<p>The compiler inserts the reference-count updates itself, in the style of Perceus (the scheme used by Koka and Lean). You never write them, and there is no runtime tracing:</p>
+<ul><li>Making another holder of a block (an assignment, a struct field, an array element, a closure capture) adds one to its count.</li><li>When a holder goes away, the count drops by one. At zero, the block is freed right then, and so is everything it holds.</li><li>A variable's holdings are released when the block of code that created it ends.</li><li>Counts are updated atomically, so values can be shared between <code>parallel</code> tasks and server threads, and any thread may free any block.</li><li>When <code>main</code> returns, the program exits without releasing what <code>main</code> still holds: the OS takes the whole heap back at once, and freeing a big structure piece by piece would only cost time. A program built with <code>TERN_STATS</code> (below) does release everything, so the leak count still covers every value.</li></ul>
+<p>Recursive data needs no special handling. This tree is built by returning new nodes that share their unchanged subtrees with the old tree, and all of it is freed when <code>main</code> ends (under <code>TERN_STATS</code>, which the counts below come from):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">enum</span> <span class="t">Tree</span>:
+    <span class="t">Leaf</span>
+    <span class="t">Node</span>(left: <span class="t">Tree</span>, value: <span class="t">int</span>, right: <span class="t">Tree</span>)
+
+<span class="k">fn</span> <span class="f">insert</span>(t: <span class="t">Tree</span>, v: <span class="t">int</span>) <span class="t">Tree</span>:
+    <span class="k">match</span> t:
+        <span class="t">Leaf</span>:
+            <span class="k">return</span> <span class="t">Tree</span>.<span class="t">Node</span>(<span class="t">Tree</span>.<span class="t">Leaf</span>, v, <span class="t">Tree</span>.<span class="t">Leaf</span>)
+        <span class="t">Node</span>(l, x, r):
+            <span class="k">if</span> v <span class="o">&lt;</span> x:
+                <span class="k">return</span> <span class="t">Tree</span>.<span class="t">Node</span>(<span class="f">insert</span>(l, v), x, r)
+            <span class="k">return</span> <span class="t">Tree</span>.<span class="t">Node</span>(l, x, <span class="f">insert</span>(r, v))
+
+<span class="k">fn</span> <span class="f">total</span>(t: <span class="t">Tree</span>) <span class="t">int</span>:
+    <span class="k">match</span> t:
+        <span class="t">Leaf</span>:
+            <span class="k">return</span> <span class="n">0</span>
+        <span class="t">Node</span>(l, x, r):
+            <span class="k">return</span> <span class="f">total</span>(l) <span class="o">+</span> x <span class="o">+</span> <span class="f">total</span>(r)
+
+<span class="k">fn</span> <span class="f">main</span>():
+    t <span class="o">=</span> <span class="t">Tree</span>.<span class="t">Leaf</span>
+    <span class="k">for</span> v <span class="k">in</span> [<span class="n">50</span>, <span class="n">30</span>, <span class="n">70</span>, <span class="n">20</span>, <span class="n">40</span>, <span class="n">60</span>, <span class="n">80</span>]:
+        t <span class="o">=</span> <span class="f">insert</span>(t, v)
+    <span class="f">print</span>(<span class="f">total</span>(t))</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>350</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 35 allocations, 35 freed, 0 leaked, 0 copy-on-write copies; no GC</code></pre></div>
+<h3 id="why-there-are-no-cycles-and-no-gc"><a class="anchor" href="#why-there-are-no-cycles-and-no-gc" aria-hidden="true">#</a>Why there are no cycles and no GC</h3>
+<p>Reference counting has one classic weakness: two objects that point at each other keep each other alive forever. In Tern that can't happen. A value holds copies, never references, so a value can't contain itself, directly or indirectly. Even a closure only holds copies of what it captured when it was created, so it can't refer back to itself.</p>
+<p>With no cycles possible, counting alone frees everything, and a garbage collector would have nothing to do. The practical results: memory is freed as soon as the last holder lets go, there are no collection pauses, and peak memory stays close to what the program actually uses. Graph-shaped data (where nodes really do refer to each other) is written as an array of nodes that refer to each other by index; see the end of the <a href="../reference.html#21-idioms">reference</a>.</p>
+<h2 id="parameters-are-borrowed"><a class="anchor" href="#parameters-are-borrowed" aria-hidden="true">#</a>Parameters are borrowed</h2>
+<p>A read-only parameter (the default) costs nothing to pass: no copy and no count update. The function reads the caller's block directly.</p>
+<p>This is safe because of Tern's exclusivity rule: while a call runs, nothing else can change or free the value passed to a read-only parameter. The callee can't change it (that is why parameters are read-only), and the caller can't either, because the caller is waiting for the call to return and can't pass the same variable with <code>&amp;</code> in the same call. Rust gets the same effect with a borrow <code>&amp;T</code>; Tern infers it for every read-only parameter.</p>
+<p>A <code>mut</code> parameter is the caller's variable itself. Writes go straight to the caller's value, so a function that changes an array in place never copies it (unless the array was already shared with another variable, in which case the first write copies it once, like any other write):</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">normalize</span>(xs: <span class="k">mut</span> [<span class="t">float</span>]):
+    top <span class="o">=</span> <span class="n">0.0</span>
+    <span class="k">for</span> x <span class="k">in</span> xs:
+        top <span class="o">=</span> <span class="f">max</span>(top, x)
+    <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(xs):
+        xs[i] <span class="o">=</span> xs[i] <span class="o">/</span> top
+
+<span class="k">fn</span> <span class="f">main</span>():
+    levels <span class="o">=</span> [<span class="n">2.0</span>, <span class="n">5.0</span>, <span class="n">10.0</span>]
+    <span class="f">normalize</span>(<span class="o">&amp;</span>levels)
+    <span class="f">print</span>(levels)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[0.2, 0.5, 1.0]</code></pre></div>
+<h2 id="moves-take-and-push"><a class="anchor" href="#moves-take-and-push" aria-hidden="true">#</a>Moves: <code>take</code> and <code>push</code></h2>
+<p>Sometimes a function wants to own a value: to change it and return it, or to store it. With a read-only parameter, the function has to copy it first:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">with_footer</span>(lines: [<span class="t">str</span>]) [<span class="t">str</span>]:
+    out <span class="o">=</span> lines           <span class="c"># a copy of the caller's array...</span>
+    out.<span class="f">push</span>(<span class="s">"-- end"</span>)    <span class="c"># ...made here, at the first write</span>
+    <span class="k">return</span> out
+
+<span class="k">fn</span> <span class="f">main</span>():
+    lines <span class="o">=</span> [<span class="s">"alpha"</span>, <span class="s">"beta"</span>]
+    lines <span class="o">=</span> <span class="f">with_footer</span>(lines)
+    <span class="f">print</span>(lines)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["alpha", "beta", "-- end"]</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 2 allocations, 2 freed, 0 leaked, 1 copy-on-write copies; no GC</code></pre></div>
+<p>A <code>take</code> parameter moves the value in instead. The caller gives up its variable, so the function holds the only reference and can change it in place:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">with_footer</span>(lines: <span class="k">take</span> [<span class="t">str</span>]) [<span class="t">str</span>]:
+    lines.<span class="f">push</span>(<span class="s">"-- end"</span>)  <span class="c"># the function owns `lines` now: no copy</span>
+    <span class="k">return</span> lines
+
+<span class="k">fn</span> <span class="f">main</span>():
+    lines <span class="o">=</span> [<span class="s">"alpha"</span>, <span class="s">"beta"</span>]
+    lines <span class="o">=</span> <span class="f">with_footer</span>(lines)
+    <span class="f">print</span>(lines)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>["alpha", "beta", "-- end"]</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 2 allocations, 2 freed, 0 leaked, 0 copy-on-write copies; no GC</code></pre></div>
+<p>(A <code>mut</code> parameter, <code>fn add_footer(lines: mut [str])</code> called as <code>add_footer(&amp;lines)</code>, also avoids the copy. Use <code>take</code> when the function builds something new from the value, or stores it somewhere.)</p>
+<p>After a move, the variable is gone, and using it is a compile error. Pass <code>copy(x)</code> to keep your own copy; <code>copy</code> is lazy too, so it costs nothing until one side is written:</p>
+<div class="block bad"><div class="label">Does not compile</div><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">with_footer</span>(lines: <span class="k">take</span> [<span class="t">str</span>]) [<span class="t">str</span>]:
+    lines.<span class="f">push</span>(<span class="s">"-- end"</span>)
+    <span class="k">return</span> lines
+
+<span class="k">fn</span> <span class="f">main</span>():
+    lines <span class="o">=</span> [<span class="s">"alpha"</span>, <span class="s">"beta"</span>]
+    report <span class="o">=</span> <span class="f">with_footer</span>(lines)
+    <span class="f">print</span>(<span class="f">len</span>(lines), report)</code></pre></div>
+<div class="block err"><div class="label">Compiler output</div><pre><code>8: error: `lines` was handed to a `take` parameter earlier and is gone (pass `copy(lines)` to keep it)</code></pre></div>
+<p><code>xs.push(v)</code> is not a <code>take</code>: it copies <code>v</code> the way <code>=</code> does, and moves it only when <code>v</code> isn't used afterwards. Pushing the same variable on every pass of a loop takes a snapshot each time, sharing the block until <code>state</code> is next written:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    history: [[<span class="t">int</span>]] <span class="o">=</span> []
+    state <span class="o">=</span> [<span class="n">0</span>, <span class="n">0</span>, <span class="n">0</span>]
+    <span class="k">for</span> step <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="n">3</span>:
+        state[step] <span class="o">=</span> <span class="n">1</span>
+        history.<span class="f">push</span>(state)
+    <span class="f">print</span>(history)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>[[1, 0, 0], [1, 1, 0], [1, 1, 1]]</code></pre></div>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>-- memory: 4 allocations, 4 freed, 0 leaked, 2 copy-on-write copies; no GC</code></pre></div>
+<p>Two copies for three snapshots: the first write happens before anything shares <code>state</code>.</p>
+<h2 id="when-copies-actually-happen"><a class="anchor" href="#when-copies-actually-happen" aria-hidden="true">#</a>When copies actually happen</h2>
+<p>A copy happens only when a block is written while another holder shares it. These were measured with <code>TERN_STATS=1</code>:</p>
+<div class="table"><table><thead><tr><th>Code</th><th>Real copies</th></tr></thead><tbody><tr><td><code>ys = xs</code> then only reads</td><td>0</td></tr><tr><td><code>ys = xs</code> then <code>ys[0] = 1</code></td><td>1, of the whole array</td></tr><tr><td><code>m2 = m</code> then <code>m2["k"] = 1</code></td><td>1, of the whole map</td></tr><tr><td><code>p = team[0]</code> then <code>p.name = "zed"</code></td><td>0 (the struct's fields were copied; the string is replaced, not written)</td></tr><tr><td><code>team[i].scores.push(0)</code></td><td>0 (writes the element in place)</td></tr><tr><td><code>p = team[i]</code>, <code>p.scores.push(0)</code>, <code>team[i] = p</code></td><td>1 per element (<code>p.scores</code> is shared with <code>team[i]</code> at the push)</td></tr><tr><td>a read-only parameter, read</td><td>0</td></tr><tr><td>a read-only parameter copied to a local, then written</td><td>1 per call</td></tr><tr><td>a <code>mut</code> or <code>take</code> parameter, written</td><td>0</td></tr><tr><td>returning a local array</td><td>0</td></tr><tr><td><code>b = Bag(items)</code>, then <code>items[0] = 9</code> and <code>b.items[1] = 8</code></td><td>1 (after the first write, each side is unique)</td></tr><tr><td><code>xs[1..]</code>, <code>xs[..n]</code></td><td>a new array every time (slices are copies)</td></tr></tbody></table></div>
+<p>Two details of the current compiler are worth knowing:</p>
+<ul><li>A variable is released at the end of its block, not right after its last use. So <code>ys = xs</code> followed by a write to <code>ys</code> copies even if <code>xs</code> is never read again. When you mean to hand a value over, say so with <code>take</code> (or change it through <code>mut</code>).</li><li>The compiler proves many arrays are never shared (a local created by a literal or <code>[v] * n</code> that never escapes, or a <code>mut</code> parameter written in a loop) and then leaves out the copy-on-write check, or does it once before the loop instead of on every write. This changes speed, never behavior.</li></ul>
+<p><a href="performance.html">Performance tips</a> shows how to find and remove the copies that matter.</p>
+<h2 id="immortal-values"><a class="anchor" href="#immortal-values" aria-hidden="true">#</a>Immortal values</h2>
+<p>Some blocks are never freed. They are marked "immortal" in their count word, so holding them costs no count updates:</p>
+<ul><li>String literals, which are part of the program's data, not the heap (with a terminating NUL, so C can read them in place); on WebAssembly they are made when the program starts.</li><li>All 256 one-byte strings, so <code>s[i]</code> never allocates.</li><li>The empty array, string, and map, which are one shared block (so memory filled with zeros reads as <code>[]</code> or <code>""</code>).</li><li>Named functions used as values.</li><li>Any block with more than about 16 million holders at once: instead of overflowing, its count saturates and the block simply stays alive until the program ends.</li></ul>
+<p>Immortal blocks aren't leaks, and <code>TERN_STATS</code> doesn't count them as leaked.</p>
+<h2 id="where-memory-lives-and-its-limits"><a class="anchor" href="#where-memory-lives-and-its-limits" aria-hidden="true">#</a>Where memory lives, and its limits</h2>
+<ul><li><strong>One heap region, then arenas.</strong> Heap blocks start out in one reserved 32GB address range. Inside structs and arrays, a reference to another block is a 64-bit offset from the region's start, so once the region is full, blocks go on in more address space the runtime maps as needed: the heap can grow as far as the machine allows, as in Go and Rust. The native runtime reserves the region at a fixed address. The portable runtime (libraries, iOS, Android, <code>--portable</code>) reserves it wherever the OS allows, halving the size until the reservation succeeds, down to 256MB. On WebAssembly, where memory is at most 4GB anyway, references stay 32-bit (offsets in 8-byte units) and the region grows with linear memory.</li><li><strong>Small blocks</strong> (up to 512 bytes) come from per-thread free lists in 8-byte size classes: no locks on the common path. Surplus freed memory moves between threads in batches, so memory freed on one thread is reused on others.</li><li><strong>Big blocks</strong> (arrays and strings over 512 bytes) come from power-of-two buckets. An array that is the last block in the region grows in place when you <code>push</code>, with no copy. Fresh blocks of 4KB or more start a few cache lines apart, so that the headers of many same-sized arrays (the rows of a grid) don't all compete for the same cache sets.</li><li><strong>Freed memory is reused, not returned to the OS</strong>, except big blocks of 64KB or more: their pages are given back once they leave a short list of recently freed blocks (the last 8, up to 64MB), which a program reallocating the same size (a snapshot per step) reuses first.</li><li><strong>Sizes.</strong> An array holds at most about 4 billion elements, and a string at most 4GB.</li><li><strong>Stacks.</strong> Every thread that runs Tern code reserves a 64MB stack.</li><li>Running out of heap prints <code>out of memory</code> and exits with status 3.</li></ul>
+<h2 id="reading-tern_stats"><a class="anchor" href="#reading-tern_stats" aria-hidden="true">#</a>Reading TERN_STATS</h2>
+<p>Set <code>TERN_STATS=1</code> when the program is compiled (<code>run</code> compiles and runs in one step). The counters are compiled in only then, so normal builds pay nothing for them.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code>$ TERN_STATS=1 tern run prog.tn
+-- memory: 2 allocations, 2 freed, 0 leaked, 1 copy-on-write copies; no GC</code></pre></div>
+<ul><li><strong>allocations</strong>: heap blocks created. (On WebAssembly every program starts with 256, the one-byte strings, plus one per string literal it uses.)</li><li><strong>freed</strong>: blocks freed.</li><li><strong>leaked</strong>: allocations minus frees minus immortal blocks. It should always be 0; the test suite requires it.</li><li><strong>copy-on-write copies</strong>: shared blocks copied because one holder wrote to them. This is the number to watch when tuning.</li></ul>
+<p>The line goes to stderr, so it doesn't mix with the program's output. For a library, call <code>tern_stats()</code> from the host to print the same line (see <a href="c-interop.html">Calling C, and Tern as a library</a>).</p>
+</article>
+<div class="pn"><a class="prev" href="../guides/parallelism.html"><span>Previous</span>Parallel programming</a><a class="next" href="../guides/performance.html"><span>Next</span>Performance tips</a></div>
+<footer>Source: <code>docs/guides/memory.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#every-value-is-a-copy">Every value is a copy</a></li><li class="l2"><a href="#copies-are-lazy-copy-on-write">Copies are lazy: copy-on-write</a></li><li class="l2"><a href="#reference-counting">Reference counting</a></li><li class="l3"><a href="#why-there-are-no-cycles-and-no-gc">Why there are no cycles and no GC</a></li><li class="l2"><a href="#parameters-are-borrowed">Parameters are borrowed</a></li><li class="l2"><a href="#moves-take-and-push">Moves: take and push</a></li><li class="l2"><a href="#when-copies-actually-happen">When copies actually happen</a></li><li class="l2"><a href="#immortal-values">Immortal values</a></li><li class="l2"><a href="#where-memory-lives-and-its-limits">Where memory lives, and its limits</a></li><li class="l2"><a href="#reading-tern_stats">Reading TERN_STATS</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>
