@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern C interop: call C directly, and call Tern from C, Python and Swift</title>
+<meta name="description" content="Tern calls C functions with an extern block and no binding generator, and builds static or shared libraries with a C header that C, Swift, Kotlin and Python&#x27;s ctypes can call.">
+<meta property="og:title" content="Tern C interop: call C directly, and call Tern from C, Python and Swift">
+<meta property="og:description" content="Tern calls C functions with an extern block and no binding generator, and builds static or shared libraries with a C header that C, Swift, Kotlin and Python&#x27;s ctypes can call.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/use/c/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/use/c/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern C interop: call C directly, and call Tern from C, Python and Swift",
+   "description": "Tern calls C functions with an extern block and no binding generator, and builds static or shared libraries with a C header that C, Swift, Kotlin and Python's ctypes can call.",
+   "url": "https://ternlang.dev/use/c/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Use cases",
+     "item": "https://ternlang.dev/use/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 3,
+     "name": "C interop and embedding",
+     "item": "https://ternlang.dev/use/c/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Does Tern need a binding generator for C?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. List the functions you want in an extern block with Tern types; the header is included and the C compiler checks the signatures."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Can Python call Tern?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. Build with --shared and load the library with ctypes."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="cur" href="../../use/">Use cases</a>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../../agents/">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Use cases &middot; C interop</p>
+  <h1>C interop and embedding</h1>
+  <p class="lead">Tern compiles to C, so calling C is a declaration, not a binding layer, and anything that can call C can call Tern.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Call C</h2>
+  <div class="block code"><pre><code><span class="k">extern</span> <span class="s">"zlib.h"</span> link <span class="s">"z"</span>:
+    <span class="k">fn</span> <span class="f">crc32</span>(crc: <span class="t">int</span>, data: <span class="t">str</span>, n: <span class="t">int</span>) <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    text <span class="o">=</span> <span class="s">"hello"</span>
+    <span class="f">print</span>(<span class="f">crc32</span>(<span class="n">0</span>, text, <span class="f">len</span>(text)))      <span class="c"># 907060870</span></code></pre></div>
+  <p>The header&rsquo;s prototypes are checked by the C compiler, and a call to <code>crc32</code> compiles to a call to <code>crc32</code>. Bundle your own <code>.c</code> files with <code>source "impl.c"</code>.</p>
+</section>
+<section class="wrap">
+  <h2>Call Tern</h2>
+  <div class="block code"><div class="label">lib.tn</div><pre><code><span class="k">export</span> <span class="k">fn</span> <span class="f">word_count</span>(text: <span class="t">str</span>) <span class="t">int</span>:
+    n <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> w <span class="k">in</span> text.<span class="f">split</span>(<span class="s">" "</span>):
+        <span class="k">if</span> w.<span class="f">trim</span>() <span class="o">!=</span> <span class="s">""</span>:
+            n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="k">return</span> n</code></pre></div>
+  <div class="block code"><pre><code>tern build --lib lib.tn<span class="c">         # liblib.a + lib.h</span>
+tern build --shared lib.tn<span class="c">      # a shared library for Python's ctypes and friends</span></code></pre></div>
+  <p>The <a href="../../docs/guides/c-interop.html">C interop guide</a> covers arrays, callbacks, opaque handles, runtime errors from C and calls from several threads.</p>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>Does Tern need a binding generator for C?</h3>
+  <p>No. List the functions you want in an extern block with Tern types; the header is included and the C compiler checks the signatures.</p>
+  <h3>Can Python call Tern?</h3>
+  <p>Yes. Build with --shared and load the library with ctypes.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../../use/">Use cases</a><a href="../../docs/">Docs</a><a href="../../packages/">Packages</a><a href="../../agents/">For agents</a><a href="../../#benchmarks">Benchmarks</a><a href="../../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

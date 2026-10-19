@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern for web servers and APIs: faster than Rust axum and Go net/http</title>
+<meta name="description" content="Build HTTP servers and JSON APIs in Tern: 169k requests/s on one thread (Rust axum 149k, Go 115k), a binary in kilobytes, typed SQL for PostgreSQL and SQLite, and no async/await.">
+<meta property="og:title" content="Tern for web servers and APIs: faster than Rust axum and Go net/http">
+<meta property="og:description" content="Build HTTP servers and JSON APIs in Tern: 169k requests/s on one thread (Rust axum 149k, Go 115k), a binary in kilobytes, typed SQL for PostgreSQL and SQLite, and no async/await.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/use/web/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/use/web/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern for web servers and APIs: faster than Rust axum and Go net/http",
+   "description": "Build HTTP servers and JSON APIs in Tern: 169k requests/s on one thread (Rust axum 149k, Go 115k), a binary in kilobytes, typed SQL for PostgreSQL and SQLite, and no async/await.",
+   "url": "https://ternlang.dev/use/web/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Use cases",
+     "item": "https://ternlang.dev/use/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 3,
+     "name": "Web servers and APIs in Tern",
+     "item": "https://ternlang.dev/use/web/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Is there a web framework for Tern?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes: roost, an axum-style framework with routing, middleware, WebSockets and SSE. The standard library's http module also serves requests on its own."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Does Tern use async/await?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. Handlers are plain functions on green-thread tasks, so blocking-looking code doesn't block the server."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Which databases does Tern support?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "PostgreSQL and SQLite, with migrations and generated, typed query functions, plus a Redis client."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="cur" href="../../use/">Use cases</a>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../../agents/">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Use cases &middot; Web</p>
+  <h1>Web servers and APIs in Tern</h1>
+  <p class="lead">Write handlers as plain functions, get an HTTP server on every core, and deploy one small binary. No async/await, no runtime to install.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>A JSON API in 16 lines</h2>
+  <div class="block code"><div class="label">main.tn</div><pre><code><span class="k">import</span> http
+<span class="k">import</span> json
+
+<span class="k">struct</span> <span class="t">Link</span>:
+    code: <span class="t">str</span>
+    url: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">handle</span>(req: http.<span class="t">Request</span>) http.<span class="t">Response</span>:
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/health"</span>:
+        <span class="k">return</span> http.<span class="f">text</span>(<span class="s">"ok"</span>)
+    <span class="k">if</span> req.path <span class="o">==</span> <span class="s">"/link"</span>:
+        <span class="k">return</span> http.<span class="f">json</span>(json.<span class="f">encode</span>(<span class="t">Link</span>(<span class="s">"tern"</span>, <span class="s">"https://ternlang.dev"</span>)))
+    <span class="k">return</span> http.<span class="f">not_found</span>()
+
+<span class="k">fn</span> <span class="f">main</span>():
+    http.<span class="f">serve</span>(<span class="n">8080</span>, handle)</code></pre></div>
+  <div class="block code"><pre><code>tern run main.tn<span class="c">                 # serving http://localhost:8080</span>
+<span class="k">curl</span> localhost:8080/link<span class="c">         # {"code":"tern","url":"https://ternlang.dev"}</span></code></pre></div>
+  <p>The handler is an ordinary function from <code>Request</code> to <code>Response</code>, so you test it by calling it. Built on macOS, this server is a 73 KB binary. The <a href="../../docs/guides/web-apps.html">web apps guide</a> adds routing, state and a database.</p>
+</section>
+<section class="wrap">
+  <h2>Benchmarks</h2>
+  <div class="table cmp bench-table">
+  <table>
+    <thead><tr><th>One server thread</th><th>Tern</th><th>Rust axum</th><th>Go net/http</th></tr></thead>
+    <tbody>
+      <tr><td>HTTP plaintext <small>requests/s</small></td><td><b>169k</b></td><td>149k</td><td>115k</td></tr>
+      <tr><td>With middleware <small>requests/s</small></td><td><b>163k</b></td><td>86k</td><td>97k</td></tr>
+      <tr><td>SSE fan-out <small>events/s</small></td><td><b>13.6M</b></td><td>3.5M</td><td>0.51M</td></tr>
+      <tr><td>Peak memory under load</td><td><b>39 MB</b></td><td>44 MB</td><td>102 MB</td></tr>
+      <tr><td>Web server binary</td><td><b>254 KB</b></td><td>1.3 MB</td><td>8.1 MB</td></tr>
+      <tr><td>Rebuild after a one-line edit <small>optimized</small></td><td><b>0.67 s</b></td><td>26.4 s</td><td>2.54 s</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Tern&rsquo;s numbers are for <a href="../../packages/">roost</a>, the web framework, on the standard library&rsquo;s http engine.</p>
+</section>
+<section class="wrap">
+  <h2>What comes with it</h2>
+  <ul>
+    <li><b>roost</b>: axum-style routing with path parameters, extractors, middleware, WebSockets, server-sent events and static files.</li>
+    <li><b>Typed SQL</b> for PostgreSQL and SQLite: migrations plus generated query functions, so a renamed column is a compile error.</li>
+    <li><b>Green-thread tasks</b>: a million spawned and joined in 41 ms (tokio 219 ms, Go 342 ms), and 100k waiting tasks in 28 MB.</li>
+    <li><b>Static Linux builds</b>: <code>tern build --target linux-static</code> makes one executable that runs in a <code>FROM scratch</code> container.</li>
+    <li><b>JSON</b> encode and decode with codecs the compiler writes for your structs: 172 ms for 300k structs, against serde&rsquo;s 249 ms.</li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>Is there a web framework for Tern?</h3>
+  <p>Yes: roost, an axum-style framework with routing, middleware, WebSockets and SSE. The standard library&#x27;s http module also serves requests on its own.</p>
+  <h3>Does Tern use async/await?</h3>
+  <p>No. Handlers are plain functions on green-thread tasks, so blocking-looking code doesn&#x27;t block the server.</p>
+  <h3>Which databases does Tern support?</h3>
+  <p>PostgreSQL and SQLite, with migrations and generated, typed query functions, plus a Redis client.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../../use/c/"><b>C interop and embedding</b><span>Call C directly; call Tern from Python</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../../use/">Use cases</a><a href="../../docs/">Docs</a><a href="../../packages/">Packages</a><a href="../../agents/">For agents</a><a href="../../#benchmarks">Benchmarks</a><a href="../../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

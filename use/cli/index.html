@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern for command-line tools: one fast static binary</title>
+<meta name="description" content="Write command-line tools in Tern: flags parsed into a struct with --help written for you, did-you-mean errors, millisecond startup, and one static binary for macOS and Linux.">
+<meta property="og:title" content="Tern for command-line tools: one fast static binary">
+<meta property="og:description" content="Write command-line tools in Tern: flags parsed into a struct with --help written for you, did-you-mean errors, millisecond startup, and one static binary for macOS and Linux.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/use/cli/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/use/cli/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern for command-line tools: one fast static binary",
+   "description": "Write command-line tools in Tern: flags parsed into a struct with --help written for you, did-you-mean errors, millisecond startup, and one static binary for macOS and Linux.",
+   "url": "https://ternlang.dev/use/cli/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Use cases",
+     "item": "https://ternlang.dev/use/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 3,
+     "name": "Command-line tools in Tern",
+     "item": "https://ternlang.dev/use/cli/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "How do I parse command-line flags in Tern?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Declare a struct with one field per flag and call flag.parse. The field types decide what each flag takes, --help is generated, and unknown flags get a did-you-mean."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Can Tern build a static binary?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. tern build --target linux-static makes a fully static (musl) executable that runs on any Linux distribution, even in an empty container."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="cur" href="../../use/">Use cases</a>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../../agents/">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Use cases &middot; CLI</p>
+  <h1>Command-line tools in Tern</h1>
+  <p class="lead">Script-like code that compiles to one small binary. Flags go into a struct, <code>--help</code> writes itself, and a typo gets a suggestion.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>A word counter</h2>
+  <div class="block code"><div class="label">wc.tn</div><pre><code><span class="k">import</span> flag
+<span class="k">import</span> fs
+
+<span class="k">struct</span> <span class="t">Opts</span>:
+    min_len: <span class="t">int</span>
+    lower: <span class="t">bool</span>
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    o <span class="o">=</span> <span class="t">Opts</span>(min_len<span class="o">=</span><span class="n">1</span>, lower<span class="o">=</span><span class="k">false</span>)
+    c <span class="o">=</span> flag.<span class="f">cli</span>(<span class="s">"wc"</span>, <span class="s">"count the distinct words in files"</span>)
+    c.<span class="f">flag</span>(<span class="s">"min_len"</span>, <span class="s">"m"</span>, <span class="s">"skip words shorter than this"</span>)
+    c.<span class="f">flag</span>(<span class="s">"lower"</span>, <span class="s">"l"</span>, <span class="s">"fold case before counting"</span>)
+    c.<span class="f">args</span>(<span class="s">"FILE..."</span>)
+    files <span class="o">=</span> flag.<span class="f">parse</span>(c, <span class="o">&amp;</span>o)?
+    seen: {<span class="t">str</span>: <span class="t">int</span>} <span class="o">=</span> {}
+    <span class="k">for</span> f <span class="k">in</span> files:
+        <span class="k">for</span> w <span class="k">in</span> fs.<span class="f">read</span>(f).<span class="f">split</span>(<span class="s">" "</span>):
+            w2 <span class="o">=</span> w.<span class="f">trim</span>().<span class="f">lower</span>() <span class="k">if</span> o.lower <span class="k">else</span> w.<span class="f">trim</span>()
+            <span class="k">if</span> <span class="f">len</span>(w2) <span class="o">&gt;=</span> o.min_len:
+                seen[w2] <span class="o">=</span> seen.<span class="f">get</span>(w2, <span class="n">0</span>) <span class="o">+</span> <span class="n">1</span>
+    <span class="f">print</span>(<span class="f">len</span>(seen), <span class="s">"distinct words"</span>)
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="n">0</span>)</code></pre></div>
+  <div class="block code"><pre><code>tern build wc.tn -o wc<span class="c">            # a 166 KB binary</span>
+<span class="k">./wc</span> --help
+<span class="k">./wc</span> --min-lenn 2 notes.txt
+error: unknown flag --min-lenn (did you mean --min-len?); wc --help lists the flags</code></pre></div>
+  <p>Each field of the struct is a flag (<code>min_len</code> is <code>--min-len</code>), its type says what the flag takes, and the values before parsing are the defaults. See the <a href="../../docs/std/flag.html">flag module</a>.</p>
+</section>
+<section class="wrap">
+  <h2>Why a compiled language for tools</h2>
+  <ul>
+    <li><b>Nothing to install.</b> Hand someone one file. <code>--target linux-static</code> builds a binary for any Linux distribution, and <code>--target linux-x86_64</code> or <code>macos-x86_64</code> cross-compiles.</li>
+    <li><b>Fast on big inputs.</b> Splitting and scanning text, counting words in a hash map and parsing CSV all beat Rust and Go in our benchmarks.</li>
+    <li><b>Parallel when you want it.</b> <code>parallel for</code> spreads a loop across cores, and the compiler rejects it if iterations would race.</li>
+    <li><b>A standard library for tools</b>: files and paths, regex, CSV, JSON, TOML, gzip, HTTP clients, terminal colors, time and logging.</li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>How do I parse command-line flags in Tern?</h3>
+  <p>Declare a struct with one field per flag and call flag.parse. The field types decide what each flag takes, --help is generated, and unknown flags get a did-you-mean.</p>
+  <h3>Can Tern build a static binary?</h3>
+  <p>Yes. tern build --target linux-static makes a fully static (musl) executable that runs on any Linux distribution, even in an empty container.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../../use/c/"><b>C interop and embedding</b><span>Call C directly; call Tern from Python</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../../use/">Use cases</a><a href="../../docs/">Docs</a><a href="../../packages/">Packages</a><a href="../../agents/">For agents</a><a href="../../#benchmarks">Benchmarks</a><a href="../../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What can you build with Tern? Web, CLI, data, WebAssembly, mobile</title>
+<meta name="description" content="What the Tern programming language is good for: web servers and APIs, command-line tools, data processing, WebAssembly, iOS and Android libraries, and C interop, with benchmarks against Rust and Go.">
+<meta property="og:title" content="What can you build with Tern? Web, CLI, data, WebAssembly, mobile">
+<meta property="og:description" content="What the Tern programming language is good for: web servers and APIs, command-line tools, data processing, WebAssembly, iOS and Android libraries, and C interop, with benchmarks against Rust and Go.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/use/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/use/">
+<link rel="stylesheet" href="../docs/style.css">
+<link rel="stylesheet" href="../home.css">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "What can you build with Tern? Web, CLI, data, WebAssembly, mobile",
+   "description": "What the Tern programming language is good for: web servers and APIs, command-line tools, data processing, WebAssembly, iOS and Android libraries, and C interop, with benchmarks against Rust and Go.",
+   "url": "https://ternlang.dev/use/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "What you can build with Tern",
+     "item": "https://ternlang.dev/use/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "What is Tern used for?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Web servers and JSON APIs, command-line tools, data processing, WebAssembly modules for the browser and Node, and native libraries for iOS and Android apps. We build ternTS, StackGrep and SkimmerDB in it."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is Tern ready for production?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "It is an early release. We run our own products on it, but the language will still change and the package index is small."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Which platforms does Tern run on?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "macOS and Linux on arm64 and x86_64. From those, it also builds WebAssembly, iOS and Android."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../"><img src="../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="cur" href="../use/">Use cases</a>
+    <a class="opt" href="../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../agents/">For agents</a>
+    <a href="../docs/">Docs</a>
+    <a href="../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Use cases</p>
+  <h1>What you can build with Tern</h1>
+  <p class="lead">Tern is a compiled, statically typed language that reads like Python. One toolchain builds servers, command-line tools, WebAssembly modules and mobile libraries, and the same code runs on all of them.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Pick what you&rsquo;re building</h2>
+  <div class="next">
+    <a href="../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../use/c/"><b>C interop and embedding</b><span>Call C directly; call Tern from Python</span></a>
+    <a href="../vs/go/"><b>Tern vs Go</b><span>Where each one wins</span></a>
+    <a href="../vs/rust/"><b>Tern vs Rust</b><span>Rust speed without the borrow checker</span></a>
+    <a href="../vs/python/"><b>Tern vs Python</b><span>Python syntax, compiled and type-checked</span></a>
+    <a href="../about/"><b>Which Tern is this?</b><span>The Tern programming language, ternlang</span></a>
+  </div>
+</section>
+<section class="wrap">
+  <h2>What&rsquo;s the same everywhere</h2>
+  <ul>
+    <li><b>One small binary.</b> No VM, no interpreter, no garbage collector to tune. A program compiles through C to native code, and a Linux build can be fully static.</li>
+    <li><b>Checked before it runs.</b> Every type is checked at compile time, and so are data races in <code>parallel</code> code.</li>
+    <li><b>Fast where it counts.</b> Ahead of or tied with Rust on all 10 of our compute benchmarks, and ahead of Go on all 10.</li>
+    <li><b>Fast to rebuild.</b> An optimized rebuild of a web service after a one-line edit takes 0.67 s.</li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>What is Tern used for?</h3>
+  <p>Web servers and JSON APIs, command-line tools, data processing, WebAssembly modules for the browser and Node, and native libraries for iOS and Android apps. We build ternTS, StackGrep and SkimmerDB in it.</p>
+  <h3>Is Tern ready for production?</h3>
+  <p>It is an early release. We run our own products on it, but the language will still change and the package index is small.</p>
+  <h3>Which platforms does Tern run on?</h3>
+  <p>macOS and Linux on arm64 and x86_64. From those, it also builds WebAssembly, iOS and Android.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../use/">Use cases</a><a href="../docs/">Docs</a><a href="../packages/">Packages</a><a href="../agents/">For agents</a><a href="../#benchmarks">Benchmarks</a><a href="../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../home.js"></script>
+</body>
+</html>

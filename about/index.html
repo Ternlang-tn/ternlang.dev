@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern programming language (ternlang): what it is, and which Tern this is</title>
+<meta name="description" content="Tern, also called ternlang, is a compiled, statically typed programming language with Python-like syntax, built for code that AI agents write. It is not tern.js or the tern migration tool.">
+<meta property="og:title" content="Tern programming language (ternlang): what it is, and which Tern this is">
+<meta property="og:description" content="Tern, also called ternlang, is a compiled, statically typed programming language with Python-like syntax, built for code that AI agents write. It is not tern.js or the tern migration tool.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/about/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/about/">
+<link rel="stylesheet" href="../docs/style.css">
+<link rel="stylesheet" href="../home.css">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern programming language (ternlang): what it is, and which Tern this is",
+   "description": "Tern, also called ternlang, is a compiled, statically typed programming language with Python-like syntax, built for code that AI agents write. It is not tern.js or the tern migration tool.",
+   "url": "https://ternlang.dev/about/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "The Tern programming language",
+     "item": "https://ternlang.dev/about/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "What is ternlang?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Ternlang is the Tern programming language: a compiled, statically typed language with Python-like syntax, at ternlang.dev."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "What file extension does Tern use?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": ".tn for source files, and tern.mod for a project's module file."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How do I install Tern?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "On macOS or Linux, run curl -fsSL https://ternlang.dev/install.sh | sh. Tern compiles through C, so you also need clang."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Who makes Tern?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "The Tern team, who also build ternTS, StackGrep and SkimmerDB with it."
+     }
+    }
+   ]
+  },
+  {
+   "@type": "ComputerLanguage",
+   "name": "Tern",
+   "alternateName": [
+    "ternlang",
+    "Tern language",
+    "Tern programming language"
+   ],
+   "url": "https://ternlang.dev/"
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../"><img src="../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a href="../use/">Use cases</a>
+    <a class="opt" href="../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../agents/">For agents</a>
+    <a href="../docs/">Docs</a>
+    <a href="../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">About</p>
+  <h1>The Tern programming language</h1>
+  <p class="lead">Tern (search for <b>ternlang</b>) is a compiled, statically typed language that reads like Python, built so AI coding agents get it right and what they write runs fast and lean. Its home is ternlang.dev.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Not to be confused with</h2>
+  <ul>
+    <li><b>Tern for JavaScript</b> (tern.js), the code-analysis engine for editors. Different project; Tern the language has its own TypeScript tool, <a href="../ts/">ternTS</a>.</li>
+    <li><b>tern</b>, the PostgreSQL migration tool written in Go. Tern the language has its own migrations package, <code>migrate</code>.</li>
+    <li><b>Ternary</b> logic or the <code>?:</code> operator. Unrelated; the name is the bird.</li>
+  </ul>
+</section>
+<section class="wrap">
+  <h2>Tern in one paragraph</h2>
+  <p>Tern compiles through C to native code for macOS and Linux, and to WebAssembly, iOS and Android. Every value is a copy, so there are no pointers, no null and no borrow checker, and the compiler rejects data races in <code>parallel</code> code. It ships with an HTTP server, JSON, regex, CSV, crypto and compression in the standard library, and packages for PostgreSQL, SQLite, Redis and the roost web framework. Files end in <code>.tn</code>, and projects have a <code>tern.mod</code>.</p>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>What is ternlang?</h3>
+  <p>Ternlang is the Tern programming language: a compiled, statically typed language with Python-like syntax, at ternlang.dev.</p>
+  <h3>What file extension does Tern use?</h3>
+  <p>.tn for source files, and tern.mod for a project&#x27;s module file.</p>
+  <h3>How do I install Tern?</h3>
+  <p>On macOS or Linux, run curl -fsSL https://ternlang.dev/install.sh | sh. Tern compiles through C, so you also need clang.</p>
+  <h3>Who makes Tern?</h3>
+  <p>The Tern team, who also build ternTS, StackGrep and SkimmerDB with it.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../use/">Use cases</a><a href="../docs/">Docs</a><a href="../packages/">Packages</a><a href="../agents/">For agents</a><a href="../#benchmarks">Benchmarks</a><a href="../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../home.js"></script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern vs Python: Python-like syntax, compiled and type-checked</title>
+<meta name="description" content="Tern looks like Python but is statically typed and compiles to native code: type errors before it runs, real parallelism with no GIL, one binary to deploy, and hints when you write Python habits.">
+<meta property="og:title" content="Tern vs Python: Python-like syntax, compiled and type-checked">
+<meta property="og:description" content="Tern looks like Python but is statically typed and compiles to native code: type errors before it runs, real parallelism with no GIL, one binary to deploy, and hints when you write Python habits.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/vs/python/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/vs/python/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern vs Python: Python-like syntax, compiled and type-checked",
+   "description": "Tern looks like Python but is statically typed and compiles to native code: type errors before it runs, real parallelism with no GIL, one binary to deploy, and hints when you write Python habits.",
+   "url": "https://ternlang.dev/vs/python/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Tern vs Python",
+     "item": "https://ternlang.dev/vs/python/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Is Tern a compiled Python?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. It borrows Python's syntax, but it is its own statically typed language and doesn't run Python code."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is Tern faster than Python?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. It compiles to native code and benchmarks ahead of Rust and Go on our compute tests."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a href="../../use/">Use cases</a>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../../agents/">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Comparison</p>
+  <h1>Tern vs Python</h1>
+  <p class="lead">If you like how Python reads but not how it deploys or how fast it runs, Tern keeps the indentation and the feel, and checks every type before anything runs.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Side by side</h2>
+  <div class="block code"><pre><code><span class="k">struct</span> <span class="t">Account</span>:
+    owner: <span class="t">str</span>
+    balance: <span class="t">int</span>
+
+<span class="k">fn</span> <span class="f">deposit</span>(a: <span class="k">mut</span> <span class="t">Account</span>, amount: <span class="t">int</span>):
+    a.balance <span class="o">+</span><span class="o">=</span> amount
+
+<span class="k">fn</span> <span class="f">main</span>():
+    acct <span class="o">=</span> <span class="t">Account</span>(<span class="s">"ada"</span>, <span class="n">0</span>)
+    acct.<span class="f">deposit</span>(<span class="n">50</span>)
+    <span class="f">print</span>(acct.owner, acct.balance)     <span class="c"># ada 50</span></code></pre></div>
+  <p>Classes become structs plus functions, and <code>acct.deposit(50)</code> still works. The <a href="../../docs/guides/coming-from.html">coming-from guide</a> has the full mapping.</p>
+</section>
+<section class="wrap">
+  <h2>What you get</h2>
+  <ul>
+    <li><b>Errors before it runs.</b> Static types everywhere, inferred inside functions.</li>
+    <li><b>Real parallelism.</b> No GIL: <code>parallel for</code> uses every core, checked for races.</li>
+    <li><b>One binary.</b> No virtualenv, no interpreter on the server.</li>
+    <li><b>Hints for Python habits.</b> <code>range(n)</code>, <code>append</code> and friends get an error that says what to write instead.</li>
+  </ul>
+</section>
+<section class="wrap">
+  <h2>What you give up</h2>
+  <ul>
+    <li>PyPI. Tern&rsquo;s package index is small; you can still call Tern from Python with ctypes.</li>
+    <li>A REPL and notebooks, and dynamic tricks like monkey-patching.</li>
+    <li>Exceptions: errors are <code>Result</code> values with <code>?</code>.</li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>Is Tern a compiled Python?</h3>
+  <p>No. It borrows Python&#x27;s syntax, but it is its own statically typed language and doesn&#x27;t run Python code.</p>
+  <h3>Is Tern faster than Python?</h3>
+  <p>Yes. It compiles to native code and benchmarks ahead of Rust and Go on our compute tests.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../../use/">Use cases</a><a href="../../docs/">Docs</a><a href="../../packages/">Packages</a><a href="../../agents/">For agents</a><a href="../../#benchmarks">Benchmarks</a><a href="../../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

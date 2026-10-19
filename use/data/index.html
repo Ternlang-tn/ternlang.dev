@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern for data processing: CSV, JSON, regex and gzip faster than Rust</title>
+<meta name="description" content="Process text and data in Tern: CSV at 928 MB/s (Rust csv 211, Go 421), regex at 1,854 MB/s, gunzip at 2,936 MB/s, JSON faster than serde, and parallel loops checked for races.">
+<meta property="og:title" content="Tern for data processing: CSV, JSON, regex and gzip faster than Rust">
+<meta property="og:description" content="Process text and data in Tern: CSV at 928 MB/s (Rust csv 211, Go 421), regex at 1,854 MB/s, gunzip at 2,936 MB/s, JSON faster than serde, and parallel loops checked for races.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/use/data/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/use/data/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern for data processing: CSV, JSON, regex and gzip faster than Rust",
+   "description": "Process text and data in Tern: CSV at 928 MB/s (Rust csv 211, Go 421), regex at 1,854 MB/s, gunzip at 2,936 MB/s, JSON faster than serde, and parallel loops checked for races.",
+   "url": "https://ternlang.dev/use/data/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Use cases",
+     "item": "https://ternlang.dev/use/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 3,
+     "name": "Data processing in Tern",
+     "item": "https://ternlang.dev/use/data/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Is Tern faster than Python for data processing?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes, by a wide margin: it compiles to native code and, in our benchmarks, beats Rust and Go at CSV, regex, gzip and JSON."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Does Tern have a dataframe library?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Not yet. It has fast CSV, JSON, regex, compression and hash maps in the standard library, and parallel loops for spreading work across cores."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a class="cur" href="../../use/">Use cases</a>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../../agents/">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Use cases &middot; Data</p>
+  <h1>Data processing in Tern</h1>
+  <p class="lead">Python-like scripts for logs, CSV and JSON that run at native speed, use less memory than Go, and spread across cores without data races.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Filter a CSV with a regex</h2>
+  <div class="block code"><div class="label">triage.tn</div><pre><code><span class="k">import</span> csv
+<span class="k">import</span> re
+
+<span class="k">fn</span> <span class="f">main</span>() <span class="t">Result</span>[<span class="t">int</span>, <span class="t">str</span>]:
+    rows <span class="o">=</span> csv.<span class="f">parse</span>(<span class="s">"service,level\napi,error\nweb,info\ndb,FATAL\n"</span>)?
+    bad <span class="o">=</span> re.<span class="f">must</span>(<span class="s">"(?i)error|fatal"</span>)
+    n <span class="o">=</span> <span class="n">0</span>
+    <span class="k">for</span> r <span class="k">in</span> rows[<span class="n">1</span><span class="o">..</span>]:
+        <span class="k">if</span> bad.<span class="f">test</span>(r[<span class="n">1</span>]):
+            n <span class="o">+</span><span class="o">=</span> <span class="n">1</span>
+    <span class="f">print</span>(n, <span class="s">"of"</span>, <span class="f">len</span>(rows) <span class="o">-</span> <span class="n">1</span>, <span class="s">"rows need attention"</span>)
+    <span class="k">return</span> <span class="t">Ok</span>(<span class="n">0</span>)</code></pre></div>
+  <div class="block code"><pre><code>tern run triage.tn<span class="c">               # 2 of 3 rows need attention</span></code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Benchmarks</h2>
+  <div class="table cmp bench-table">
+  <table>
+    <thead><tr><th>One thread</th><th>Tern</th><th>Rust</th><th>Go</th></tr></thead>
+    <tbody>
+      <tr><td>CSV, parse every row <small>MB/s</small></td><td><b>928</b></td><td>211 <small>csv</small></td><td>421</td></tr>
+      <tr><td>Regex <code>(?i)error|warning|fatal</code> <small>MB/s</small></td><td><b>1,854</b></td><td>904 <small>regex</small></td><td>26</td></tr>
+      <tr><td>Regex with capture groups <small>MB/s</small></td><td><b>2,429</b></td><td>1,961</td><td>59</td></tr>
+      <tr><td>gunzip <small>MB/s</small></td><td><b>2,936</b></td><td>963 <small>flate2</small></td><td>623</td></tr>
+      <tr><td>JSON, 300k structs <small>encode + decode</small></td><td><b>172 ms</b>, 107 MB</td><td>249 ms, 194 MB <small>serde</small></td><td>809 ms, 303 MB</td></tr>
+      <tr><td>Word count <small>hash map of strings</small></td><td><b>122 ms</b>, 40 MB</td><td>166 ms, 40 MB</td><td>207 ms, 199 MB</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The regex engine is written in Tern and runs in time linear in the input, so a pattern from a user can&rsquo;t hang your job.</p>
+</section>
+<section class="wrap">
+  <h2>Use every core</h2>
+  <div class="block code"><pre><code><span class="k">fn</span> <span class="f">main</span>():
+    sums <span class="o">=</span> [<span class="n">0</span>] <span class="o">*</span> <span class="n">8</span>
+    <span class="k">parallel</span> <span class="k">for</span> i <span class="k">in</span> <span class="n">0</span><span class="o">..</span><span class="f">len</span>(sums):
+        sums[i] <span class="o">=</span> i <span class="o">*</span> i           <span class="c"># each iteration writes only its own slot</span>
+    <span class="f">print</span>(sums)</code></pre></div>
+  <p>Write to a shared variable from every iteration and <code>tern check</code> rejects it, naming the race and how to fix it.</p>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>Is Tern faster than Python for data processing?</h3>
+  <p>Yes, by a wide margin: it compiles to native code and, in our benchmarks, beats Rust and Go at CSV, regex, gzip and JSON.</p>
+  <h3>Does Tern have a dataframe library?</h3>
+  <p>Not yet. It has fast CSV, JSON, regex, compression and hash maps in the standard library, and parallel loops for spreading work across cores.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../../use/c/"><b>C interop and embedding</b><span>Call C directly; call Tern from Python</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../../use/">Use cases</a><a href="../../docs/">Docs</a><a href="../../packages/">Packages</a><a href="../../agents/">For agents</a><a href="../../#benchmarks">Benchmarks</a><a href="../../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

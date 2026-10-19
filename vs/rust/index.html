@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern vs Rust: Rust-level speed without the borrow checker</title>
+<meta name="description" content="Tern vs Rust compared: Tern is ahead of or tied with Rust on 10 of 10 compute benchmarks, rebuilds in 0.67 s vs 26.4 s, and has no lifetimes or borrow checker; Rust wins single-thread wasm allocation.">
+<meta property="og:title" content="Tern vs Rust: Rust-level speed without the borrow checker">
+<meta property="og:description" content="Tern vs Rust compared: Tern is ahead of or tied with Rust on 10 of 10 compute benchmarks, rebuilds in 0.67 s vs 26.4 s, and has no lifetimes or borrow checker; Rust wins single-thread wasm allocation.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/vs/rust/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/vs/rust/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern vs Rust: Rust-level speed without the borrow checker",
+   "description": "Tern vs Rust compared: Tern is ahead of or tied with Rust on 10 of 10 compute benchmarks, rebuilds in 0.67 s vs 26.4 s, and has no lifetimes or borrow checker; Rust wins single-thread wasm allocation.",
+   "url": "https://ternlang.dev/vs/rust/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Tern vs Rust",
+     "item": "https://ternlang.dev/vs/rust/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Is Tern as fast as Rust?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "On our 10 compute benchmarks it is ahead or tied on all of them. Rust still wins single-threaded WebAssembly binary-trees and uses slightly less memory on native binary-trees."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is Tern memory safe?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. There are no pointers or references, values are reference counted with copy-on-write, and the compiler rejects data races in parallel code."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a href="../../use/">Use cases</a>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../../agents/">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Comparison</p>
+  <h1>Tern vs Rust</h1>
+  <p class="lead">Rust gets memory safety from ownership and borrowing. Tern gets it by having no references at all: every value is a copy, so there&rsquo;s nothing to borrow, and races are still compile errors.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Numbers</h2>
+  <div class="table cmp bench-table">
+  <table>
+    <thead><tr><th></th><th>Tern</th><th>Best Rust</th></tr></thead>
+    <tbody>
+      <tr><td>n-body</td><td><b>896 ms</b></td><td>982 ms</td></tr>
+      <tr><td>binary-trees</td><td><b>326 ms</b>, 99 MB</td><td>343 ms, <b>96 MB</b> <small>mimalloc</small></td></tr>
+      <tr><td>JSON, 300k structs</td><td><b>172 ms</b></td><td>249 ms <small>serde</small></td></tr>
+      <tr><td>fib, fork-join</td><td>114 ms</td><td>115 ms <small>rayon</small></td></tr>
+      <tr><td>HTTP plaintext, one thread</td><td><b>169k</b> req/s</td><td>149k <small>axum</small></td></tr>
+      <tr><td>Rebuild after an edit <small>optimized</small></td><td><b>0.67 s</b></td><td>26.4 s</td></tr>
+      <tr><td>Clean build</td><td><b>1.67 s</b></td><td>44.9 s</td></tr>
+      <tr><td>WebAssembly binary-trees, one thread</td><td>3.75 s</td><td><b>2.84 s</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<section class="wrap">
+  <h2>What&rsquo;s different</h2>
+  <ul>
+    <li><b>No lifetimes, no borrow checker.</b> Functions change a caller&rsquo;s variable only through a <code>mut</code> parameter with <code>&amp;</code> at the call site, and arguments can&rsquo;t overlap.</li>
+    <li><b>Reference counting with lazy copies</b> instead of ownership. Nothing can form a cycle, so nothing leaks.</li>
+    <li><b>No async/await.</b> Green-thread tasks; a million spawned and joined in 41 ms against tokio&rsquo;s 219 ms.</li>
+    <li><b>Python-shaped syntax</b>, which coding agents get right more often than lifetimes.</li>
+  </ul>
+</section>
+<section class="wrap">
+  <h2>Pick Rust when</h2>
+  <ul>
+    <li>You need crates.io, no_std or embedded targets, Windows, or explicit control over memory layout.</li>
+    <li>You need a stable language today.</li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>Is Tern as fast as Rust?</h3>
+  <p>On our 10 compute benchmarks it is ahead or tied on all of them. Rust still wins single-threaded WebAssembly binary-trees and uses slightly less memory on native binary-trees.</p>
+  <h3>Is Tern memory safe?</h3>
+  <p>Yes. There are no pointers or references, values are reference counted with copy-on-write, and the compiler rejects data races in parallel code.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../../use/">Use cases</a><a href="../../docs/">Docs</a><a href="../../packages/">Packages</a><a href="../../agents/">For agents</a><a href="../../#benchmarks">Benchmarks</a><a href="../../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

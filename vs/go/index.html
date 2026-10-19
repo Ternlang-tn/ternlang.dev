@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern vs Go: benchmarks, code size and when to pick each</title>
+<meta name="description" content="Tern vs Go compared: Tern beats Go on all 10 of our compute benchmarks, serves 169k vs 115k HTTP requests/s per thread, and builds smaller binaries; Go has the bigger ecosystem and maturity.">
+<meta property="og:title" content="Tern vs Go: benchmarks, code size and when to pick each">
+<meta property="og:description" content="Tern vs Go compared: Tern beats Go on all 10 of our compute benchmarks, serves 169k vs 115k HTTP requests/s per thread, and builds smaller binaries; Go has the bigger ecosystem and maturity.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/vs/go/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/vs/go/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern vs Go: benchmarks, code size and when to pick each",
+   "description": "Tern vs Go compared: Tern beats Go on all 10 of our compute benchmarks, serves 169k vs 115k HTTP requests/s per thread, and builds smaller binaries; Go has the bigger ecosystem and maturity.",
+   "url": "https://ternlang.dev/vs/go/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Tern vs Go",
+     "item": "https://ternlang.dev/vs/go/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Is Tern faster than Go?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "On our benchmarks, yes: ahead on all 10 compute benchmarks and on HTTP throughput per thread. Go served slightly more redirects per second in the agent-built app test."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is Tern like Go?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "In spirit: one binary, a small language, fast builds. The syntax is Python-like, and there is no nil and no shared mutable data."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a href="../../use/">Use cases</a>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../../agents/">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Comparison</p>
+  <h1>Tern vs Go</h1>
+  <p class="lead">Both compile to one binary and keep the language small. Tern reads like Python, has no nil and no data races, and is faster on our benchmarks. Go is mature and has a huge ecosystem.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Numbers</h2>
+  <div class="table cmp bench-table">
+  <table>
+    <thead><tr><th></th><th>Tern</th><th>Go</th></tr></thead>
+    <tbody>
+      <tr><td>Compute benchmarks won <small>of 10</small></td><td><b>10</b></td><td>0</td></tr>
+      <tr><td>HTTP plaintext, one thread</td><td><b>169k</b> req/s</td><td>115k req/s</td></tr>
+      <tr><td>Spawn and join 1M tasks</td><td><b>41 ms</b></td><td>342 ms</td></tr>
+      <tr><td>100k waiting tasks</td><td><b>28 MB</b></td><td>277 MB</td></tr>
+      <tr><td>Web server binary</td><td><b>254 KB</b></td><td>8.1 MB</td></tr>
+      <tr><td>Rebuild after an edit <small>optimized</small></td><td><b>0.67 s</b></td><td>2.54 s</td></tr>
+      <tr><td>Agent-built link shortener <small>lines</small></td><td><b>273</b></td><td>805</td></tr>
+      <tr><td>Same app, redirects/s</td><td>146k</td><td><b>154k</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<section class="wrap">
+  <h2>What&rsquo;s different</h2>
+  <ul>
+    <li><b>No nil, no exceptions.</b> <code>Option[T]</code> and <code>Result[T, E]</code> with <code>?</code> instead of <code>if err != nil</code>.</li>
+    <li><b>Values, not pointers.</b> Every value is a copy (lazily), so there&rsquo;s no aliasing, and the compiler rejects data races in <code>parallel</code> code. Go finds races only at run time with <code>-race</code>.</li>
+    <li><b>Goroutines become <code>parallel</code> blocks and tasks</b>, on a work-stealing scheduler.</li>
+    <li><b>Generics and enums with data</b>, matched with <code>match</code>.</li>
+  </ul>
+</section>
+<section class="wrap">
+  <h2>Pick Go when</h2>
+  <ul>
+    <li>You need a mature ecosystem, Windows, or a language your team already knows.</li>
+    <li>You need stability guarantees today. Tern is an early release.</li>
+  </ul>
+  <p>Coming from Go? The <a href="../../docs/guides/coming-from.html">coming-from guide</a> maps Go idioms to Tern.</p>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>Is Tern faster than Go?</h3>
+  <p>On our benchmarks, yes: ahead on all 10 compute benchmarks and on HTTP throughput per thread. Go served slightly more redirects per second in the agent-built app test.</p>
+  <h3>Is Tern like Go?</h3>
+  <p>In spirit: one binary, a small language, fast builds. The syntax is Python-like, and there is no nil and no shared mutable data.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../../use/">Use cases</a><a href="../../docs/">Docs</a><a href="../../packages/">Packages</a><a href="../../agents/">For agents</a><a href="../../#benchmarks">Benchmarks</a><a href="../../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>

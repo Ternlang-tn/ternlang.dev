@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://ternlang.dev/about/</loc></url>
   <url><loc>https://ternlang.dev/agents/claude-code/</loc></url>
   <url><loc>https://ternlang.dev/agents/codex/</loc></url>
   <url><loc>https://ternlang.dev/agents/</loc></url>
@@ -52,6 +53,7 @@
   <url><loc>https://ternlang.dev/docs/std/random.html</loc></url>
   <url><loc>https://ternlang.dev/docs/std/re.html</loc></url>
   <url><loc>https://ternlang.dev/docs/std/simd.html</loc></url>
+  <url><loc>https://ternlang.dev/docs/std/sql.html</loc></url>
   <url><loc>https://ternlang.dev/docs/std/term.html</loc></url>
   <url><loc>https://ternlang.dev/docs/std/time.html</loc></url>
   <url><loc>https://ternlang.dev/docs/std/tls.html</loc></url>
@@ -76,4 +78,14 @@
   <url><loc>https://ternlang.dev/ts/jest/</loc></url>
   <url><loc>https://ternlang.dev/ts/nestjs/</loc></url>
   <url><loc>https://ternlang.dev/ts/vs-swc/</loc></url>
+  <url><loc>https://ternlang.dev/use/c/</loc></url>
+  <url><loc>https://ternlang.dev/use/cli/</loc></url>
+  <url><loc>https://ternlang.dev/use/data/</loc></url>
+  <url><loc>https://ternlang.dev/use/</loc></url>
+  <url><loc>https://ternlang.dev/use/mobile/</loc></url>
+  <url><loc>https://ternlang.dev/use/wasm/</loc></url>
+  <url><loc>https://ternlang.dev/use/web/</loc></url>
+  <url><loc>https://ternlang.dev/vs/go/</loc></url>
+  <url><loc>https://ternlang.dev/vs/python/</loc></url>
+  <url><loc>https://ternlang.dev/vs/rust/</loc></url>
 </urlset>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sql · Tern</title>
+<link rel="canonical" href="https://ternlang.dev/docs/std/sql.html">
+<link rel="stylesheet" href="../style.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top">
+  <button class="menu" aria-label="Menu">&#9776;</button>
+  <a class="brand" href="../../index.html">Tern</a>
+  <div class="search"><input type="search" placeholder="Search the docs  ( / )" aria-label="Search"><div class="results" hidden></div></div>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Documentation"><ul><li><a href="../index.html">Tern</a></li></ul><div class="sec">Tour of Tern</div><ul><li><a href="../tour/01-getting-started.html">1. Getting started</a></li><li><a href="../tour/02-values-and-types.html">2. Values and types</a></li><li><a href="../tour/03-control-flow.html">3. Control flow</a></li><li><a href="../tour/04-functions.html">4. Functions</a></li><li><a href="../tour/05-structs.html">5. Structs</a></li><li><a href="../tour/06-arrays-and-maps.html">6. Arrays and maps</a></li><li><a href="../tour/07-strings.html">7. Strings</a></li><li><a href="../tour/08-enums-and-match.html">8. Enums and match</a></li><li><a href="../tour/09-values-and-mut.html">9. Values, mut, and &amp;</a></li><li><a href="../tour/10-closures.html">10. Functions as values</a></li><li><a href="../tour/11-parallelism.html">11. Parallelism</a></li><li><a href="../tour/12-modules.html">12. Modules and packages</a></li><li><a href="../tour/13-next-steps.html">13. Where to go next</a></li></ul><div class="sec">Guides</div><ul><li><a href="../guides/coming-from.html">Coming from Python, Go, Rust, or JavaScript</a></li><li><a href="../guides/web-apps.html">Building web apps</a></li><li><a href="../guides/openapi-clients.html">Clients for other APIs (OpenAPI)</a></li><li><a href="../guides/publishing-packages.html">Writing and publishing a package</a></li><li><a href="../guides/parallelism.html">Parallel programming</a></li><li><a href="../guides/memory.html">How memory works</a></li><li><a href="../guides/performance.html">Performance tips</a></li><li><a href="../guides/c-interop.html">Calling C, and Tern as a library</a></li><li><a href="../guides/wasm.html">WebAssembly and JavaScript</a></li><li><a href="../guides/mobile.html">iOS and Android</a></li><li><a href="../guides/cookbook.html">Cookbook</a></li></ul><div class="sec">Standard library</div><ul><li><a href="../std/index.html">Overview</a></li><li><a href="../std/fmt.html">fmt</a></li><li><a href="../std/math.html">math</a></li><li><a href="../std/random.html">random</a></li><li><a href="../std/time.html">time</a></li><li><a href="../std/os.html">os</a></li><li><a href="../std/fs.html">fs</a></li><li><a href="../std/path.html">path</a></li><li><a href="../std/flag.html">flag</a></li><li><a href="../std/term.html">term</a></li><li><a href="../std/url.html">url</a></li><li><a href="../std/toml.html">toml</a></li><li><a href="../std/binary.html">binary</a></li><li><a href="../std/heap.html">heap</a></li><li><a href="../std/pqueue.html">pqueue</a></li><li><a href="../std/deque.html">deque</a></li><li><a href="../std/bitset.html">bitset</a></li><li><a href="../std/json.html">json</a></li><li><a href="../std/re.html">re</a></li><li><a href="../std/simd.html">simd</a></li><li><a href="../std/http.html">http</a></li><li><a href="../std/crypto.html">crypto</a></li><li><a href="../std/compress.html">compress</a></li><li><a href="../std/tls.html">tls</a></li><li><a href="../std/log.html">log</a></li><li><a href="../std/html.html">html</a></li><li><a href="../std/csv.html">csv</a></li><li><a href="../std/sql.html" class="cur" aria-current="page">sql</a></li></ul><div class="sec">Packages</div><ul><li><a href="../packages/index.html">Overview</a></li><li><a href="../packages/roost.html">roost</a></li><li><a href="../packages/sqlite.html">sqlite</a></li><li><a href="../packages/pg.html">pg</a></li><li><a href="../packages/redis.html">redis</a></li><li><a href="../packages/migrate.html">migrate</a></li><li><a href="../packages/sqlgen.html">sqlgen</a></li><li><a href="../packages/auth.html">auth</a></li><li><a href="../packages/openapi.html">openapi</a></li><li><a href="../packages/sentry.html">sentry</a></li></ul><div class="sec">Reference</div><ul><li><a href="../reference.html">Language reference</a></li><li><a href="../builtins.html">Builtin functions</a></li><li><a href="../grammar.html">Grammar</a></li><li><a href="../errors.html">Compiler errors</a></li><li><a href="../cli.html">Command line</a></li></ul></nav>
+<main>
+<article>
+<h1 id="sql"><a class="anchor" href="#sql" aria-hidden="true">#</a>sql</h1>
+<p>The <code>sql</code> module is what database drivers share, like Go's <code>database/sql</code>: it reads rows straight into your structs. A driver (the <a href="../packages/pg.html">pg</a> and <a href="../packages/sqlite.html">sqlite</a> packages, or one you write) hands its rows over in one format, and <code>sql.decode_rows</code> fills a struct or an array of structs from them, with code the compiler writes for that struct type: columns are matched to fields by name once, then each value is read by its field's type. There is no JSON or map in between.</p>
+<p>Most programs never call it: they call their driver (<code>db.fetch[User](...)</code> in pg, <code>d.query_into(...)</code> in sqlite), which does. This page is for writing a driver, or for reading rows that come from somewhere else.</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sql
+
+<span class="k">enum</span> <span class="t">Status</span>:
+    todo
+    done
+
+<span class="k">struct</span> <span class="t">Task</span>:
+    id: <span class="t">int</span>
+    title: <span class="t">str</span>
+    status: <span class="t">Status</span>
+    due: <span class="t">Option</span>[<span class="t">str</span>]
+
+<span class="k">fn</span> <span class="f">main</span>():
+    b <span class="o">=</span> sql.<span class="f">rows</span>([<span class="s">"id"</span>, <span class="s">"title"</span>, <span class="s">"status"</span>, <span class="s">"due"</span>])
+    b.<span class="f">row</span>(<span class="n">4</span>)
+    b.<span class="f">put_int</span>(<span class="n">1</span>)
+    b.<span class="f">put_text</span>(<span class="s">"write the docs"</span>)
+    b.<span class="f">put_text</span>(<span class="s">"done"</span>)
+    b.<span class="f">put_null</span>()
+    b.<span class="f">row</span>(<span class="n">4</span>)
+    b.<span class="f">put_text</span>(<span class="s">"2"</span>)                    <span class="c"># text where the field is a number: read as one</span>
+    b.<span class="f">put_text</span>(<span class="s">"ship"</span>)
+    b.<span class="f">put_text</span>(<span class="s">"todo"</span>)
+    b.<span class="f">put_text</span>(<span class="s">"2026-10-12"</span>)
+    tasks: [<span class="t">Task</span>] <span class="o">=</span> []
+    n <span class="o">=</span> sql.<span class="f">decode_rows</span>(b.<span class="f">bytes</span>(), <span class="o">&amp;</span>tasks)
+    <span class="f">print</span>(n)
+    <span class="k">for</span> t <span class="k">in</span> tasks:
+        <span class="f">print</span>(t)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>2
+Task{id: 1, title: "write the docs", status: Status.done, due: None}
+Task{id: 2, title: "ship", status: Status.todo, due: Some("2026-10-12")}</code></pre></div>
+<h2 id="reading-rows"><a class="anchor" href="#reading-rows" aria-hidden="true">#</a>Reading rows</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">decode_rows</span>(raw: <span class="t">str</span>, out: <span class="k">mut</span> <span class="t">T</span>) <span class="t">int</span>          <span class="t">T</span>: a <span class="k">struct</span>, <span class="k">or</span> an array of structs
+<span class="k">fn</span> <span class="f">decode_error</span>() <span class="t">str</span></code></pre></div>
+<p><code>sql.decode_rows(raw, &amp;out)</code> returns the number of rows in <code>raw</code>, or <code>-1</code> when a value doesn't fit its field (then <code>sql.decode_error()</code> says which) or <code>raw</code> isn't in the format below (then <code>decode_error()</code> is <code>""</code>). On <code>-1</code>, <code>out</code> is left as it was.</p>
+<ul><li>Into an array <code>[T]</code>, the rows replace what it held.</li><li>Into a single <code>T</code>, the first row fills the fields it has a column for; the other fields keep their values. Every row is counted, so <code>&gt; 0</code> means "found".</li><li>Columns are matched to fields by name. A column with no field is skipped, and a field with no column keeps its zero value (in an array) or its value (in a single struct).</li><li><code>NULL</code> is <code>None</code> in an <code>Option</code> field, and the zero value (<code>0</code>, <code>""</code>, <code>false</code>) elsewhere.</li></ul>
+<p>What each field type reads:</p>
+<div class="table"><table><thead><tr><th>Field</th><th>Reads</th></tr></thead><tbody><tr><td><code>int</code></td><td>an integer, or its text (<code>"42"</code>, <code>"-7"</code>)</td></tr><tr><td><code>float</code></td><td>a float or an integer, their text, or a timestamp's text (<code>2026-10-11 12:00:00+00</code>, <code>2026-10-11T12:00:00Z</code>, a date): seconds since 1970, like <code>time.now()</code></td></tr><tr><td><code>bool</code></td><td>a boolean, an integer (not 0), or text starting with <code>t</code> or <code>1</code></td></tr><tr><td><code>str</code></td><td>text, or a number or boolean written as text</td></tr><tr><td>an enum without payloads</td><td>the variant's label (<code>"in_progress"</code>)</td></tr><tr><td><code>[int]</code> <code>[float]</code> <code>[bool]</code> <code>[str]</code></td><td>a PostgreSQL array (<code>{1,2}</code>, <code>{a,"b c"}</code>) or a JSON array</td></tr><tr><td>any other type <code>json.decode</code> reads</td><td>JSON text (a <code>jsonb</code> column into a struct, say)</td></tr><tr><td><code>Option[...]</code> of one of these</td><td><code>None</code> for <code>NULL</code>, else <code>Some</code> of the value</td></tr></tbody></table></div>
+<p>A value that doesn't fit is an error, not a silent zero:</p>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">import</span> sql
+
+<span class="k">struct</span> <span class="t">Item</span>:
+    id: <span class="t">int</span>
+    name: <span class="t">str</span>
+
+<span class="k">fn</span> <span class="f">main</span>():
+    b <span class="o">=</span> sql.<span class="f">rows</span>([<span class="s">"id"</span>, <span class="s">"name"</span>])
+    b.<span class="f">row</span>(<span class="n">2</span>)
+    b.<span class="f">put_text</span>(<span class="s">"seven"</span>)
+    b.<span class="f">put_text</span>(<span class="s">"x"</span>)
+    items: [<span class="t">Item</span>] <span class="o">=</span> []
+    <span class="f">print</span>(sql.<span class="f">decode_rows</span>(b.<span class="f">bytes</span>(), <span class="o">&amp;</span>items), sql.<span class="f">decode_error</span>())
+
+    one <span class="o">=</span> <span class="t">Item</span>(<span class="n">0</span>, <span class="s">"unchanged"</span>)
+    b2 <span class="o">=</span> sql.<span class="f">rows</span>([<span class="s">"id"</span>])
+    b2.<span class="f">row</span>(<span class="n">1</span>)
+    b2.<span class="f">put_int</span>(<span class="n">9</span>)
+    <span class="f">print</span>(sql.<span class="f">decode_rows</span>(b2.<span class="f">bytes</span>(), <span class="o">&amp;</span>one), one)</code></pre></div>
+<div class="block out"><div class="label">Output</div><pre><code>-1 the value "seven" doesn't fit id: int
+1 Item{id: 9, name: "unchanged"}</code></pre></div>
+<h2 id="building-rows"><a class="anchor" href="#building-rows" aria-hidden="true">#</a>Building rows</h2>
+<div class="block code"><button class="copy" aria-label="Copy code">Copy</button><pre><code><span class="k">fn</span> <span class="f">rows</span>(columns: [<span class="t">str</span>]) <span class="t">Rows</span>
+<span class="k">fn</span> <span class="f">row</span>(r: <span class="k">mut</span> <span class="t">Rows</span>, n: <span class="t">int</span>)               starts a row of n values, <span class="k">in</span> column order
+<span class="k">fn</span> <span class="f">put_int</span>(r: <span class="k">mut</span> <span class="t">Rows</span>, v: <span class="t">int</span>)
+<span class="k">fn</span> <span class="f">put_float</span>(r: <span class="k">mut</span> <span class="t">Rows</span>, v: <span class="t">float</span>)
+<span class="k">fn</span> <span class="f">put_bool</span>(r: <span class="k">mut</span> <span class="t">Rows</span>, v: <span class="t">bool</span>)
+<span class="k">fn</span> <span class="f">put_text</span>(r: <span class="k">mut</span> <span class="t">Rows</span>, s: <span class="t">str</span>)
+<span class="k">fn</span> <span class="f">put_null</span>(r: <span class="k">mut</span> <span class="t">Rows</span>)
+<span class="k">fn</span> <span class="f">bytes</span>(r: <span class="k">mut</span> <span class="t">Rows</span>) <span class="t">str</span>                 the rows so far (r can go on)</code></pre></div>
+<p>A driver that reads a database one value at a time (SQLite's <code>sqlite3_column_*</code>) builds its rows with these. Any column may hold any kind of value, row by row.</p>
+<h2 id="the-format"><a class="anchor" href="#the-format" aria-hidden="true">#</a>The format</h2>
+<p>A driver that receives rows in bulk can hand them over without copying, if they're in this format already (PostgreSQL's are: the pg package passes the server's <code>DataRow</code> messages through untouched).</p>
+<ul><li><strong>Header</strong>: the column count, then for each column its format and name: <code>u32</code> format, <code>u32</code> name length, the name's bytes (little-endian).</li><li><strong>Rows</strong>: each one is <code>'D'</code>, a <code>u32</code> big-endian length (of what follows, counting the length itself), a <code>u16</code> big-endian field count, then per field an <code>i32</code> big-endian length (<code>-1</code> for <code>NULL</code>) and that many bytes.</li><li><strong>Formats</strong>, per column:</li></ul>
+<div class="table"><table><thead><tr><th>Constant</th><th>Value</th><th>A field is</th></tr></thead><tbody><tr><td><code>sql.TEXT</code></td><td>0</td><td>the value as text</td></tr><tr><td><code>sql.INT</code></td><td>1</td><td>a signed big-endian integer of 1, 2, 4 or 8 bytes</td></tr><tr><td><code>sql.FLOAT</code></td><td>2</td><td>a big-endian IEEE float of 4 or 8 bytes</td></tr><tr><td><code>sql.BOOL</code></td><td>3</td><td>one byte, <code>0</code> for false</td></tr><tr><td><code>sql.UINT</code></td><td>4</td><td>an unsigned big-endian integer of 1, 2, 4 or 8 bytes</td></tr><tr><td><code>sql.TAGGED</code></td><td>5</td><td>one byte giving the value's own format (0 to 4), then the value</td></tr></tbody></table></div>
+<p><code>sql.rows</code> writes every column as <code>TAGGED</code>.</p>
+<p>A driver that runs the same statement over and over keeps the header: <code>h = sql.rows(columns).head()</code> once, then <code>sql.rows_from(h)</code> starts each result without writing the names again.</p>
+<h3 id="filling-a-struct-from-values-in-hand"><a class="anchor" href="#filling-a-struct-from-values-in-hand" aria-hidden="true">#</a>Filling a struct from values in hand</h3>
+<p>A driver that reads values one at a time (sqlite does, with its column functions) can skip the rows format for the common case, the first row into one struct: <code>sql.row_field(&amp;out, name)</code> is the number of the field a column is for (<code>-1</code>: none), worked out once per statement; <code>sql.row_id(&amp;out)</code> is a number for the struct's type (<code>0</code> when <code>out</code> is an array, which only <code>decode_rows</code> fills); then <code>sql.set_int(&amp;out, field, v)</code>, <code>set_float</code>, <code>set_text</code> and <code>set_null</code> put a column's value in, converted as <code>decode_rows</code> would (NULL zeroes the field, or makes an <code>Option</code> <code>None</code>). Each returns <code>false</code> when the value doesn't fit the field, and <code>sql.decode_error()</code> says which.</p>
+</article>
+<div class="pn"><a class="prev" href="../std/csv.html"><span>Previous</span>csv</a><a class="next" href="../packages/index.html"><span>Next</span>Overview</a></div>
+<footer>Source: <code>docs/std/sql.md</code>. Every example on this page is compiled and run by <code>tern x test docs</code>.</footer>
+</main>
+<nav class="toc" aria-label="On this page"><div class="sec">On this page</div><ul><li class="l2"><a href="#reading-rows">Reading rows</a></li><li class="l2"><a href="#building-rows">Building rows</a></li><li class="l2"><a href="#the-format">The format</a></li><li class="l3"><a href="#filling-a-struct-from-values-in-hand">Filling a struct from values in hand</a></li></ul></nav>
+</div>
+<script>window.TERN_ROOT="../";</script>
+<script src="../search.js"></script>
+<script src="../site.js"></script>
+</body>
+</html>
