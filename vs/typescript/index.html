@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tern vs TypeScript and Node.js: static types without the runtime</title>
+<meta name="description" content="Tern vs TypeScript on Node: the same agent-built app was 273 lines vs 502, served 146k vs 47k requests/s, shipped 408 KB vs 25.8 MB, and idled in 4.4 MB vs 89.6 MB.">
+<meta property="og:title" content="Tern vs TypeScript and Node.js: static types without the runtime">
+<meta property="og:description" content="Tern vs TypeScript on Node: the same agent-built app was 273 lines vs 502, served 146k vs 47k requests/s, shipped 408 KB vs 25.8 MB, and idled in 4.4 MB vs 89.6 MB.">
+<meta property="og:image" content="https://ternlang.dev/og.png">
+<meta property="og:url" content="https://ternlang.dev/vs/typescript/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Tern">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://ternlang.dev/vs/typescript/">
+<link rel="stylesheet" href="../../docs/style.css">
+<link rel="stylesheet" href="../../home.css">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('tern-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "TechArticle",
+   "headline": "Tern vs TypeScript and Node.js: static types without the runtime",
+   "description": "Tern vs TypeScript on Node: the same agent-built app was 273 lines vs 502, served 146k vs 47k requests/s, shipped 408 KB vs 25.8 MB, and idled in 4.4 MB vs 89.6 MB.",
+   "url": "https://ternlang.dev/vs/typescript/",
+   "about": {
+    "@type": "ComputerLanguage",
+    "name": "Tern",
+    "url": "https://ternlang.dev/"
+   }
+  },
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Tern",
+     "item": "https://ternlang.dev/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Tern vs TypeScript",
+     "item": "https://ternlang.dev/vs/typescript/"
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Is Tern faster than Node.js?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "For the server in our test, yes: 146k vs 47k requests per second, because Tern uses every core. Per request on one thread, Node used slightly less CPU (21 vs 23 microseconds)."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Can Tern run in the browser?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "As WebAssembly: tern build --lib --target wasm writes a module, a JavaScript loader and TypeScript types."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body class="site">
+<header class="bar">
+  <a class="logo" href="../../"><img src="../../tern.svg" alt="" width="44" height="32">Tern</a>
+  <nav>
+    <a href="../../use/">Use cases</a>
+    <a class="opt" href="../../#benchmarks">Benchmarks</a>
+    <a class="opt" href="../../agents/">For agents</a>
+    <a href="../../docs/">Docs</a>
+    <a href="../../ts/">ternTS</a>
+  </nav>
+  <button class="theme" aria-label="Toggle dark mode">&#9680;</button>
+</header>
+
+<main class="home-main guide">
+<section class="wrap">
+  <p class="eyebrow">Comparison</p>
+  <h1>Tern vs TypeScript</h1>
+  <p class="lead">TypeScript gives you types; Node gives you a runtime to ship and feed. Tern checks types the same way before anything runs, then compiles to one native binary that uses every core.</p>
+  <div class="block code"><pre><code><span class="k">curl</span> -fsSL https://ternlang.dev/install.sh | sh
+tern new myapp &amp;&amp; cd myapp</code></pre></div>
+</section>
+<section class="wrap">
+  <h2>Same spec, same agent</h2>
+  <div class="table cmp bench-table">
+  <table>
+    <thead><tr><th>Agent-built link shortener</th><th>Tern</th><th>TypeScript (Node)</th></tr></thead>
+    <tbody>
+      <tr><td>Lines of code <small>excluding tests</small></td><td><b>273</b></td><td>502</td></tr>
+      <tr><td>Redirects per second</td><td><b>146k</b></td><td>47k</td></tr>
+      <tr><td>CPU per redirect</td><td>23 &micro;s</td><td><b>21 &micro;s</b> <small>one thread</small></td></tr>
+      <tr><td>Deployed size</td><td><b>408 KB</b></td><td>25.8 MB</td></tr>
+      <tr><td>Memory at idle</td><td><b>4.4 MB</b></td><td>89.6 MB</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Both apps pass the same 32 black-box acceptance checks. Node used slightly less CPU per request on its one thread; Tern spreads requests over every core. Details on the <a href="../../agents/">agents page</a>.</p>
+</section>
+<section class="wrap">
+  <h2>What&rsquo;s different</h2>
+  <ul>
+    <li><b>Types are sound and always on.</b> No <code>any</code> and no <code>as</code> casts to step around the checker.</li>
+    <li><b>No async/await, no event-loop blocking.</b> Handlers are plain functions on green-thread tasks, and <code>parallel</code> uses every core.</li>
+    <li><b>No null or undefined.</b> <code>Option[T]</code> and <code>Result[T, E]</code> with <code>?</code>.</li>
+    <li><b>Nothing to install on the server.</b> No node_modules; a Linux build can be fully static.</li>
+  </ul>
+</section>
+<section class="wrap">
+  <h2>Pick TypeScript when</h2>
+  <ul>
+    <li>The code runs in the browser, or you depend on npm packages. (Tern can still compile to <a href="../../use/wasm/">WebAssembly</a> with TypeScript types for the hot part.)</li>
+    <li>Your team shares types between front end and back end.</li>
+  </ul>
+  <p>Already on TypeScript and want faster builds? <a href="../../ts/">ternTS</a>, written in Tern, transpiles exactly like tsc, many times faster.</p>
+</section>
+
+<section class="wrap">
+  <h2>Questions</h2>
+  <h3>Is Tern faster than Node.js?</h3>
+  <p>For the server in our test, yes: 146k vs 47k requests per second, because Tern uses every core. Per request on one thread, Node used slightly less CPU (21 vs 23 microseconds).</p>
+  <h3>Can Tern run in the browser?</h3>
+  <p>As WebAssembly: tern build --lib --target wasm writes a module, a JavaScript loader and TypeScript types.</p>
+</section>
+<section class="wrap">
+  <h2>More about Tern</h2>
+  <div class="next">
+    <a href="../../use/web/"><b>Web servers and APIs</b><span>169k requests/s on one thread, 254 KB binary</span></a>
+    <a href="../../use/cli/"><b>Command-line tools</b><span>Flags into a struct, one static binary</span></a>
+    <a href="../../use/data/"><b>Data processing</b><span>CSV, JSON, regex and gzip faster than Rust</span></a>
+    <a href="../../use/wasm/"><b>WebAssembly</b><span>40 KB modules with TypeScript types</span></a>
+    <a href="../../use/mobile/"><b>iOS and Android</b><span>One library for Swift and Kotlin</span></a>
+    <a href="../../docs/tour/01-getting-started.html"><b>Start the tour</b><span>Install Tern and write a first program</span></a>
+  </div>
+  <p class="note">Tern (ternlang) is an early release: the language will change, and so will these numbers. Benchmarks run on an Apple M4 Pro; the full tables, losses included, are on the <a href="../../#benchmarks">home page</a>.</p>
+</section>
+</main>
+
+<footer class="foot wrap">
+  <div><img src="../../tern.svg" alt="" width="33" height="24"> Tern is an early release.</div>
+  <div class="links"><a href="../../use/">Use cases</a><a href="../../docs/">Docs</a><a href="../../packages/">Packages</a><a href="../../agents/">For agents</a><a href="../../#benchmarks">Benchmarks</a><a href="../../ts/">ternTS</a><a href="https://github.com/Ternlang-tn">GitHub</a></div>
+</footer>
+<script src="../../home.js"></script>
+</body>
+</html>
